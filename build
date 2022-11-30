@@ -1,0 +1,3 @@
+#!/bin/bash
+marp slides.md --html -o slides.pdf
+latexmk -pdf -halt-on-error thesis.tex
