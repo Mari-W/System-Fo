@@ -5,7 +5,9 @@ author: Marius Weidner
 theme: uncover
 ---
 
+# Title
+
 <!-- _paginate: false -->
-<!-- _footer: Marius Weidner ‒ Chair of Programming Languages -->
+<!-- _footer: Marius Weidner ‒ Chair of Programming Languages ‒ Title  -->
 
 ---
