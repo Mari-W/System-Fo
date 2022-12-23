@@ -3,4 +3,5 @@
 *.fls
 *.log
 *.lock
+*.out
 *.html
