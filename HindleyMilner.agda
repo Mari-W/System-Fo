@@ -24,28 +24,27 @@ xs ▷▷ ys = ys ++ xs
 
 -- Sorts --------------------------------------------------------------------------------
 
-data Refable : Set where
-  ⊤ᵣ : Refable
-  ⊥ᵣ : Refable
+data Ctxable : Set where
+  ⊤ᶜ : Ctxable
+  ⊥ᶜ : Ctxable
 
-data Sort : Refable → Set where
-  eₛ  : Sort ⊤ᵣ 
-  σₛ  : Sort ⊥ᵣ
-  τₛ  : Sort ⊤ᵣ
+data Sort : Ctxable → Set where
+  eₛ  : Sort ⊤ᶜ
+  vₛ  : Sort ⊥ᶜ
+  σₛ  : Sort ⊥ᶜ
+  τₛ  : Sort ⊤ᶜ
 
 Sorts : Set
-Sorts = List (Sort ⊤ᵣ)
+Sorts = List (Sort ⊤ᶜ)
 
 variable
-  r r' r'' r₁ r₂ : Refable
+  r r' r'' r₁ r₂ : Ctxable
   s s' s'' s₁ s₂ : Sort r
   S S' S'' S₁ S₂ : Sorts
-  a a' a'' a₁ a₂ : s ∈ S
   x x' x'' x₁ x₂ : eₛ ∈ S
   α α' α'' α₁ α₂ : τₛ ∈ S
 
-
-Var : Sorts → Sort ⊤ᵣ → Set
+Var : Sorts → Sort ⊤ᶜ → Set
 Var S s = s ∈ S
 
 -- Syntax -------------------------------------------------------------------------------
@@ -59,6 +58,7 @@ data Term : Sorts → Sort r → Set where
   λ`x→_        : Term (S ▷ eₛ) eₛ → Term S eₛ
   _·_          : Term S eₛ → Term S eₛ → Term S eₛ
   `let`x=_`in_ : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
+  -λ`x→_       : Term (S ▷ eₛ) eₛ → Term S vₛ
   _⇒_          : Term S τₛ → Term S τₛ → Term S τₛ
   ∀`α_         : Term (S ▷ τₛ) σₛ → Term S σₛ
   ↑ₚ_          : Term S τₛ → Term S σₛ
@@ -69,21 +69,21 @@ Poly : Sorts → Set
 Poly S = Term S σₛ
 Mono : Sorts → Set
 Mono S = Term S τₛ
+Val : Sorts → Set
+Val S = Term S vₛ
 
 variable
   e e' e'' e₁ e₂ : Expr S
+  v v' v'' v₁ v₂ : Val S
   σ σ' σ'' σ₁ σ₂ : Poly S
   τ τ' τ'' τ₁ τ₂ : Mono S
 
-data Val : Expr S → Set where
-  val-λ : Val (λ`x→ e)
-
-variable
-  v v' v'' v₁ v₂ : Val e 
+⌞_⌟ : Val S → Expr S
+⌞ -λ`x→ e ⌟ = λ`x→ e
 
 -- Context ------------------------------------------------------------------------------
 
-Stores : Sorts → Sort ⊤ᵣ → Set
+Stores : Sorts → Sort ⊤ᶜ → Set
 Stores S eₛ = Mono S
 Stores S τₛ = ⊤
 
@@ -102,21 +102,22 @@ _▶_ : Ctx S → Stores S s → Ctx (S ▷ s)
 (Γ ▶ γ) (here refl) = γ
 (Γ ▶ _) (there x) = Γ x
 
+
 wk-τ : Mono S → Term (S ▷ s') τₛ 
 wk-τ (` x) = ` there x
 wk-τ (τ₁ ⇒ τ₂) = (wk-τ τ₁ ⇒ wk-τ τ₂) 
 
 wk-σ : Poly S → Term (S ▷ s') σₛ
-wk-σ (∀`α σ) = ∀`α {! TODO EXT-WK !}
+wk-σ (∀`α σ) = ∀`α {! TODO LIFT  !}
 wk-σ (↑ₚ τ) = ↑ₚ (wk-τ τ)
 
-wk-t : ∀ {s} → Stores S s → Stores (S ▷ s') s
-wk-t {s = eₛ} τ = wk-τ τ
-wk-t {s = τₛ} _ = tt  
+wkₛ : Stores S s → Stores (S ▷ s') s
+wkₛ {s = eₛ} τ = wk-τ τ
+wkₛ {s = τₛ} _ = tt  
 
 wk-drop : (v : Var S s) → Stores (drop-last v S) s → Stores S s
-wk-drop (here refl) t = wk-t t
-wk-drop (there x) t = wk-t (wk-drop x t)
+wk-drop (here refl) t = wkₛ t
+wk-drop (there x) t = wkₛ (wk-drop x t)
 
 wk-ctx : Ctx S → Var S s → Stores S s 
 wk-ctx Γ x = wk-drop x (Γ x)
@@ -139,19 +140,20 @@ ren ρ (` x) = ` (ρ x)
 ren ρ (λ`x→ e) = λ`x→ (ren (extᵣ ρ) e)
 ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
 ren ρ (`let`x= e₂ `in e₁) = `let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
+ren ρ (-λ`x→ e) = -λ`x→ (ren (extᵣ ρ) e) 
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
 ren ρ (↑ₚ τ) = ↑ₚ ren ρ τ
 ren ρ (∀`α σ) = ∀`α (ren (extᵣ ρ) σ)
-
 wkᵣ : Ren S (S ▷ s) 
 wkᵣ = there
 
 -- Substitution -------------------------------------------------------------------------
 
-takes : Sort r → Sort ⊤ᵣ 
-takes eₛ = eₛ
-takes σₛ = τₛ
-takes τₛ = τₛ
+binds : Sort r → Sort ⊤ᶜ 
+binds eₛ = eₛ
+binds σₛ = τₛ
+binds τₛ = τₛ
+binds vₛ = eₛ -- never substituted into
 
 Sub : Sorts → Sorts → Set
 Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
@@ -165,15 +167,16 @@ sub ξ (` x) = (ξ x)
 sub ξ (λ`x→ e) = λ`x→ (sub (extₛ ξ) e)
 sub ξ (e₁ · e₂) = sub ξ e₁ · sub ξ e₂
 sub ξ (`let`x= e₂ `in e₁) = `let`x= sub ξ e₂ `in (sub (extₛ ξ) e₁)
+sub ξ (-λ`x→ e) = -λ`x→ (sub (extₛ ξ) e) 
 sub ξ (τ₁ ⇒ τ₂) = sub ξ τ₁ ⇒ sub ξ τ₂
 sub ξ (∀`α σ) = ∀`α (sub (extₛ ξ) σ)
 sub ξ (↑ₚ τ) = ↑ₚ sub ξ τ
 
-intro : Term S (takes s) → Sub (S ▷ (takes s)) S
+intro :  Term S (binds s) → Sub (S ▷ (binds s)) S
 intro e (here refl) = e
 intro e (there x) = ` x 
 
-_[_] : Term (S ▷ (takes s)) s → Term S (takes s) → Term S s
+_[_] : Term (S ▷ (binds s)) s → Term S (binds s) → Term S s
 e₁ [ e₂ ] = sub (intro e₂) e₁
 
 variable
@@ -212,62 +215,31 @@ data _⊢_∶_ : Ctx S → Expr S → Poly S → Set where
 
 -- Semantics ----------------------------------------------------------------------------
 
-infixr 3 _↪_
-data _↪_ : Expr S → Expr S → Set where
-  β-λ :
-    Val e₂ →
-    --------------------------
-    (λ`x→ e₁) · e₂ ↪ e₁ [ e₂ ]
-  β-let : 
-    Val e₂ → 
-    -----------------------------
-    `let`x= e₂ `in e₁ ↪ e₁ [ e₂ ]
-  {- ξ-λ :
-    e ↪ e' →
-    ----------------
-    λ`x→ e ↪ λ`x→ e' -}
-  ξ-·₁ :
-    e₁ ↪ e₂ →
+infixr 3 _↓_
+data _↓_ : Expr S → Val S → Set where
+  ↓-λ :
+    λ`x→ e ↓ -λ`x→ e 
+  ↓-· : 
+    e₁ ↓ -λ`x→ e →
+    e₂ ↓ v' → 
+    e [ ⌞ v' ⌟ ] ↓ v →
+    -----------------
+    e₁ · e₂ ↓ v
+  ↓-let :
+    e₂ ↓ v' → 
+    e₁ [ ⌞ v' ⌟ ] ↓ v →
     ---------------
-    e₁ · e ↪ e₂ · e
-  ξ-·₂ :
-    Val e → 
-    e₁ ↪ e₂ →
-    ---------------
-    e · e₁ ↪ e · e₂
-  ξ-let :
-    e₁ ↪ e₂ →
-    -----------------------------------
-    `let`x= e₁ `in e ↪ `let`x= e₂ `in e
+    `let`x= e₂ `in e₁ ↓ v 
 
--- Progress -----------------------------------------------------------------------------
+-- Soundness -----------------------------------------------------------------------------
 
-progress :
+soundness : 
   ∅ ⊢ e ∶ σ →
-  --------------------------
-  (∃[ e' ] (e ↪ e')) ⊎ Val e
-progress (⊢-λ _) = inj₂ val-λ
-progress (⊢-· ⊢e₁ ⊢e₂) with progress ⊢e₁ | progress ⊢e₂ 
-... | inj₁ (_ , e↪e') | _ = inj₁ (_ , ξ-·₁ e↪e')
-... | inj₂ val-λ | inj₁ (_ , e↪e') = inj₁ (_ , ξ-·₂ val-λ e↪e')
-... | inj₂ val-λ | inj₂ val-λ = inj₁ (_ , β-λ val-λ)
-progress (⊢-let ⊢e₂ _) with progress ⊢e₂
-... | inj₁ (_ , e↪e') = inj₁ (_ , ξ-let e↪e')
-... | inj₂ val-λ = inj₁ (_ , β-let val-λ)
-progress (⊢-τ ⊢e) = progress ⊢e
-progress (⊢-∀ ⊢e) = progress ⊢e
-
--- Preservation -------------------------------------------------------------------------
-
-{- preservation : 
-  ∅ ⊢ e ∶ σ → 
-  e ↪ e' → 
-  -----------
-  ∅ ⊢ e' ∶ σ
-preservation (⊢-· fun arg) (β-λ v) = {!   !}
-preservation (⊢-· fun arg) (ξ-·₁ red) = {!   !}
-preservation (⊢-· fun arg) (ξ-·₂ v red) = {!   !}
-preservation (⊢-let arg bdy) (β-let v) = {!   !}
-preservation (⊢-let arg bdy) (ξ-let red) = {!   !}
-preservation (⊢-τ a) b = {!   !}
-preservation (⊢-∀ a) b = {!   !} -}     
+  e ↓ v' →
+  ∅ ⊢ ⌞ v' ⌟ ∶ σ
+soundness (⊢-λ ⊢e) ↓-λ = ⊢-λ ⊢e
+soundness (⊢-· ⊢e₁ ⊢e₂) (↓-· e₁↓λ`x→e e₂↓e' e[e']↓v) with soundness ⊢e₁ e₁↓λ`x→e 
+... | a  = {! a  !}
+soundness (⊢-let a a₁) (↓-let b b₁) = {!   !}
+soundness (⊢-τ a) b = {!  !}
+soundness (⊢-∀ a) b = {!   !} 

@@ -3,6 +3,7 @@
 open import Data.List using (List; []; _∷_; drop; _++_)
 open import Data.List.Membership.Propositional using (_∈_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Nullary using (¬_)
 open import Data.Sum.Base using (_⊎_; inj₁; inj₂)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.List.Relation.Unary.Any using (here; there)
@@ -22,13 +23,13 @@ xs ▷▷ ys = ys ++ xs
 
 -- Sorts --------------------------------------------------------------------------------
 
-data Refable : Set where
-  ⊤ᵣ : Refable
-  ⊥ᵣ : Refable
+data Ctxable : Set where
+  ⊤ᵣ : Ctxable
+  ⊥ᵣ : Ctxable
 
-
-data Sort : Refable → Set where
-  eₛ  : Sort ⊤ᵣ 
+data Sort : Ctxable → Set where
+  eₛ  : Sort ⊤ᵣ
+  vₛ  : Sort ⊥ᵣ 
   oₛ  : Sort ⊤ᵣ 
   cₛ  : Sort ⊥ᵣ
   σₛ  : Sort ⊥ᵣ 
@@ -38,10 +39,9 @@ Sorts : Set
 Sorts = List (Sort ⊤ᵣ)
 
 variable
-  mᵣ mᵣ' mᵣ'' mᵣ₁ mᵣ₂ : Refable
-  s s' s'' s₁ s₂ : Sort mᵣ 
+  r r' r'' r₁ r₂ : Ctxable
+  s s' s'' s₁ s₂ : Sort r 
   S S' S'' S₁ S₂ : Sorts
-  a a' a'' a₁ a₂ : s ∈ S
   x x' x'' x₁ x₂ : eₛ ∈ S
   o o' o'' o₁ o₂ : oₛ ∈ S
   α α' α'' α₁ α₂ : τₛ ∈ S
@@ -58,13 +58,16 @@ infixr 4 λ`x→_ `let`x=_`in_ ∀`α_⇒_ inst`_∶_`=_`in_ _,_
 infixr 5 _⇒_ _·_ _∶_
 infix  6 `_ ↑ₚ_
 
-data Term : Sorts → Sort mᵣ → Set where
+data Term : Sorts → Sort r → Set where
   `_              : Var S s → Term S s
   λ`x→_           : Term (S ▷ eₛ) eₛ → Term S eₛ
   _·_             : Term S eₛ → Term S eₛ → Term S eₛ
   `let`x=_`in_    : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
   inst`_∶_`=_`in_ : Term S oₛ → Term S σₛ → Term S eₛ → Term S eₛ → Term S eₛ
   decl`o`in_      : Term (S ▷ oₛ) eₛ → Term S eₛ
+  -λ`x→_          : Term (S ▷ eₛ) eₛ → Term S vₛ
+  -_∶_            : Term S eₛ → Term S τₛ → Term S vₛ
+  -_,_            : Term S vₛ → Term S vₛ → Term S vₛ
   _⇒_             : Term S τₛ → Term S τₛ → Term S τₛ
   _∶_             : Term S oₛ → Term S τₛ → Term S cₛ
   _,_             : Term S cₛ → Term S cₛ → Term S cₛ
@@ -81,9 +84,17 @@ Poly : Sorts → Set
 Poly S =  Term S σₛ
 Mono : Sorts → Set
 Mono S = Term S τₛ
+Val : Sorts → Set
+Val S = Term S vₛ
+
+{- ⌞_⌟ : Val S → Expr S
+⌞ -λ`x→ e ⌟ = λ`x→ e
+-}
+
 
 variable
   e e' e'' e₁ e₂ : Expr S
+  v v' v'' v₁ v₂ : Val S
   c c' c'' c₁ c₂ : Cstr S
   σ σ' σ'' σ₁ σ₂ : Poly S
   τ τ' τ'' τ₁ τ₂ : Mono S
@@ -141,14 +152,15 @@ wk-drop (there x) t = wkₛ (wk-drop x t)
 wk-ctx : Ctx S → Var S s → Stores S s 
 wk-ctx Γ x = wk-drop x (Γ x)
 
-_[_]⊎_ : Ctx S → Over S → Poly S → Ctx S
-(Γ [ ` here refl ]⊎ σ) x = {!   !}
-(Γ [ o ]⊎ σ) x = Γ x
- 
-infix 30 _▶'_
-_▶'_ : Ctx S → Cstr S → Ctx S
-Γ ▶' (o ∶ τ) = Γ [ o ]⊎ (↑ₚ τ)
-Γ ▶' (c , c') = (Γ ▶' c) ▶' c'
+_[_]⊎_ : Ctx S → (v : Var S oₛ) → Poly (drop-last v S) → Ctx S
+(Γ [ here refl ]⊎ σ) (here refl) = Γ (here refl) ▷ σ
+(Γ [ there o ]⊎ σ) (here refl) = Γ (here refl)
+(Γ [ _ ]⊎ σ) (there x) = Γ (there x) 
+
+infix 30 _▶ᶜ_
+_▶ᶜ_ : Ctx S → Cstr S → Ctx S
+Γ ▶ᶜ (` o ∶ τ) = Γ [ o ]⊎ {! ?  !}
+Γ ▶ᶜ (c , c') = (Γ ▶ᶜ c) ▶ᶜ c'
 
 variable 
   Γ Γ' Γ'' Γ₁ Γ₂ : Ctx S
@@ -171,6 +183,7 @@ ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
 ren ρ (`let`x= e₂ `in e₁) = `let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
 ren ρ (inst` o ∶ σ `= e₂ `in e₁) = inst` (ren ρ o) ∶ ren ρ σ `=  (ren ρ e₂) `in ren ρ e₁
 ren ρ (decl`o`in e) = decl`o`in ren (extᵣ ρ) e
+ren ρ (-λ`x→ e) = -λ`x→ (ren (extᵣ ρ) e) 
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
 ren ρ (o ∶ σ) = ren ρ o ∶ ren ρ σ
 ren ρ (c₁ , c₂) = (ren ρ c₁ , ren ρ c₂)
@@ -180,14 +193,15 @@ ren ρ (∀`α cs ⇒ σ) = ∀`α ren ρ cs ⇒ ren (extᵣ ρ) σ
 wkᵣ : Ren S (S ▷ s) 
 wkᵣ = there
 
--- Substitution   -------------------------------------------------------------------------
+-- Substitution -------------------------------------------------------------------------
 
-takes : Sort mᵣ → Sort ⊤ᵣ 
+takes : Sort r → Sort ⊤ᵣ 
 takes eₛ = eₛ
 takes σₛ = τₛ
 takes τₛ = τₛ 
-takes oₛ = eₛ 
+takes oₛ = eₛ -- never substituted into
 takes cₛ = τₛ 
+takes vₛ = eₛ -- never substituted into
 
 Sub : Sorts → Sorts → Set
 Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
@@ -203,6 +217,7 @@ sub ξ (e₁ · e₂) = sub ξ e₁ · sub ξ e₂
 sub ξ (`let`x= e₂ `in e₁) = `let`x= sub ξ e₂ `in (sub (extₛ ξ) e₁)
 sub ξ (inst` o ∶ σ `= e₂ `in e₁) = inst` sub ξ o ∶ sub ξ σ `= sub ξ e₂ `in sub ξ e₁
 sub ξ (decl`o`in e) = decl`o`in sub (extₛ ξ) e
+sub ξ (-λ`x→ e) = -λ`x→ (sub (extₛ ξ) e) 
 sub ξ (τ₁ ⇒ τ₂) = sub ξ τ₁ ⇒ sub ξ τ₂
 sub ξ (o ∶ σ) = sub ξ o ∶ sub ξ σ
 sub ξ (c₁ , c₂) = sub ξ c₁ , sub ξ c₂
@@ -220,6 +235,14 @@ variable
   ξ ξ' ξ'' ξ₁ ξ₂ : Sub S S₂ 
 
 -- Typing -------------------------------------------------------------------------------
+
+_ₜ : Poly S → Mono S
+(∀`α _ ⇒ σ) ₜ = {!   !}
+(↑ₚ (` x)) ₜ = ` x
+(↑ₚ (t ⇒ _)) ₜ = t 
+
+Unique : Ctx S → OVar S → Poly S → Set
+Unique ctx o σ = ∀ {σ'} → σ' ∈ ctx o → ¬ σ' ₜ ≡ {! σ ₜ !}
 
 infixr 3 _⊢_∶_
 data _⊢_∶_ : Ctx S → Term S s → Poly S → Set where
@@ -250,20 +273,40 @@ data _⊢_∶_ : Ctx S → Term S s → Poly S → Set where
     Γ ▶ ∅ᶜ ⊢ e ∶ wk-σ σ → 
     ----------------
     Γ ⊢ decl`o`in e ∶ σ
-  {- ⊢-inst :
+  ⊢-inst :
     Γ ⊢ e₂ ∶ σ → 
-    Γ [ o ]⊎ σ ⊢ e₂ ∶ σ' → 
+    (Γ [ o ]⊎ σ) ⊢ e₁ ∶ σ' → 
+    Unique Γ o σ →
     ---------------------------------
-    Γ ⊢ inst` o ∶ σ `= e₂ `in e₁ ∶ σ' -}
+    Γ ⊢ inst` ` o ∶ σ `= e₂ `in e₁ ∶ σ'
   ⊢-τ :
     Γ ⊢ e ∶ ∀`α c ⇒ σ →
     Γ ⊢ (wk-c c [ τ ]) ∶ σ' →
     -------------------
     Γ ⊢ e ∶ (σ [ τ ])
   ⊢-∀ : 
-    (Γ ▶' c) ⊢ e ∶ σ → 
+    (Γ ▶ᶜ c) ⊢ e ∶ σ → 
     ------------------
     Γ ⊢ e ∶ ∀`α c ⇒ wk-σ σ 
 
-infixr 3 _↪_
-data _↪_ : Expr S → Expr S → Set where
+-- Environments -------------------------------------------------------------------------
+
+
+
+-- Semantics ----------------------------------------------------------------------------
+
+infixr 3 _↓_
+data _↓_ : Expr S → Val S → Set where
+  ↓-λ :
+    λ`x→ e ↓ -λ`x→ e 
+{-   ↓-· : 
+    e₁ ↓ -λ`x→ e →
+    e₂ ↓ v' → 
+    e [ ⌞ v' ⌟ ] ↓ v →
+    -----------------
+    e₁ · e₂ ↓ v
+  ↓-let :
+    e₂ ↓ v' → 
+    e₁ [ ⌞ v' ⌟ ] ↓ v →
+    ---------------
+    `let`x= e₂ `in e₁ ↓ v    -}
