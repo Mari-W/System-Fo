@@ -12,7 +12,7 @@ open import Data.Product using (_×_; _,_; Σ-syntax; ∃-syntax)
 open import Data.List.Relation.Unary.Any using (Any)
 open import Relation.Nullary using (¬_)
 
-module HindleyMilner where
+module SystemF where
 
 -- Sorts --------------------------------------------------------------------------------
 
@@ -24,7 +24,6 @@ data Sort : Ctxable → Set where
   eₛ  : Sort ⊤ᶜ
   vₛ  : Sort ⊥ᶜ
   σₛ  : Sort ⊤ᶜ
-  τₛ  : Sort ⊤ᶜ
 
 Sorts : Set
 Sorts = List (Sort ⊤ᶜ)
@@ -34,36 +33,35 @@ variable
   s s' s'' s₁ s₂ : Sort r
   S S' S'' S₁ S₂ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
-  α α' α'' α₁ α₂ : τₛ ∈ S
+  α α' α'' α₁ α₂ : σₛ ∈ S
 
 Var : Sorts → Sort ⊤ᶜ → Set
 Var S s = s ∈ S
 
 -- Syntax -------------------------------------------------------------------------------
 
-infixr 4 λ`x→_ `let`x=_`in_ ∀`α_
-infixr 5 _⇒_ _·_
-infix  6 `_ ↑ₚ_
+infixr 4 λ`x→_ Λ`α→_ `let`x=_`in_ ∀`α_
+infixr 5 _⇒_ _·_ _•_
+infix  6 `_ 
 
 data Term : Sorts → Sort r → Set where
   `_           : Var S s → Term S s
   tt           : Term S eₛ
   λ`x→_        : Term (S ▷ eₛ) eₛ → Term S eₛ
+  Λ`α→_        : Term (S ▷ σₛ) eₛ → Term S eₛ
   _·_          : Term S eₛ → Term S eₛ → Term S eₛ
+  _•_          : Term S eₛ → Term S σₛ → Term S eₛ
   `let`x=_`in_ : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
   val-λ`x→_    : Term (S ▷ eₛ) eₛ → Term S vₛ
   val-tt       : Term S vₛ
-  `⊤           : Term S τₛ
-  _⇒_          : Term S τₛ → Term S τₛ → Term S τₛ
-  ∀`α_         : Term (S ▷ τₛ) σₛ → Term S σₛ
-  ↑ₚ_          : Term S τₛ → Term S σₛ
+  `⊤           : Term S σₛ
+  _⇒_          : Term S σₛ → Term S σₛ → Term S σₛ
+  ∀`α_         : Term (S ▷ σₛ) σₛ → Term S σₛ
 
 Expr : Sorts → Set
 Expr S = Term S eₛ
 Poly : Sorts → Set
 Poly S = Term S σₛ
-Mono : Sorts → Set
-Mono S = Term S τₛ
 Val : Sorts → Set
 Val S = Term S vₛ
 
@@ -71,7 +69,6 @@ variable
   e e' e'' e₁ e₂ : Expr S
   v v' v'' v₁ v₂ : Val S
   σ σ' σ'' σ₁ σ₂ : Poly S
-  τ τ' τ'' τ₁ τ₂ : Mono S
 
 ⌞_⌟ : Val S → Expr S
 ⌞ val-λ`x→ e ⌟ = λ`x→ e
@@ -81,7 +78,6 @@ variable
 
 Stores : Sorts → Sort ⊤ᶜ → Set
 Stores S eₛ = Poly S
-Stores S τₛ = ⊤
 Stores S σₛ = ⊤
 
 depth : Var S s → ℕ
@@ -99,22 +95,13 @@ _▶_ : Ctx S → Stores S s → Ctx (S ▷ s)
 (Γ ▶ γ) (here refl) = γ
 (Γ ▶ _) (there x) = Γ x
 
-wk-τ : Mono S → Mono (S ▷ s')
-wk-τ `⊤ = `⊤
-wk-τ (` x) = ` there x
-wk-τ (τ₁ ⇒ τ₂) = (wk-τ τ₁ ⇒ wk-τ τ₂) 
-
-postulate   
+postulate
   wk-e : Expr S → Expr (S ▷ s')
   wk-σ : Poly S → Poly (S ▷ s')
-  {- wk-σ (` x) = ` there x
-  wk-σ (∀`α σ) = ∀`α {!   !}
-  wk-σ (↑ₚ τ) = ↑ₚ (wk-τ τ) -}
 
 wkₛ : Stores S s → Stores (S ▷ s') s
 wkₛ {s = eₛ} σ = wk-σ σ
 wkₛ {s = σₛ} _ = tt
-wkₛ {s = τₛ} _ = tt  
 
 wk-dropped : (v : Var S s) → Stores (drop-last v S) s → Stores S s
 wk-dropped (here refl) t = wkₛ t
@@ -140,14 +127,16 @@ ren : Ren S₁ S₂ → (Term S₁ s → Term S₂ s)
 ren ρ (` x) = ` (ρ x)
 ren ρ tt = tt
 ren ρ (λ`x→ e) = λ`x→ (ren (extᵣ ρ) e)
+ren ρ (Λ`α→ e) = Λ`α→ (ren (extᵣ ρ) e)
 ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
+ren ρ (e • σ) = (ren ρ e) • (ren ρ σ)
 ren ρ (`let`x= e₂ `in e₁) = `let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
 ren ρ (val-λ`x→ e) = val-λ`x→ (ren (extᵣ ρ) e) 
 ren ρ val-tt = val-tt
 ren ρ `⊤ = `⊤
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
-ren ρ (↑ₚ τ) = ↑ₚ ren ρ τ
 ren ρ (∀`α σ) = ∀`α (ren (extᵣ ρ) σ)
+
 wkᵣ : Ren S (S ▷ s) 
 wkᵣ = there
 
@@ -155,8 +144,7 @@ wkᵣ = there
 
 binds : Sort r → Sort ⊤ᶜ 
 binds eₛ = eₛ
-binds σₛ = τₛ
-binds τₛ = τₛ
+binds σₛ = σₛ
 binds vₛ = eₛ
 
 Sub : Sorts → Sorts → Set
@@ -170,14 +158,15 @@ sub : Sub S₁ S₂ → (Term S₁ s → Term S₂ s)
 sub ξ (` x) = (ξ x)
 sub ξ tt = tt
 sub ξ (λ`x→ e) = λ`x→ (sub (extₛ ξ) e)
+sub ξ (Λ`α→ e) = Λ`α→ (sub (extₛ ξ) e)
 sub ξ (e₁ · e₂) = sub ξ e₁ · sub ξ e₂
+sub ξ (e • σ) = sub ξ e • sub ξ σ
 sub ξ (`let`x= e₂ `in e₁) = `let`x= sub ξ e₂ `in (sub (extₛ ξ) e₁)
 sub ξ (val-λ`x→ e) = val-λ`x→ (sub (extₛ ξ) e)
 sub ξ val-tt = val-tt 
 sub ξ `⊤ = `⊤
 sub ξ (τ₁ ⇒ τ₂) = sub ξ τ₁ ⇒ sub ξ τ₂
 sub ξ (∀`α σ) = ∀`α (sub (extₛ ξ) σ)
-sub ξ (↑ₚ τ) = ↑ₚ sub ξ τ
 
 intro :  Term S (binds s) → Sub (S ▷ (binds s)) S
 intro e (here refl) = e
@@ -199,29 +188,29 @@ data _⊢_∶_ : Ctx S → Expr S → Poly S → Set where
     Γ ⊢ ` x ∶ σ
   ⊢-⊤ : 
     --------------
-    Γ ⊢ tt ∶ ↑ₚ `⊤
+    Γ ⊢ tt ∶ `⊤
   ⊢-λ : 
-    Γ ▶ (↑ₚ τ₁) ⊢ e ∶ ↑ₚ (wk-τ τ₂) →  
+    Γ ▶ σ ⊢ e ∶ wk-σ σ →  
     ---------------------------
-    Γ ⊢ λ`x→ e ∶ ↑ₚ (τ₁ ⇒ τ₂)
+    Γ ⊢ λ`x→ e ∶ σ
+  ⊢-Λ : 
+    Γ ▶ tt ⊢ e ∶ wk-σ σ →  
+    ---------------------------
+    Γ ⊢ Λ`α→ e ∶ σ
   ⊢-· : 
-    Γ ⊢ e₁ ∶ ↑ₚ (τ₁ ⇒ τ₂) →
-    Γ ⊢ e₂ ∶ ↑ₚ τ₁ →
+    Γ ⊢ e₁ ∶ σ₁ ⇒ σ₂ →
+    Γ ⊢ e₂ ∶ σ₁ →
     -----------------------
-    Γ ⊢ e₁ · e₂ ∶ ↑ₚ τ₂
+    Γ ⊢ e₁ · e₂ ∶ σ₂
+  ⊢-• : 
+    Γ ⊢ e ∶ ∀`α σ' →
+    -----------------------
+    Γ ⊢ e • σ ∶ σ' [ σ ]
   ⊢-let : 
     Γ ⊢ e₂ ∶ σ →
-    Γ ▶ σ ⊢ e₁ ∶ ↑ₚ (wk-τ τ) →
+    Γ ▶ σ ⊢ e₁ ∶ wk-σ σ' →
     ----------------------------
-    Γ ⊢ `let`x= e₂ `in e₁ ∶ ↑ₚ τ
-  ⊢-τ : 
-    Γ ⊢ e ∶ ∀`α σ →
-    --------------------
-    Γ ⊢ e ∶ (σ [ τ ])
-  ⊢-∀ : 
-    Γ ⊢ e ∶ σ → 
-    ------------------
-    Γ ⊢ e ∶ ∀`α wk-σ σ 
+    Γ ⊢ `let`x= e₂ `in e₁ ∶ σ'
 
 -- Semantics ----------------------------------------------------------------------------
 
