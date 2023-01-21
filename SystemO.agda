@@ -73,7 +73,7 @@ Over S = Term S oₛ
 Cstr : Sorts → Set
 Cstr S = Term S cₛ
 Poly : Sorts → Set
-Poly S =  Term S σₛ
+Poly S = Term S σₛ
 Mono : Sorts → Set
 Mono S = Term S τₛ
 
@@ -127,14 +127,13 @@ wk-τ : Mono S → Mono (S ▷ s')
 wk-τ (` x) = ` there x
 wk-τ (τ₁ ⇒ τ₂) = (wk-τ τ₁ ⇒ wk-τ τ₂) 
 
-postulate 
-  wk-c : Cstr S → Cstr (S ▷ s') 
 {- wk-c ε = ε -}
 -- wk-c (` x ∶α→ τ) = (` there x) ∶α→ {!   !}
 {- wk-c (c₁ , c₂) = wk-c c₁ , wk-c c₂ -}
 
 -- see exam
 postulate
+  wk-c : Cstr S → Cstr (S ▷ s') 
   wk-e : Expr S → Expr (S ▷ s')
   wk-σ : Poly S → Poly (S ▷ s')
 {- wk-σ (∀`α c ⇒ σ) = ∀`α {!   !} ⇒ {! wk-σ σ  !}
@@ -197,8 +196,6 @@ ren ρ (` x) = ` (ρ x)
 ren ρ (λ`x→ e) = λ`x→ (ren (extᵣ ρ) e)
 ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
 ren ρ (`let`x= e₂ `in e₁) = `let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
-{- ren ρ (↑ᵢ e) = ↑ᵢ (ren (extᵣ ρ) e)
-ren ρ (e ᵢ i) = (ren (extᵣ ρ) e) ᵢ ren ρ i -}
 ren ρ (inst` o ∶ σ `= e₂ `in e₁) = inst` (ren ρ o) ∶ ren ρ σ `=  ren ρ e₂ `in ren (extᵣ ρ) e₁
 ren ρ (decl`o`in e) = decl`o`in ren (extᵣ ρ) e
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
@@ -207,7 +204,6 @@ ren ρ (o ∶α→ σ) = ren ρ o ∶α→ ren (extᵣ ρ) σ
 {- ren ρ (c₁ , c₂) = (ren ρ c₁ , ren ρ c₂) -}
 ren ρ (↑ₚ τ) = ↑ₚ ren ρ τ
 ren ρ (∀`α cs ⇒ σ) = ∀`α ren ρ cs ⇒ ren (extᵣ ρ) σ
--- ren ρ (↓ₑ e) = ↓ₑ ren (extᵣ ρ) e
 
 wkᵣ : Ren S (S ▷ s) 
 wkᵣ = there
@@ -220,8 +216,6 @@ takes σₛ = τₛ
 takes τₛ = τₛ 
 takes oₛ = eₛ -- never substituted into
 takes cₛ = τₛ 
-{- takes iₛ = eₛ -- never substituted into
- -}
 Sub : Sorts → Sorts → Set
 Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
 
@@ -234,8 +228,6 @@ sub ξ (` x) = (ξ x)
 sub ξ (λ`x→ e) = λ`x→ (sub (extₛ ξ) e)
 sub ξ (e₁ · e₂) = sub ξ e₁ · sub ξ e₂
 sub ξ (`let`x= e₂ `in e₁) = `let`x= sub ξ e₂ `in (sub (extₛ ξ) e₁)
-{- sub ξ (↑ᵢ e) = ↑ᵢ (sub (extₛ ξ) e)
-sub ξ (e ᵢ i) = (sub (extₛ ξ) e) ᵢ sub ξ i -}
 sub ξ (inst` o ∶ σ `= e₂ `in e₁) = inst` sub ξ o ∶ sub ξ σ `= sub ξ e₂ `in sub (extₛ ξ) e₁ 
 sub ξ (decl`o`in e) = decl`o`in sub (extₛ ξ) e
 sub ξ (τ₁ ⇒ τ₂) = sub ξ τ₁ ⇒ sub ξ τ₂
@@ -244,7 +236,6 @@ sub ξ (o ∶α→ τ) = sub ξ o ∶α→ sub (extₛ ξ) τ
 {- sub ξ (c₁ , c₂) = sub ξ c₁ , sub ξ c₂ -}
 sub ξ (∀`α cs ⇒ σ) = ∀`α sub ξ cs ⇒ (sub (extₛ ξ) σ)
 sub ξ (↑ₚ τ) = ↑ₚ sub ξ τ
--- sub ξ (↓ₑ e) = ↓ₑ sub (extₛ ξ) e
 
 intro : Term S (takes s) → Sub (S ▷ (takes s)) S
 intro e (here refl) = e
@@ -263,25 +254,17 @@ postulate
   {- Unique ctx' o σ with wk-ctx ctx' o 
   ... | ctx = ∀ {σ'} → σ' ∈ ctx → {!   !} -}
 
+{- 
 Types : Term S s → Set
 Types {S = S} {s = eₛ} _ = Poly S
 Types {S = S} {s = oₛ} _ = Poly S
-{- Types {S = S} {s = iₛ} _ = Poly S -}
 Types {S = S} {s = cₛ} _ = Expr S
 Types {s = σₛ} _ = ⊤
 Types {s = τₛ} _ = ⊤
 
 variable
   T T' T'' T₁ T₂ : Types t
-
-
-{- infixr 3 _⊢ᶜ_∶_
-data _⊢ᶜ_∶_ : Ctx S → Cstr S → Var S eₛ → Set where
-    ⊢-c :
-      (↑ₚ τ , x) ∈ (wk-ctx Γ o) → -- todo α→ τ 
-      ----------------
-      Γ ⊢ᶜ (` o ∶α→ τ) ∶ x , ↑ₚ τ
- -}
+-}
 
 infixr 3 _⊢_∶_
 data _⊢_∶_ : Ctx S → Expr S → Poly S → Set where
@@ -314,17 +297,19 @@ data _⊢_∶_ : Ctx S → Expr S → Poly S → Set where
   ⊢-inst :
     Unique Γ o σ →
     Γ ⊢ e₂ ∶ σ →
-    (Γ [ o ]⊎ σ)  ▶ σ ⊢ e₁ ∶ ↑ₚ (wk-τ τ) →  
+    (Γ [ o ]⊎ σ) ▶ σ ⊢ e₁ ∶ ↑ₚ (wk-τ τ) →  
     ---------------------------------
     Γ ⊢ inst` ` o ∶ σ `= e₂ `in e₁ ∶ ↑ₚ τ
   ⊢-[τ] :
     Γ ⊢ e ∶ ∀`α (` o ∶α→ τ') ⇒ σ →
-    (t' [ τ ] , x) ∈ (wk-ctx Γ o) →
-    -------------------------
-    Γ ⊢ e ∶ (σ [ τ ])
+    (↑ₚ (τ ⇒ τ' [ τ ]) , x) ∈ (wk-ctx Γ o) →
+    --------------------------------------------------
+    Γ ⊢ e ∶ σ [ τ ]
   ⊢-∀α :
-    ((Γ ▶ tt) [ wk-x o ]⊎ (↑ₚ τ')) ▶ (↑ₚ τ') ⊢ wk-e (wk-e e) ∶ wk-σ σ → 
-    ----------------
+    ((Γ ▶ tt) [ wk-x o ]⊎ (↑ₚ (` here refl ⇒ τ'))) 
+        ▶ (↑ₚ (` here refl ⇒ τ')) 
+      ⊢ wk-e (wk-e e) ∶ wk-σ σ → 
+    ------------------------------------------------------------------------
     Γ ⊢ e ∶ ∀`α (` o ∶α→ τ') ⇒ σ
   {- ⊢-c : 
     (↑ₚ τ , v) ∈ (wk-ctx Γ o) → -- todo α→ τ
@@ -353,4 +338,4 @@ data _⊢_∶_ : Ctx S → Expr S → Poly S → Set where
     Γ ⊢ ∀`α c ⇒ σ ∶ tt
   ⊢-τ : 
     ----------
-    Γ ⊢ τ ∶ tt -}      
+    Γ ⊢ τ ∶ tt -}         

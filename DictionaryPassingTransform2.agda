@@ -33,7 +33,7 @@ tr-mono (` x) = ` tr-member x
 tr-mono (τ₁ ⇒ τ₂) = tr-mono τ₁ ⇒ tr-mono τ₂
 
 tr-poly : O.Poly O.S → F.Poly (tr-sorts O.S)
-tr-poly (O.∀`α o ∶α→ τ ⇒ σ) = F.∀`α tr-mono τ ⇒ tr-poly σ
+tr-poly (O.∀`α o ∶α→ τ ⇒ σ) = F.∀`α (` here refl ⇒ tr-mono τ) ⇒ tr-poly σ
 tr-poly (↑ₚ τ) = tr-mono τ
 
 tr-ctx : O.Ctx O.S → F.Ctx (tr-sorts O.S)
@@ -47,7 +47,7 @@ tr :
   -------------------------------
   ∃[ e ] (tr-ctx O.Γ) F.⊢ e ∶ (tr-poly O.σ)
 tr (⊢-`x {x = x} refl) = ` tr-member x , ⊢-`x {!   !}
-tr (⊢-`o {x = x} t) = ` tr-member x  , ⊢-`x {!  !}
+tr (⊢-`o {x = x} t) = ` tr-member x , ⊢-`x {!  !}
 tr (⊢-λ ⊢e) with tr ⊢e
 ... | e , ⊢e = (λ`x→ e) , ⊢-λ {! ⊢e !}
 tr (⊢-· ⊢e₁ ⊢e₂) with tr ⊢e₁ | tr ⊢e₂
@@ -59,6 +59,6 @@ tr (⊢-decl ⊢e) with tr ⊢e
 tr (⊢-inst ⊢o ⊢e₂ ⊢e₁) with tr ⊢e₂ | tr ⊢e₁ 
 ... | e₂ , ⊢e₂ | e₁ , ⊢e₁ = (`let`x= e₂ `in e₁) , ⊢-let ⊢e₂ {! ⊢e₁ !}
 tr (⊢-[τ] {x = x} ⊢e c) with tr ⊢e
-tr (⊢-[τ] {τ = τ} {x = x} _ c) | e , ⊢e = (e • tr-mono τ) · ` tr-member x , ⊢-· {!   !} {!   !}
+tr (⊢-[τ] {τ = τ} {x = x} _ c) | e , ⊢e = (e • tr-mono τ) · ` tr-member x , {!   !}
 tr (⊢-∀α ⊢e) with tr ⊢e 
 ... | e , ⊢e = (Λ`α→ λ`x→ e) , ⊢-Λ (⊢-λ {!   !})
