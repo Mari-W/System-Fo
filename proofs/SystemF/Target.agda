@@ -1,4 +1,4 @@
-open import Common using (_▷_; _▷▷_)
+open import Common using (_▷_; _▷▷_; Ctxable; ⊤ᶜ; ⊥ᶜ; r)
 open import Data.List using (List; []; _∷_; drop; _++_)
 open import Data.List.Membership.Propositional using (_∈_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
@@ -16,20 +16,21 @@ module SystemF.Target where
 
 -- Sorts --------------------------------------------------------------------------------
 
-data Sort : Set where
-  eₛ  : Sort 
-  σₛ  : Sort 
+data Sort : Ctxable → Set where
+  eₛ  : Sort ⊤ᶜ
+  σₛ  : Sort ⊤ᶜ
+  vₛ  : Sort ⊥ᶜ
 
 Sorts : Set
-Sorts = List Sort
+Sorts = List (Sort ⊤ᶜ)
 
 variable
-  s s' s'' s₁ s₂ : Sort
+  s s' s'' s₁ s₂ : Sort r
   S S' S'' S₁ S₂ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
   α α' α'' α₁ α₂ : σₛ ∈ S
 
-Var : Sorts → Sort → Set
+Var : Sorts → Sort ⊤ᶜ → Set
 Var S s = s ∈ S
 
 -- Syntax -------------------------------------------------------------------------------
@@ -38,7 +39,7 @@ infixr 4 λ`x→_ Λ`α→_ `let`x=_`in_ ∀`α_
 infixr 5 _⇒_ _·_ _•_
 infix  6 `_ 
 
-data Term : Sorts → Sort → Set where
+data Term : Sorts → Sort r → Set where
   `_           : Var S s → Term S s
   tt           : Term S eₛ
   λ`x→_        : Term (S ▷ eₛ) eₛ → Term S eₛ
@@ -88,9 +89,10 @@ wk = ren there
 
 -- Substitution -------------------------------------------------------------------------
 
-binds : Sort → Sort 
+binds : Sort r → Sort ⊤ᶜ
 binds eₛ = eₛ
 binds σₛ = σₛ
+binds vₛ = eₛ
 
 Sub : Sorts → Sorts → Set
 Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
@@ -111,19 +113,19 @@ sub ξ `⊤ = `⊤
 sub ξ (τ₁ ⇒ τ₂) = sub ξ τ₁ ⇒ sub ξ τ₂
 sub ξ (∀`α σ) = ∀`α (sub (extₛ ξ) σ)
 
-intro :  Term S (binds s) → Sub (S ▷ (binds s)) S
-intro e (here refl) = e
-intro e (there x) = ` x 
+introduce :  Term S (binds s) → Sub (S ▷ (binds s)) S
+introduce e (here refl) = e
+introduce e (there x) = ` x 
 
 _[_] : Term (S ▷ (binds s)) s → Term S (binds s) → Term S s
-e₁ [ e₂ ] = sub (intro e₂) e₁
+e₁ [ e₂ ] = sub (introduce e₂) e₁
 
 variable
   ξ ξ' ξ'' ξ₁ ξ₂ : Sub S S₂ 
 
 -- Context ------------------------------------------------------------------------------
 
-Stores : Sorts → Sort → Set
+Stores : Sorts → Sort ⊤ᶜ → Set
 Stores S eₛ = Type S
 Stores S σₛ = ⊤
 
@@ -142,13 +144,13 @@ lookup : Ctx S → (v : Var S s) → Stores (drop-last v S) s
 lookup (Γ ▶ x) (here refl) = x
 lookup (Γ ▶ x) (there t) = lookup Γ t
 
-wk-item : Stores S s → Stores (S ▷ s') s
-wk-item {s = eₛ} σ = wk σ
-wk-item {s = σₛ} _ = tt
+wk-stores : Stores S s → Stores (S ▷ s') s
+wk-stores {s = eₛ} σ = wk σ
+wk-stores {s = σₛ} _ = tt
 
 wk-stored : (v : Var S s) → Stores (drop-last v S) s → Stores S s
-wk-stored (here refl) t = wk-item t
-wk-stored (there x) t = wk-item (wk-stored x t)
+wk-stored (here refl) t = wk-stores t
+wk-stored (there x) t = wk-stores (wk-stored x t)
 
 wk-ctx : Ctx S → Var S s → Stores S s 
 wk-ctx Γ x = wk-stored x (lookup Γ x)
@@ -157,6 +159,31 @@ variable
   Γ Γ' Γ'' Γ₁ Γ₂ : Ctx S
 
 -- Typing -------------------------------------------------------------------------------
+
+-- Renaming Typing
+
+idᵣ : Ren S S
+idᵣ = id
+
+ren' : Ren S₁ S₂ → Stores S₁ s → Stores S₂ s
+ren' {s = eₛ} ρ σ = ren ρ σ
+ren' {s = σₛ} ρ st = tt   
+
+dropᵣ : Ren S₁ S₂ → Ren S₁ (S₂ ▷ s) 
+dropᵣ ρ x = there (ρ x)
+
+data OPE : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
+  ope-id : ∀ {Γ} → OPE {S₁ = S} {S₂ = S} idᵣ Γ Γ
+  ope-keep : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₁ s} → 
+    OPE ρ Γ₁ Γ₂ →
+    --------------------------------------
+    OPE (extᵣ ρ) (Γ₁ ▶ st) (Γ₂ ▶ ren' ρ st)
+  ope-drop : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₂ s} →
+    OPE ρ Γ₁ Γ₂ →
+    -------------------------
+    OPE (dropᵣ ρ) Γ₁ (Γ₂ ▶ st)
+
+-- Expression Typing
 
 infixr 3 _⊢_∶_
 data _⊢_∶_ : Ctx S → Expr S → Type S → Set where
@@ -190,4 +217,6 @@ data _⊢_∶_ : Ctx S → Expr S → Type S → Set where
     ----------------------------
     Γ ⊢ `let`x= e₂ `in e₁ ∶ σ'
 
- 
+-- Semantics ----------------------------------------------------------------------------
+
+-- Soundness ----------------------------------------------------------------------------

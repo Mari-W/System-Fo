@@ -1,6 +1,4 @@
-{-# OPTIONS --allow-unsolved-metas #-}
-
-open import Common using (_▷_; _▷▷_)
+open import Common using (_▷_; _▷▷_; Ctxable; ⊤ᶜ; ⊥ᶜ; r)
 open import Data.List using (List; []; _∷_; drop; _++_; map)
 open import Data.List.Membership.Propositional using (_∈_)
 open import Relation.Binary.PropositionalEquality using (_≡_; refl)
@@ -21,23 +19,23 @@ module SystemF.Source where
 
 -- Sorts --------------------------------------------------------------------------------
 
-data Sort : Set where
-  eₛ  : Sort 
-  oₛ  : Sort
-  cₛ  : Sort
-  σₛ  : Sort 
+data Sort : Ctxable → Set where
+  eₛ  : Sort ⊤ᶜ
+  oₛ  : Sort ⊤ᶜ
+  cₛ  : Sort ⊥ᶜ
+  σₛ  : Sort ⊤ᶜ
 
 Sorts : Set
-Sorts = List Sort
+Sorts = List (Sort ⊤ᶜ)
 
 variable
-  s s' s'' s₁ s₂ : Sort
+  s s' s'' s₁ s₂ : Sort r
   S S' S'' S₁ S₂ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
   o o' o'' o₁ o₂ : oₛ ∈ S
   α α' α'' α₁ α₂ : σₛ ∈ S
 
-Var : Sorts → Sort → Set
+Var : Sorts → Sort ⊤ᶜ → Set
 Var S s = s ∈ S
 
 -- Syntax -------------------------------------------------------------------------------
@@ -46,7 +44,7 @@ infixr 4 λ`x→_ Λ`α_⇒_ `let`x=_`in_ inst`_∶_`=_`in_ ∀`α_⇒_
 infixr 5 _⇒_ _·_ _•_ _#_ _∶∶_
 infix  6 `_ decl`o`in_
 
-data Term : Sorts → Sort → Set where
+data Term : Sorts → Sort r → Set where
   `_              : Var S s → Term S s
   tt              : Term S eₛ
   λ`x→_           : Term (S ▷ eₛ) eₛ → Term S eₛ
@@ -110,10 +108,10 @@ wk = ren there
 
 -- Substitution -------------------------------------------------------------------------
 
-binds : Sort → Sort 
+binds : Sort r → Sort ⊤ᶜ 
 binds eₛ = eₛ
-binds oₛ = eₛ
 binds cₛ = σₛ
+binds oₛ = eₛ
 binds σₛ = σₛ
 
 Sub : Sorts → Sorts → Set
@@ -140,90 +138,21 @@ sub ξ `⊤ = `⊤
 sub ξ (τ₁ ⇒ τ₂) = sub ξ τ₁ ⇒ sub ξ τ₂
 sub ξ (∀`α c ⇒ σ) = ∀`α sub (extₛ ξ) c ⇒ (sub (extₛ ξ) σ)
 
-intro :  Term S (binds s) → Sub (S ▷ (binds s)) S
-intro e (here refl) = e
-intro e (there x) = ` x 
+introduce :  Term S (binds s) → Sub (S ▷ (binds s)) S
+introduce e (here refl) = e
+introduce e (there x) = ` x 
 
 _[_] : Term (S ▷ (binds s)) s → Term S (binds s) → Term S s
-e₁ [ e₂ ] = sub (intro e₂) e₁
+e₁ [ e₂ ] = sub (introduce e₂) e₁
 
 variable
   ξ ξ' ξ'' ξ₁ ξ₂ : Sub S S₂ 
-
--- Equality -----------------------------------------------------------------------------
-
-{- mutual 
-  _≡x_ : (x x' : Var S s) → Dec (x ≡ x')
-  here refl ≡x here refl = yes refl
-  here refl ≡x there x' = no (λ ())
-  there x ≡x here refl = no (λ ())
-  there x ≡x there x' with x ≡x x' 
-  ... | yes refl = yes refl
-  ... | no x = no λ { refl → x refl }
-
-  _≡c_ : (c c' : Cstr S) → Dec (c ≡ c')
-  (` x) ≡c (` x') with x ≡x x'
-  ... | yes refl = yes refl
-  ... | no x = no λ { refl → x refl }
-  (` x) ≡c ε = no (λ ())
-  (` x) ≡c (c' ∶∶ c'') = no (λ ())
-  (` x) ≡c (c' # c'') = no (λ ())
-  ε ≡c (` x) = no (λ ())
-  ε ≡c ε = yes refl
-  ε ≡c (c' ∶∶ c'') = no (λ ())
-  ε ≡c (c' # c'') = no (λ ())
-  (o ∶∶ σ) ≡c (` x) = no (λ ())
-  (o ∶∶ σ) ≡c ε = no (λ ())
-  ((` o) ∶∶ σ) ≡c ((` o') ∶∶ σ') with o ≡x o' | σ ≡σ σ' 
-  ... | yes refl | yes refl = yes refl
-  ... | yes refl | no x = no λ { refl → x refl }
-  ... | no x | yes refl = no λ { refl → x refl }
-  ... | no x | no x' = no λ { refl → x refl }
-  (o ∶∶ σ) ≡c (c # c') = no (λ ())
-  (c # c') ≡c (` x) = no (λ ())
-  (c # c') ≡c ε = no (λ ())
-  (c # c') ≡c (o ∶∶ σ) = no (λ ())
-  (c # c'') ≡c (c' # c''') with c ≡c c' | c'' ≡c c''' 
-  ... | yes refl | yes refl = yes refl
-  ... | yes refl | no x = no λ { refl → x refl }
-  ... | no x | yes refl = no λ { refl → x refl }
-  ... | no x | no x' = no λ { refl → x refl }
-
-  _≡σ_ : (σ σ' : Type S) → Dec (σ ≡ σ')
-  (` x) ≡σ (` x') with x ≡x x'
-  ... | yes refl = yes refl
-  ... | no x = no λ { refl → x refl }
-  (` x) ≡σ `⊤ = no (λ ())
-  (` x) ≡σ (σ' ⇒ σ'') = no (λ ())
-  (` x) ≡σ (∀`α σ' ⇒ σ'') = no (λ ())
-  `⊤ ≡σ (` x) = no (λ ())
-  `⊤ ≡σ `⊤ = yes refl
-  `⊤ ≡σ (σ' ⇒ σ'') = no (λ ())
-  `⊤ ≡σ (∀`α σ' ⇒ σ'') = no (λ ())
-  (σ ⇒ σ') ≡σ (` x) = no (λ ())
-  (σ ⇒ σ') ≡σ `⊤ = no (λ ())
-  (σ ⇒ σ'') ≡σ (σ' ⇒ σ''') with σ ≡σ σ' | σ'' ≡σ σ''' 
-  ... | yes refl | yes refl = yes refl
-  ... | yes refl | no x = no λ { refl → x refl }
-  ... | no x | yes refl = no λ { refl → x refl }
-  ... | no x | no x' = no λ { refl → x refl }
-  (σ ⇒ σ₁) ≡σ (∀`α σ' ⇒ σ'') = no (λ ())
-  (∀`α c ⇒ σ) ≡σ (` x) = no (λ ())
-  (∀`α c ⇒ σ) ≡σ `⊤ = no (λ ())
-  (∀`α c ⇒ σ) ≡σ (σ' ⇒ σ'') = no (λ ())
-  (∀`α c ⇒ σ) ≡σ (∀`α c' ⇒ σ') with c ≡c c' | σ ≡σ σ' 
-  ... | yes refl | yes refl = yes refl
-  ... | yes refl | no x = no λ { refl → x refl }
-  ... | no x | yes refl = no λ { refl → x refl }
-  ... | no x | no x' = no λ { refl → x refl }
- -}
  
 -- Context ------------------------------------------------------------------------------
 
-Stores : Sorts → Sort → Set
+Stores : Sorts → Sort ⊤ᶜ → Set
 Stores S eₛ = Type S
 Stores S oₛ = ⊤
-Stores S cₛ = ⊥
 Stores S σₛ = ⊤
 
 data Ctx : Sorts → Set where
@@ -232,7 +161,6 @@ data Ctx : Sorts → Set where
   _▸_ : Ctx S → (Var S oₛ × Type S) → Ctx S
 
 _▸*_ : Ctx S → Cstr S → Ctx S
-Γ ▸* (` x) = Γ
 Γ ▸* ε = Γ
 Γ ▸* (` o ∶∶ σ) = Γ ▸ (o , σ)
 Γ ▸* (c₁ # c₂) = (Γ ▸* c₁) ▸* c₂
@@ -249,14 +177,14 @@ lookup (Γ ▶ x) (here refl) = x
 lookup (Γ ▶ x) (there t) = lookup Γ t
 lookup (Γ ▸ x) t = lookup Γ t
 
-wk-item : Stores S s → Stores (S ▷ s') s
-wk-item {s = eₛ} σ = wk σ
-wk-item {s = oₛ} _ = tt
-wk-item {s = σₛ} _ = tt
+wk-stores : Stores S s → Stores (S ▷ s') s
+wk-stores {s = eₛ} σ = wk σ
+wk-stores {s = oₛ} _ = tt
+wk-stores {s = σₛ} _ = tt
 
 wk-stored : (v : Var S s) → Stores (drop-last v S) s → Stores S s
-wk-stored (here refl) t = wk-item t
-wk-stored (there x) t = wk-item (wk-stored x t)
+wk-stored (here refl) t = wk-stores t
+wk-stored (there x) t = wk-stores (wk-stored x t)
 
 wk-ctx : Ctx S → Var S s → Stores S s 
 wk-ctx Γ x = wk-stored x (lookup Γ x)
@@ -264,24 +192,44 @@ wk-ctx Γ x = wk-stored x (lookup Γ x)
 variable 
   Γ Γ' Γ'' Γ₁ Γ₂ : Ctx S
 
--- Constraint Solving -----------------------------------------------------------------
+-- Constraint Solving -------------------------------------------------------------------
 
-_≡x_ : (x x' : Var S s) → Dec (x ≡ x')
-here refl ≡x here refl = yes refl
-here refl ≡x there x' = no (λ ())
-there x ≡x here refl = no (λ ())
-there x ≡x there x' with x ≡x x' 
-... | yes refl = yes refl
-... | no x = no λ { refl → x refl }
-
-resolve : Ctx S → Var S oₛ → List (Type S)
-resolve (Γ ▶ x) (here refl) = []
-resolve (Γ ▶ x) (there o) = map wk (resolve Γ o)
-resolve (Γ ▸ (o' , σ)) o with o' ≡x o 
-... | yes refl = (resolve Γ o) ▷ σ
-... | no _ = (resolve Γ o)
-
+data [_,_]∈_ : Var S oₛ → Type S → Ctx S → Set where
+  here : ∀ {o σ} → [ o , σ ]∈ (Γ ▸ (o , σ)) 
+  under-bind : ∀ {o σ} {s : Stores S s'} → [ o , σ ]∈ Γ → [ there o , wk σ ]∈ (Γ ▶ s) 
+  under-inst : ∀ {o σ o' σ'} → [ o , σ ]∈ Γ → [ o , σ ]∈ (Γ ▸ (o' , σ'))
+  
 -- Typing -------------------------------------------------------------------------------
+
+-- Renaming Typing
+
+idᵣ : Ren S S
+idᵣ = id
+
+ren' : Ren S₁ S₂ → Stores S₁ s → Stores S₂ s
+ren' {s = eₛ} ρ σ = ren ρ σ
+ren' {s = oₛ} ρ _ = tt
+ren' {s = σₛ} ρ _ = tt   
+
+dropᵣ : Ren S₁ S₂ → Ren S₁ (S₂ ▷ s) 
+dropᵣ ρ x = there (ρ x)
+
+data OPE : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
+  ope-id : ∀ {Γ} → OPE {S₁ = S} {S₂ = S} idᵣ Γ Γ
+  ope-keep : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₁ s} → 
+    OPE ρ Γ₁ Γ₂ →
+    --------------------------------------
+    OPE (extᵣ ρ) (Γ₁ ▶ st) (Γ₂ ▶ ren' ρ st)
+  ope-drop : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₂ s} →
+    OPE ρ Γ₁ Γ₂ →
+    -------------
+    OPE (dropᵣ ρ) Γ₁ (Γ₂ ▶ st)
+  ope-keep-inst : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ} {o} → 
+    OPE ρ Γ₁ Γ₂ →
+    --------------------------------------
+    OPE ρ (Γ₁ ▸ (o , σ)) (Γ₂ ▸ (ρ o , ren ρ σ))
+    
+-- Constraint Typing 
 
 infixr 3 _⊢_
 data _⊢_ : Ctx S → Cstr S → Set where
@@ -289,7 +237,7 @@ data _⊢_ : Ctx S → Cstr S → Set where
     ----------
     Γ ⊢ ε
   ⊢–∶∶ : 
-    σ ∈ resolve Γ o →
+    [ o , σ ]∈ Γ →
     ----------------------
     Γ ⊢ (` o ∶∶ σ)
   ⊢–# : 
@@ -298,6 +246,8 @@ data _⊢_ : Ctx S → Cstr S → Set where
     -------------
     Γ ⊢ (c₁ # c₂)
 
+-- Expression Typing
+
 infixr 3 _⊢_∶_
 data _⊢_∶_ : Ctx S → Term S s → Type S → Set where
   ⊢-`x :  
@@ -305,7 +255,7 @@ data _⊢_∶_ : Ctx S → Term S s → Type S → Set where
     ----------------
     Γ ⊢ (` x) ∶ σ
   ⊢-`o :  
-    σ ∈ resolve Γ o →
+    [ o , σ ]∈ Γ →
     -----------------
     Γ ⊢ ` o ∶ σ
   ⊢-⊤ : 
@@ -342,4 +292,4 @@ data _⊢_∶_ : Ctx S → Term S s → Type S → Set where
     Γ ⊢ e₂ ∶ σ' →
     Γ ▸ (o , σ) ⊢ e₁ ∶ σ →
     ----------------------------------
-    Γ ⊢ inst` ` o ∶ σ `= e₂ `in e₁ ∶ σ   
+    Γ ⊢ inst` ` o ∶ σ `= e₂ `in e₁ ∶ σ    
