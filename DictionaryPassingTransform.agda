@@ -1,411 +1,210 @@
-open import Common using (_▷_; _▷▷_)
-open import HindleyMilner
-open import SystemO
+open import Common using (_▷_; _▷▷_; Ctxable; ⊤ᶜ; ⊥ᶜ; r)
+open import SystemF
+open import SystemF-Overloading
 open import Function.Inverse using (_↔_)
 open import Data.List using (List; []; _∷_)
 open import Data.List.Membership.Propositional using (_∈_)
+open import Data.Bool.Base using (Bool; false; true)
 open import Data.Product using (_×_; _,_; Σ-syntax; ∃-syntax)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; cong₂; cong; trans; subst; sym; subst₂)
 open import Data.List.Relation.Unary.Any using (here; there)
 open import Data.Unit using (⊤; tt)
 open import Data.Nat using (ℕ; zero; suc)
+open import Function using (id; _∘_)
 
 module DictionaryPassingTransform where
 
-module O = SystemO
-module HM = HindleyMilner
+module SRC = SystemF-Overloading
+module TGT = SystemF
 
-tr-sort : O.Sort O.⊤ᶜ → HM.Sort HM.⊤ᶜ
-tr-sort eₛ = HM.eₛ
-tr-sort oₛ = HM.eₛ
-tr-sort τₛ = HM.τₛ
+sort→ : SRC.Sort ⊤ᶜ → TGT.Sort ⊤ᶜ
+sort→ eₛ = eₛ
+sort→ oₛ = eₛ
+sort→ σₛ = σₛ
 
-tr-sorts : O.Sorts → HM.Sorts
-tr-sorts [] = []
-tr-sorts (S ▷ s) = (tr-sorts S) ▷ tr-sort s
+sorts→ : SRC.Ctx SRC.S → TGT.Sorts
+sorts→  ∅ = []
+sorts→ {S ▷ s} (Γ ▶ x) = sorts→ Γ ▷ sort→ s
+sorts→ (Γ ▸ (o , σ)) = sorts→ Γ ▷ TGT.eₛ
 
-tr-member : O.s ∈ O.S → tr-sort O.s ∈ tr-sorts O.S
-tr-member (here refl) = here refl
-tr-member (there t) = there (tr-member t)
+member→ :  ∀ (Γ : SRC.Ctx SRC.S) → 
+  SRC.s ∈ SRC.S → (sort→ SRC.s) ∈ (sorts→ Γ)
+member→ {S ▷ s'} {s = s'} (Γ ▶ σ) (here refl) = here refl
+member→ {S ▷ s'} {s = s} (Γ ▶ σ) (there x) = there (member→ Γ x)
+member→ {S ▷ s'} {s = s} (Γ ▸ (o , σ)) x = there (member→ Γ x)
 
-tr-mono : O.Mono O.S → HM.Mono (tr-sorts O.S) 
-tr-mono (` x) = ` tr-member x
-tr-mono (τ₁ ⇒ τ₂) = tr-mono τ₁ ⇒ tr-mono τ₂
+type→ : ∀ (Γ : SRC.Ctx SRC.S) →
+  SRC.Type SRC.S →
+  TGT.Type (sorts→ Γ)
+type→ Γ (` x) = ` member→ Γ x
+type→ Γ `⊤ = `⊤
+type→ Γ (σ ⇒ σ') = type→ Γ σ ⇒ type→ Γ σ'
+type→ Γ (SRC.∀`α c ⇒ σ) = TGT.∀`α cstr→ (Γ ▶ tt) c (type→ (Γ ▶ tt) σ)
+  where cstr→ : ∀ (Γ : SRC.Ctx SRC.S) →
+          SRC.Cstr SRC.S →
+          TGT.Type (sorts→ Γ) →
+          TGT.Type (sorts→ Γ)
+        cstr→ Γ ε σ = σ
+        cstr→ Γ (o ∶∶ σ') σ = type→ Γ σ' ⇒ σ
+        cstr→ Γ (c₁ # c₂) σ = cstr→ Γ c₂ (cstr→ Γ c₁ σ)
 
-poly-depth : O.Poly O.S → ℕ 
-poly-depth (O.∀`α c ⇒ σ) = suc (poly-depth σ)
-poly-depth (↑ₚ σ) = zero
+stores→ : ∀ (Γ : SRC.Ctx SRC.S) →
+  SRC.Stores SRC.S SRC.s →
+  TGT.Stores (sorts→ Γ) (sort→ SRC.s)
+stores→ {s = eₛ} Γ σ = type→ Γ σ
+stores→ {s = oₛ} Γ _ = `⊤
+stores→ {s = σₛ} Γ _ = tt 
 
-ext-by-n : HM.Sorts → ℕ → HM.Sorts 
-ext-by-n S zero = S
-ext-by-n S (suc n) = ext-by-n (S ▷ τₛ) n
+ctx→ : (Γ : SRC.Ctx SRC.S) → TGT.Ctx (sorts→ Γ)
+ctx→ ∅ = ∅
+ctx→ (Γ ▶ x) = (ctx→ Γ) ▶ stores→ Γ x
+ctx→ {S ▷ s} (Γ ▸ (o , σ)) = (ctx→ Γ) ▶ type→ Γ σ
+ 
+wk-ope :  ∀ {st : SRC.Stores SRC.S SRC.s} (Γ : SRC.Ctx SRC.S) → SRC.OPE (SRC.dropᵣ SRC.idᵣ) Γ (Γ ▶ st)
+wk-ope Γ = ope-drop ope-id
 
-wk-by-n : HM.Mono HM.S → (n : ℕ) → HM.Mono (ext-by-n HM.S n)
-wk-by-n τ zero = τ
-wk-by-n τ (suc n) = wk-by-n (HM.wk-τ τ) n
+ope→ren : ∀ {ρ : SRC.Ren SRC.S₁ SRC.S₂} (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) → 
+  SRC.OPE ρ Γ₁ Γ₂ →
+  TGT.Ren (sorts→ Γ₁) (sorts→ Γ₂)
+ope→ren Γ Γ ope-id = id
+ope→ren (Γ₁ ▶ _) (Γ₂ ▶ _) (ope-keep ope) = TGT.extᵣ (ope→ren Γ₁ Γ₂ ope)
+ope→ren Γ₁ (Γ₂ ▶ _) (ope-drop ope) = TGT.dropᵣ (ope→ren Γ₁ Γ₂ ope)
+ope→ren (Γ₁ ▸ _) (Γ₂ ▸ _) (ope-keep-inst ope) = TGT.extᵣ (ope→ren Γ₁ Γ₂ ope) 
 
-reconst-poly : (n : ℕ)  → HM.Mono (ext-by-n (tr-sorts O.S) n) → HM.Poly (tr-sorts O.S)
-reconst-poly zero τ = ↑ₚ τ
-reconst-poly (suc n) τ = ∀`α reconst-poly n τ
+⊢member→ : (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) {ρ : SRC.Ren SRC.S₁ SRC.S₂} →
+  (ope : SRC.OPE ρ Γ₁ Γ₂) → 
+  TGT.OPE (ope→ren Γ₁ Γ₂ ope) (ctx→ Γ₁) (ctx→ Γ₂) →
+  (x : SRC.Var SRC.S₁ SRC.s) →
+  (ope→ren Γ₁ Γ₂ ope) (member→ Γ₁ x) ≡ member→ Γ₂ (ρ x)   
+⊢member→ Γ₁ Γ₂ ope ope→ x = {!   !}
 
-tr-poly' : (σ : O.Poly O.S) → HM.Mono (ext-by-n (tr-sorts O.S) (poly-depth σ)) × HM.Mono (ext-by-n (tr-sorts O.S) (poly-depth σ))
-tr-poly' (↑ₚ τ) = HM.`⊤ , tr-mono τ 
-tr-poly' (O.∀`α o ∶α→ τ' ⇒ σ) with tr-poly' σ 
-... | ` x , τ = wk-by-n (tr-mono τ') (poly-depth σ) , τ -- unreachable
-... | `⊤ , τ = wk-by-n (tr-mono τ') (poly-depth σ) , τ
-... | τ⇒τ , τ = wk-by-n (tr-mono τ') (poly-depth σ) ⇒ τ⇒τ , τ
+⊢ren→ : (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) {ρ : SRC.Ren SRC.S₁ SRC.S₂} →
+  (ope : SRC.OPE ρ Γ₁ Γ₂) → 
+  TGT.OPE (ope→ren Γ₁ Γ₂ ope) (ctx→ Γ₁) (ctx→ Γ₂) →
+  (σ : SRC.Type SRC.S₁) →
+  TGT.ren (ope→ren Γ₁ Γ₂ ope) (type→ Γ₁ σ) ≡ type→ Γ₂ (SRC.ren ρ σ) 
+⊢ren→ Γ₁ Γ₂ ope ope→ (` x) = cong `_ (⊢member→ Γ₁ Γ₂ ope ope→ x)
+⊢ren→ Γ₁ Γ₂ ope ope→ `⊤ = refl
+⊢ren→ Γ₁ Γ₂ ope ope→ (σ₁ ⇒ σ₂) = cong₂ _⇒_ (⊢ren→ Γ₁ Γ₂ ope ope→ σ₁) (⊢ren→ Γ₁ Γ₂ ope ope→ σ₂)
+⊢ren→ Γ₁ Γ₂ ope ope→ (SRC.∀`α c ⇒ σ) = cong TGT.∀`α_ {!    !}
 
-tr-poly : O.Poly O.S → HM.Poly (tr-sorts O.S)
-tr-poly (↑ₚ τ) = ↑ₚ tr-mono τ
-tr-poly σ with tr-poly' σ
-... | τ' , τ = reconst-poly (poly-depth σ) (τ' ⇒ τ)
+⊢ctx→ : ∀ (Γ : SRC.Ctx SRC.S) {σ : SRC.Type SRC.S} {o} → 
+  (ctx→ Γ) ▶ type→ Γ σ ≡ ctx→ (Γ ▸ (o , σ)) 
+⊢ctx→ (Γ ▶ x) = refl
+⊢ctx→ {S ▷ s} (Γ ▸ (o , σ)) = refl
 
-tr-ctx : O.Ctx O.S → HM.Ctx (tr-sorts O.S)
-tr-ctx {S ▷ eₛ} Γ {eₛ} (here refl) = tr-poly (Γ (here refl))
-tr-ctx {S ▷ oₛ} Γ {eₛ} (here refl) = HM.↑ₚ HM.`⊤
-tr-ctx {S ▷ τₛ} Γ {τₛ} (here refl) = tt
-tr-ctx {S ▷ _}  Γ      (there x)   = tr-ctx (ctx-drop Γ) x 
+ope→ : ∀ {ρ : SRC.Ren SRC.S₁ SRC.S₂} (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) → 
+  (ope : SRC.OPE ρ Γ₁ Γ₂) → 
+  TGT.OPE (ope→ren Γ₁ Γ₂ ope) (ctx→ Γ₁) (ctx→ Γ₂)
+ope→ Γ Γ ope-id  = ope-id
+ope→ (_▶_ {s = eₛ} Γ₁ σ) (Γ₂ ▶ _) (ope-keep ope) = subst 
+  (λ x → TGT.OPE (TGT.extᵣ (ope→ren Γ₁ Γ₂ ope)) (ctx→ Γ₁ TGT.▶ type→ Γ₁ σ) (ctx→ Γ₂ TGT.▶ x)) 
+  (⊢ren→ Γ₁ Γ₂ ope (ope→ Γ₁ Γ₂ ope) σ) (ope-keep (ope→ Γ₁ Γ₂ ope))
+ope→ (_▶_ {s = oₛ} Γ₁ _) (Γ₂ ▶ _) (ope-keep ope) = ope-keep (ope→ Γ₁ Γ₂ ope)
+ope→ (_▶_ {s = σₛ} Γ₁ _) (Γ₂ ▶ _) (ope-keep ope) = ope-keep (ope→ Γ₁ Γ₂ ope)
+ope→ Γ₁ (Γ₂ ▶ x) (ope-drop ope) = ope-drop (ope→ Γ₁ Γ₂ ope)
+ope→ Γ₁'@(Γ₁ ▸ (o , σ)) Γ₂'@(Γ₂ ▸ (o' , σ')) (ope-keep-inst {ρ} ope) = 
+  subst₂ (TGT.OPE (ope→ren Γ₁' Γ₂' (ope-keep-inst ope))) (⊢ctx→ Γ₁) (⊢ctx→ Γ₂) 
+    (subst (λ x → TGT.OPE (ope→ren Γ₁' Γ₂' (ope-keep-inst ope)) (ctx→ Γ₁ ▶ type→ Γ₁ σ) (ctx→ Γ₂ ▶ x)) 
+      (⊢ren→ Γ₁ Γ₂ ope (ope→ Γ₁ Γ₂ ope) σ) (ope-keep (ope→ Γ₁ Γ₂ ope)))
 
-tr-cstr : 
-  O.Γ O.⊢ᶜ O.c ∶ O.x → 
-  -------------------------------
-  ∃[ e ] ∃[ τ ] (tr-ctx O.Γ) HM.⊢ e ∶ ↑ₚ τ
-tr-cstr (⊢-c {τ = τ} {x = x} e) = ` {!   !} , tr-mono τ , ⊢-`x {!   !}
+resolve→ : ∀ (Γ : SRC.Ctx SRC.S) →
+  [ SRC.o , SRC.σ ]∈ Γ → 
+  ∃[ x ] TGT.wk-ctx (ctx→ Γ) x ≡ (type→ Γ SRC.σ)
+resolve→ {S ▷ s} {o} {σ} (Γ SRC.▸ (o , σ)) (here {Γ = Γ}) = {!   !}
+resolve→ {S ▷ s} (Γ ▶ σ) (under-bind x) with resolve→ Γ x
+resolve→ {S ▷ eₛ} (Γ ▶ σ') (under-bind {σ = σ} x) | t , eq = 
+  there t , trans (cong TGT.wk eq) (⊢ren→ Γ (Γ ▶ σ') (wk-ope Γ) (ope→ Γ (Γ ▶ σ') (wk-ope Γ)) σ)
+resolve→ {S ▷ oₛ} (Γ ▶ _) (under-bind {σ = σ} x) | t , eq = 
+  there t , trans (cong TGT.wk eq) (⊢ren→ Γ (Γ ▶ tt) (wk-ope Γ) {!   !} σ)
+resolve→ {S ▷ σₛ} (Γ ▶ σ') (under-bind {σ = σ} x) | t , eq = 
+  there t , trans (cong TGT.wk eq) (⊢ren→ Γ (Γ ▶ σ') (wk-ope Γ) (ope→ Γ (Γ SRC.▶ σ') (wk-ope Γ)) σ)
+resolve→ {S ▷ s} (Γ ▸ (o , σ')) (under-inst {σ = σ} t) with resolve→ Γ t
+... | t , eq = there t , trans (cong TGT.wk eq) {! ⊢ren→ ? ? ? ? ?   !}
 
-tr :
-  O.Γ O.⊢ O.e ∶ O.σ → 
-  -------------------------------
-  ∃[ e ] (tr-ctx O.Γ) HM.⊢ e ∶ (tr-poly O.σ)
-tr (⊢-`x {x = here refl} refl) = ` (here refl) , ⊢-`x {! refl  !}
-tr (⊢-`x {x = there x} refl)   = ` there (tr-member x) , ⊢-`x {!   !}
-tr (⊢-`o {x = x} t) = ` tr-member x  , ⊢-`x {!  !}
-tr (⊢-λ ⊢e) with tr ⊢e 
-... | e , ⊢e = (λ`x→ e) , ⊢-λ {! ⊢e !}
-tr (⊢-· ⊢e₁ ⊢e₂) with tr ⊢e₁ | tr ⊢e₂
+var→ : ∀ (Γ : SRC.Ctx SRC.S) {x : SRC.Var SRC.S eₛ} {σ : SRC.Type SRC.S} →
+  SRC.wk-ctx Γ x ≡ σ → 
+  ∃[ x ] TGT.wk-ctx (ctx→ Γ) x ≡ (type→ Γ σ)
+var→ Γ {x} {σ} refl = member→ Γ x , {!   !}
+
+⊢wk : ∀ (Γ : SRC.Ctx SRC.S) {σ : SRC.Type SRC.S} {σ' : SRC.Type SRC.S} {e : TGT.Expr (sorts→ Γ ▷ TGT.eₛ)} →
+  (ctx→ Γ TGT.▶ type→ Γ σ) TGT.⊢ e ∶ type→ (Γ SRC.▶ σ) (SRC.wk σ') →
+  (ctx→ Γ TGT.▶ type→ Γ σ) TGT.⊢ e ∶ TGT.wk (type→ Γ σ')
+⊢wk Γ {σ = σ}  {σ' = σ'} {e = e} ⊢e = subst (λ x → (ctx→ Γ TGT.▶ type→ Γ σ) TGT.⊢ e ∶ x) 
+  (sym (⊢ren→ Γ (Γ SRC.▶ σ) (wk-ope Γ) (ope→ Γ (Γ SRC.▶ σ) (wk-ope Γ)) σ')) ⊢e  
+
+⊢Λ→ : ∀ (Γ : SRC.Ctx SRC.S) (c : SRC.Cstr (SRC.S ▷ σₛ)) 
+        (e : TGT.Expr (sorts→ ((Γ ▶ tt) SRC.▸* c))) {σ : SRC.Type (SRC.S ▷ σₛ)} →
+  ctx→ ((Γ ▶ tt) ▸* c) TGT.⊢ e ∶ type→ ((Γ SRC.▶ tt) SRC.▸* c) σ  →
+  ∃[ e ] (ctx→ Γ) TGT.⊢ e ∶ (type→ Γ SRC.σ)
+⊢Λ→ Γ ε e ⊢e = (Λ`α→ e) , {! ⊢-Λ ⊢e  !}
+⊢Λ→ Γ (c ∶∶ c₁) e ⊢e = {!   !} , {!   !}
+⊢Λ→ Γ (c # c₁) e ⊢e = {!   !}  , {!   !}
+
+⊢∶→ : ∀ {Γ : SRC.Ctx SRC.S} →
+  Γ SRC.⊢ SRC.t ∶ SRC.σ →
+  ∃[ e ] (ctx→ Γ) TGT.⊢ e ∶ (type→ Γ SRC.σ)
+⊢∶→ {Γ = Γ} (⊢-`x {x = x} eq) with var→ Γ {x = x} eq
+... | x , Γx≡σ = (` x) , ⊢-`x Γx≡σ
+⊢∶→ {Γ = Γ} (⊢-`o x) with resolve→ Γ x 
+... | x , Γx≡σ = (` x) , ⊢-`x Γx≡σ
+⊢∶→ ⊢-⊤ = tt , ⊢-⊤
+⊢∶→ {σ = σ} {Γ = Γ} (⊢-λ ⊢e) with ⊢∶→ ⊢e  
+... | e , ⊢e = (λ`x→ e) , ⊢-λ (⊢wk Γ ⊢e)
+⊢∶→ (⊢-Λ {c = c} ⊢e) with ⊢∶→ ⊢e
+... | e→ , ⊢:→e = {!   !} , {!   !}
+⊢∶→ (⊢-· ⊢e₁ ⊢e₂) with ⊢∶→ ⊢e₁ | ⊢∶→ ⊢e₂ 
 ... | e₁ , ⊢e₁ | e₂ , ⊢e₂ = e₁ · e₂ , ⊢-· ⊢e₁ ⊢e₂
-tr (⊢-let ⊢e₂ ⊢e₁) with tr ⊢e₂ | tr ⊢e₁ 
-... | e₂ , ⊢e₂ | e₁ , ⊢e₁ = (`let`x= e₂ `in e₁) , ⊢-let ⊢e₂ {! ⊢e₁ !}
-tr (⊢-decl ⊢e) with tr ⊢e 
-... | e , ⊢e = (`let`x= tt `in e) , ⊢-let ⊢-⊤ {! ⊢e !}
-tr (⊢-inst ⊢o ⊢e₂ ⊢e₁) with tr ⊢e₂ | tr ⊢e₁ 
-... | e₂ , ⊢e₂ | e₁ , ⊢e₁ = (`let`x= e₂ `in e₁) , ⊢-let ⊢e₂ {! ⊢e₁ !}
-tr (⊢-∀α ⊢e) with tr ⊢e 
-... | e , ⊢e = (λ`x→ e) , {! ⊢-∀ ? !}
-tr (⊢-[τ] ⊢ᶜc ⊢e) with tr ⊢e | tr-cstr ⊢ᶜc
-... | e , ⊢e | e' , σ , ⊢e' = e · e' , ⊢-τ {!  !}
+⊢∶→ (⊢-• ⊢e ⊢c) with ⊢∶→ ⊢e 
+... | e→ , ⊢:→e = {!  !}
+⊢∶→ {Γ = Γ} (⊢-let ⊢e₂ ⊢e₁) with ⊢∶→ ⊢e₂ | ⊢∶→ ⊢e₁ 
+... | e₂ , ⊢e₂ | e₁ , ⊢e₁  = (`let`x= e₂ `in e₁) , ⊢-let ⊢e₂ (⊢wk Γ ⊢e₁)
+⊢∶→ {Γ = Γ} (⊢-decl ⊢e) with ⊢∶→ ⊢e
+... | e , ⊢e = (`let`x= tt `in e) , ⊢-let ⊢-⊤ {!  ⊢wk Γ ⊢e !}
+⊢∶→ {σ = σ} {Γ = Γ} (⊢-inst {o = o} ⊢e₂ ⊢e₁) with ⊢∶→ ⊢e₂ | ⊢∶→ ⊢e₁ 
+... | e₂ , ⊢e₂ | e₁ , ⊢e₁ = (`let`x= e₂ `in e₁) , ⊢-let ⊢e₂ {!  ⊢wk Γ ⊢e₁  !}
+             
+{- postulate
+  ⊢← : ∀ {Γ : SRC.Ctx SRC.S} →
+    (c : SRC.Cstr (SRC.S ▷ σₛ)) →
+    (Γ ▶ tt) ▸* c SRC.⊢ SRC.e ∶ SRC.σ →
+    (→e : TGT.Expr (sorts→ ((Γ ▶ tt) ▸* c))) →
+    (ctx→ ((Γ ▶ tt) ▸* c)) TGT.⊢ →e ∶ type→ {!   !} SRC.σ →
+    ∃[ e ] (ctx→ Γ) TGT.⊢ e ∶ type→ {!   !} (SRC.∀`α c ⇒ SRC.σ)
 
-{- tr-e : ∀{Γ : O.Ctx O.S} → Γ O.⊢ O.e ∶ O.σ → HM.Expr (tr-sorts O.S)
-tr-e (⊢-`x {x = x} refl) = ` tr-member x
-tr-e (⊢-`o {x = x} e) = ` tr-member x
-tr-e (⊢-λ e) with tr-e e 
-... | e = λ`x→ e
-tr-e (⊢-· e₁ e₂) with tr-e e₁ | tr-e e₂
-... | e₁ | e₂ = e₁ · e₂
-tr-e (⊢-let e₂ e₁) with tr-e e₂ | tr-e e₁ 
-... | e₂ | e₁ = `let`x= e₂ `in e₁
-tr-e (⊢-decl e) with tr-e e 
-... | e = `let`x= tt `in e
-tr-e (⊢-inst uq e₂ e₁) with tr-e e₂ | tr-e e₁ 
-... | e₂ | e₁ = `let`x= e₂ `in e₁
-tr-e (⊢-∀α e) with tr-e e
-... | e = λ`x→ e
-tr-e (⊢-[τ] c e) with tr-cstr c | tr-e e
-... | e' | e = e · e' 
+postulate
+  ⊢→ : ∀ {Γ : SRC.Ctx SRC.S} →
+    Γ SRC.⊢ SRC.e ∶ SRC.∀`α SRC.c ⇒ SRC.σ' →
+    Γ SRC.⊢ SRC.c SRC.[ SRC.σ ] →
+    (→e : TGT.Expr (sorts→ Γ)) →
+    (ctx→ Γ) TGT.⊢ →e ∶ type→ {!   !} (SRC.∀`α SRC.c ⇒ SRC.σ') →
+    ∃[ e ] (ctx→ Γ) TGT.⊢ e ∶ type→ {!   !} (SRC.σ' SRC.[ SRC.σ ]) -}
+
+{- ⊢wk :  ∀ (Γ : SRC.Ctx SRC.S) {st : SRC.Stores SRC.S SRC.s} {σ : SRC.Type SRC.S} {e : TGT.Expr (sorts→ Γ ▷ TGT.eₛ)} →
+  (ctx→ Γ TGT.▶ (stores→ Γ st)) TGT.⊢ e ∶ type→ (Γ SRC.▶ st) (SRC.wk σ) →
+  (ctx→ Γ TGT.▶ (stores→ Γ st)) TGT.⊢ e ∶ TGT.wk (type→ Γ σ)
+⊢wk Γ {σ = σ} {e = e} ⊢e = subst 
+  (λ x → (ctx→ Γ TGT.▶ type→ Γ σ) TGT.⊢ e ∶ x) 
+  (sym (⊢ren→ Γ (Γ SRC.▶ σ) (wk→ope Γ) (ope→ Γ (Γ SRC.▶ σ) (wk→ope Γ)) σ)) ⊢e
  -}
 
-{- tr-cstr : 
-  O.Γ O.⊢ᶜ O.c ∶ O.e → 
-  -------------------------------
-  ∃[ e ] ∃[ τ ] (tr-ctx O.Γ) HM.⊢ e ∶ ↑ₚ τ
-tr-cstr (⊢-c {τ = τ} {x = x} e) = ` {!   !} , tr-mono τ , ⊢-`x {!   !}
- -}
-{- tr :
-  O.Γ O.⊢ O.e ∶ O.σ → 
-  -------------------------------
-  ∃[ e ] (tr-ctx O.Γ) HM.⊢ e ∶ (tr-poly O.σ)
-tr (⊢-`x {x = here refl} refl) = ` (here refl) , ⊢-`x {! refl  !}
-tr (⊢-`x {x = there x} refl)   = ` there (tr-member x) , ⊢-`x {!   !}
-tr (⊢-`o {x = x} t) = ` tr-member x  , ⊢-`x {!  !}
-tr (⊢-λ ⊢e) with tr ⊢e 
-... | e , ⊢e = (λ`x→ e) , ⊢-λ {! ⊢e !}
-tr (⊢-· ⊢e₁ ⊢e₂) with tr ⊢e₁ | tr ⊢e₂
-... | e₁ , ⊢e₁ | e₂ , ⊢e₂ = e₁ · e₂ , ⊢-· ⊢e₁ ⊢e₂
-tr (⊢-let ⊢e₂ ⊢e₁) with tr ⊢e₂ | tr ⊢e₁ 
-... | e₂ , ⊢e₂ | e₁ , ⊢e₁ = (`let`x= e₂ `in e₁) , ⊢-let ⊢e₂ {! ⊢e₁ !}
-tr (⊢-decl ⊢e) with tr ⊢e 
-... | e , ⊢e = (`let`x= tt `in e) , ⊢-let ⊢-⊤ {! ⊢e !}
-tr (⊢-inst ⊢o ⊢e₂ ⊢e₁) with tr ⊢e₂ | tr ⊢e₁ 
-... | e₂ , ⊢e₂ | e₁ , ⊢e₁ = (`let`x= e₂ `in e₁) , ⊢-let ⊢e₂ {! ⊢e₁ !}
-tr (⊢-∀α ⊢e) with tr ⊢e 
-... | e , ⊢e = (λ`x→ e) , {! ⊢-∀ ? !}
-tr (⊢-[τ] ⊢ᶜc ⊢e) with tr ⊢e | tr-cstr ⊢ᶜc
-... | e , ⊢e | e' , σ , ⊢e' = e · e' , {!   !} -}
-
-
-
-{- tr-cstr : (O.Γ O.⊢ O.c ∶ O.i) → (→Γ HM.⊢ →e ∶ →σ)
-tr-cstr (⊢-c {v = v} x) = {!   !} -}
-
-{- data _<_ : (O.Γ O.⊢ O.e ∶ O.σ) → (→Γ HM.⊢ →e ∶ →σ) → Set where -}
-
-{- tr-expr (⊢-`x x) = {!   !}
-tr-expr (⊢-λ ⊢e) = {!  ⊢-λ ? !}
-tr-expr _ = {!   !} -}
-{- tr-expr (⊢-· ⊢e₁ ⊢e₂) = ⊢-· (tr-expr ⊢e₁) (tr-expr ⊢e₂)
-tr-expr (⊢-let ⊢e₂ ⊢e₁) = ⊢-let (tr-expr ⊢e₂) (tr-expr ⊢e₁)
-tr-expr (⊢-decl ⊢e) = ⊢-let ⊢-⊤ (tr-expr ⊢e)
-tr-expr (⊢-inst _ ⊢e₂ ⊢e₁) = ⊢-let (tr-expr ⊢e₂) (tr-expr ⊢e₁)
-tr-expr (⊢-∀α ⊢e) = ⊢-∀ (⊢-λ (tr-expr ⊢e))
-tr-expr (⊢-[τ] ⊢e ⊢c) = (⊢-· (⊢-τ (tr-expr ⊢e)) (tr-cstr ⊢c)) -}
-
-{- tr-ty : O.Poly O.S → HM.Poly (tr-sorts O.S)
-tr-ty a = {!   !}
-
-tr-ctx : O.Ctx O.S → HM.Ctx (tr-sorts O.S) 
-tr-ctx {S ▷ eₛ} Γ {eₛ} (here refl) = {! Γ (here refl)   !}
-tr-ctx {S ▷ oₛ} Γ {eₛ} (here refl) = HM.`⊤
-tr-ctx {S ▷ iₛ} Γ {.(tr-sort O.iₛ)} (here refl) with Γ (here refl)
-... | a = {!  tr-ty a  !}
-tr-ctx {S ▷ τₛ} Γ {.(tr-sort O.τₛ)} (here refl) = {!   !}
-tr-ctx {S ▷ x₁} Γ {s} (there x) = {!   !} -}
-
-{- tr-sort : O.Sort O.⊤ᶜ → HM.Sort HM.⊤ᶜ
-tr-sort eₛ = HM.eₛ
-tr-sort oₛ = HM.eₛ
-tr-sort τₛ = HM.τₛ
-tr-sort iₛ = HM.eₛ
-
-tr-sorts : O.Sorts → HM.Sorts
-tr-sorts [] = []
-tr-sorts (S ▷ eₛ) = (tr-sorts S) ▷ eₛ
-tr-sorts (S ▷ oₛ) = tr-sorts S
-tr-sorts (S ▷ iₛ) = (tr-sorts S) ▷ eₛ
-tr-sorts (S ▷ τₛ) = (tr-sorts S) ▷ τₛ
-
-tr-var : O.Var O.S eₛ → HM.Var (tr-sorts O.S) eₛ 
-tr-var (here refl) = here refl
-tr-var (there t) with tr-var t 
-... | t = {!    !}
-
-tr-ovar : O.Γ O.⊢ ` O.o ∶ O.σ → HM.Var (tr-sorts O.S) eₛ 
-tr-ovar (⊢-`o eq el) = {!   !}
-
-tr-ty : O.Poly O.S → HM.Poly (tr-sorts O.S) 
-tr-ty σ = {!   !}
-
-tr-ctx : O.Ctx O.S → HM.Ctx (tr-sorts O.S) 
-tr-ctx Γ x = {!   !}
-
-tr-cstr : Cstr O.S → HM.Expr (tr-sorts O.S) → HM.Expr (tr-sorts O.S)
-tr-cstr ε e = e
-tr-cstr (o ∶ τ) e = λ`x→ wk-e e
-tr-cstr (c₁ , c₂) e = tr-cstr c₁ (tr-cstr c₂ e)
-
-{- variable
-  ~e ~e' ~e'' ~e₁ ~e₂ : HM.Expr (tr-sorts O.S)
-
-infixr 3 _⊢_∶_≻_ 
-data _⊢_∶_≻_ : O.Ctx O.S → O.Expr O.S → O.Poly O.S → HM.Expr (tr-sorts O.S) → Set where
-  ⊢-`x :  
-    O.wk-ctx O.Γ O.x ≡ O.σ →
-    ----------------
-    O.Γ ⊢ O.` O.x ∶ O.σ ≻ ` (tr-member O.x)
-  ⊢-`o :
-    (O.σ , O.x) ∈ (O.wk-ctx O.Γ o) →
-    ----------------
-    O.Γ ⊢ O.` O.x ∶ O.σ ≻ ` (tr-member O.x)
-  ⊢-λ : 
-    O.Γ O.▶ (O.↑ₚ O.τ₁) ⊢ O.e ∶ O.↑ₚ (O.wk-τ O.τ₂) ≻ HM.e →
-    ----------------------------------------------
-    O.Γ ⊢ O.λ`x→ O.e ∶ O.↑ₚ (O.τ₁ ⇒ O.τ₂) ≻ HM.λ`x→ HM.e
-  ⊢-· : 
-    O.Γ ⊢ O.e₁ ∶ O.↑ₚ (O.τ₁ ⇒ O.τ₂) ≻ HM.e₁ →
-    O.Γ ⊢ O.e₂ ∶ O.↑ₚ O.τ₁ ≻ HM.e₂ →
-    -----------------------
-    O.Γ ⊢ O.e₁ O.· O.e₂ ∶ O.↑ₚ O.τ₂ ≻ HM.e₁ HM.· HM.e₂
-  ⊢-let : 
-    O.Γ ⊢ O.e₂ ∶ O.σ ≻ HM.e₂ →
-    O.Γ O.▶ (↑ₚ O.τ) ⊢ O.e₁ ∶ O.↑ₚ (O.wk-τ O.τ) ≻ HM.e₁ →
-    ----------------------------
-    O.Γ ⊢ O.`let`x= O.e₂ `in O.e₁ ∶ O.↑ₚ O.τ ≻ HM.`let`x= HM.e₂ `in HM.e₁
-  ⊢-decl : 
-    O.Γ O.▶ O.∅ᶜ ⊢ O.e ∶ O.wk-σ O.σ ≻ HM.e → 
-    ---------------------------------
-    O.Γ ⊢ O.decl`o`in O.e ∶ O.σ ≻ HM.`let`x= tt `in HM.e
-  ⊢-inst :
-    Unique O.Γ O.o O.σ →
-    O.Γ ⊢ O.e₂ ∶ O.σ ≻ HM.e₂ →
-    O.Γ [ O.o ]⊎ O.σ ⊢ O.e₁ ∶ O.↑ₚ (O.wk-τ O.τ) ≻ HM.e₁ →  
-    ---------------------------------
-    O.Γ ⊢ inst` ` O.o ∶ O.σ `= O.e₂ `in O.e₁ ∶ O.↑ₚ O.τ  ≻ HM.`let`x= HM.e₂ `in HM.e₁
-  ⊢-τ :
-    O.Γ O.⊢ᶜ O.c O.[ O.τ ] ∶ O.x →
-    O.Γ ⊢ O.e ∶ O.∀`α O.c ⇒ O.σ ≻ HM.e →
-    -------------------
-    O.Γ ⊢ O.e · (` O.x) ∶ (O.σ O.[ O.τ ]) ≻ HM.e · ` (tr-member O.x)
-  ⊢-∀ :
-    O.Γ ▶ᶜ O.c ⊢ O.e ∶ O.wk-σ O.σ ≻ HM.e → 
-    ----------------
-    O.Γ ⊢ O.λ`x→ O.e ∶ O.∀`α O.wk-c O.c ⇒ O.wk-σ O.σ ≻ (HM.λ`x→ HM.e)
-    
-tr : 
-  O.Γ ⊢ O.e ∶ O.σ ≻ HM.e → 
-  -------------------------------
-  (tr-ctx O.Γ) HM.⊢ HM.e ∶ (tr-poly O.σ)
-tr (⊢-`x {x = x} refl) =  ⊢-`x {!   !}
-tr (⊢-`o {x = x} t) = ⊢-`x {!  !}
-tr (⊢-λ ⊢e) with tr ⊢e 
-... | ⊢e = ⊢-λ {! ⊢e !}
-tr (⊢-· ⊢e₁ ⊢e₂) with tr ⊢e₁ | tr ⊢e₂
-... | ⊢e₁ | ⊢e₂ = ⊢-· ⊢e₁ ⊢e₂
-tr (⊢-let ⊢e₂ ⊢e₁) with tr ⊢e₂ | tr ⊢e₁ 
-... | ⊢e₂ | ⊢e₁ = ⊢-let ⊢e₂ {! ⊢e₁ !}
-tr (⊢-decl ⊢e) with tr ⊢e 
-... | ⊢e = {!   !}
-tr (⊢-inst ⊢o ⊢e₂ ⊢e₁) with tr ⊢e₂ | tr ⊢e₁ 
-... | ⊢e₂ | ⊢e₁ = ⊢-let ⊢e₂ {! ⊢e₁ !}
-tr (⊢-∀ ⊢e) with tr ⊢e 
-... | ⊢e = {! ⊢-∀ ⊢e  !}
-tr (⊢-τ ⊢ᶜc ⊢e) with tr ⊢e 
-... | ⊢e = {!   !}  -}
-
-infixr 3 _⊢_∶_≻_ 
-data _⊢_∶_≻_ : O.Ctx O.S → (t : O.Term O.S O.s) → Types t → HM.Expr (tr-sorts O.S) → Set where
-  ⊢-`x :  
-    O.wk-ctx O.Γ O.x ≡ O.τ →
-    ----------------
-    O.Γ ⊢ O.` O.x ∶ O.↑ₚ O.τ ≻ ` (tr-var O.x)
-  ⊢-`o :
-    (eq : O.wk-ctx O.Γ O.o ≡ O.Σ) →
-    (el : O.σ ∈ O.Σ) →
-    ----------------
-    O.Γ ⊢ O.` o ∶ O.σ ≻ ` (tr-ovar (⊢-`o eq el))
-  ⊢-λ : 
-    O.Γ O.▶ O.τ₁ ⊢ O.e ∶ O.↑ₚ (O.wk-τ O.τ₂) ≻ HM.e →
-    ----------------------------------------------
-    O.Γ ⊢ O.λ`x→ O.e ∶ O.↑ₚ (O.τ₁ ⇒ O.τ₂) ≻ HM.λ`x→ HM.e
-  ⊢-· : 
-    O.Γ ⊢ O.e₁ ∶ O.↑ₚ (O.τ₁ ⇒ O.τ₂) ≻ HM.e₁ →
-    O.Γ ⊢ O.e₂ ∶ O.↑ₚ O.τ₁ ≻ HM.e₂ →
-    -----------------------
-    O.Γ ⊢ O.e₁ O.· O.e₂ ∶ O.↑ₚ O.τ₂ ≻ HM.e₁ HM.· HM.e₂
-  ⊢-let : 
-    O.Γ ⊢ O.e₂ ∶ O.σ ≻ HM.e₂ →
-    O.Γ O.▶ O.τ ⊢ O.e₁ ∶ O.↑ₚ (O.wk-τ O.τ) ≻ HM.e₁ →
-    ----------------------------
-    O.Γ ⊢ O.`let`x= O.e₂ `in O.e₁ ∶ O.↑ₚ O.τ ≻ HM.`let`x= HM.e₂ `in HM.e₁
-  ⊢-decl : 
-    O.Γ O.▶ O.∅ᶜ ⊢ O.e ∶ O.wk-σ O.σ ≻ HM.e → 
-    ---------------------------------
-    O.Γ ⊢ O.decl`o`in O.e ∶ O.σ ≻ HM.e
-{-   ⊢-inst :
-    O.Γ ⊢ O.e₂ ∶ O.σ ≻ HM.e₂  → 
-    (O.Γ [ O.o ]⊎  {!   !}) O.▶ O.σ ⊢ O.e₁ ∶ O.σ' ≻ HM.e₁  → 
-    Unique O.Γ O.o O.σ →
-    ---------------------------------
-    O.Γ ⊢ O.inst` ` O.o ∶ O.σ `= O.e₂ `in O.e₁ ∶ O.σ' ≻ HM.`let`x= HM.e₂ `in HM.e₁ -}
-  ⊢-τ :
-    O.Γ ⊢ O.e ∶ O.∀`α O.c ⇒ O.σ ≻ HM.e →
-    O.Γ ⊢ (O.wk-c O.c O.[ O.τ ]) ∶ tt ≻ HM.e' →
-    -------------------
-    O.Γ ⊢ O.e ∶ (O.σ O.[ O.τ ]) ≻ HM.e · HM.e'
-  ⊢-∀ : 
-    (O.Γ O.▶ᶜ O.c) ⊢ O.e ∶ O.σ ≻ HM.e' → 
-    ------------------
-    O.Γ ⊢ O.e ∶ O.∀`α O.c ⇒ O.wk-σ O.σ ≻ tr-cstr O.c HM.e'
-
-
-type-preserving-translation :
-  O.Γ ⊢ O.e ∶ O.σ ≻ HM.e →
-  (tr-ctx O.Γ) HM.⊢ HM.e ∶ (tr-ty O.σ)
-type-preserving-translation a = {!   !} -}
-{-type-preserving-translation (⊢-`x x) = {!   !}
-type-preserving-translation (⊢-λ e) = {!   !}
-type-preserving-translation (⊢-· e e₁) = {!   !}
-type-preserving-translation (⊢-let e e₁) = {!   !}
-type-preserving-translation (⊢-decl e) = {!   !}
-type-preserving-translation (⊢-∀ e) = {!   !} 
+{- ⊢wk₁ : ∀ (Γ : SRC.Ctx SRC.S) {σ : SRC.Type SRC.S} {e : TGT.Expr (sorts→ Γ ▷ TGT.eₛ)} →
+  (ctx→ Γ TGT.▶ type→ Γ σ) TGT.⊢ e ∶ type→ (Γ SRC.▶ σ) (SRC.wk σ) →
+  (ctx→ Γ TGT.▶ type→ Γ σ) TGT.⊢ e ∶ TGT.wk (type→ Γ σ)
+⊢wk₁ Γ {σ = σ} {e = e} ⊢e = subst (λ x → (ctx→ Γ TGT.▶ type→ Γ σ) TGT.⊢ e ∶ x) 
+  (sym (⊢ren→ Γ (Γ SRC.▶ σ) (wk→ope Γ) (ope→ Γ (Γ SRC.▶ σ) (wk→ope Γ)) σ)) ⊢e
  -}
 
-{- tr-sort : O.Sort O.⊤ᶜ → HM.Sort HM.⊤ᶜ
-tr-sort eₛ = HM.eₛ
-tr-sort oₛ = HM.eₛ
-tr-sort τₛ = HM.τₛ
+{- lemma : ∀ {Γ : SRC.Ctx SRC.S} {σ : SRC.Type SRC.S} {o' σ'} → 
+  TGT.wk {s' = eₛ} (type→ Γ σ) ≡ type→  (Γ ▸ (o' , σ')) σ
+lemma {Γ = Γ} {σ = ` x} = {!   !}
+lemma {Γ = Γ} {σ = `⊤} = refl
+lemma {Γ = Γ} {σ = σ₁ ⇒ σ₂} = cong₂ _⇒_ lemma lemma
+lemma {Γ = Γ} {σ = SRC.∀`α c ⇒ σ'} = cong TGT.∀`α_ {!   !}
+ -}
 
-tr-sorts : {Γ : O.Γ O.S} → (S : O.Sorts) → HM.Sorts 
-tr-sorts [] = []
-tr-sorts (S ▷ eₛ) = (tr-sorts S) ▷ eₛ
-tr-sorts (S ▷ oₛ) = []
-tr-sorts (S ▷ τₛ) = (tr-sorts S) ▷ τₛ
-
-variable 
-  ~e ~e' ~e'' ~e₁ ~e₂ : HM.Expr (tr-sorts O.S)
-  ~σ : HM.Poly (tr-sorts O.S)
-
-tr-ctx : (Γ : O.Ctx O.S) → HM.Ctx (tr-sorts O.S)
-tr-ctx x = λ { v → {!   !} }
-
-tr-c : O.Cstr O.S → HM.Mono (tr-sorts O.S)
-tr-c c = {!   !}
-
-c-ty : O.Cstr O.S → O.Mono O.S
-c-ty ε = {!   !}
-c-ty (c ∶ c₁) = {!   !}
-c-ty (c , c₁) = {!   !}
-
-tr-ty : O.Poly O.S → HM.Poly (tr-sorts O.S)
-tr-ty (O.∀`α ε ⇒ σ) = HM.∀`α (tr-ty σ)
-tr-ty (O.∀`α o ∶ τ ⇒ σ) = {!   !}
-tr-ty (O.∀`α c₁ , c₂ ⇒ σ) = {! HM.∀`α (tr-c c₁) ⇒   !}
-tr-ty (O.↑ₚ p) = {!   !}
-
-{- var-pres : O.Var O.S O.s → HM.Var (tr-sorts  O.S) (tr-sort O.s)
-var-pres {s = eₛ} (here refl) = here refl
-var-pres {s = oₛ} (here refl) = {!   !}
-var-pres {s = τₛ} (here refl) = here refl
-var-pres (there v) = {!   !} -}
-
-infixr 3 _⊢_∶_≻_ 
-data _⊢_∶_≻_ : O.Ctx O.S → O.Expr O.S → O.Poly O.S → HM.Expr (tr-sorts O.S) → Set where
-  {- ⊢-x : 
-    O.wk-ctx O.Γ O.x ≡ O.τ →
-    ------------------------
-    O.Γ ⊢ O.` O.x ∶ O.↑ₚ O.τ ≻ {!   !} -}
-  {- ⊢-λ : 
-    O.Γ O.▶ O.τ₁ ⊢ O.e ∶ O.↑ₚ (O.wk-τ O.τ₂) ≻ ~e →
-    ----------------------------------------------
-    O.Γ ⊢ O.λ`x→ O.e ∶ O.↑ₚ (O.τ₁ ⇒ O.τ₂) ≻ HM.λ`x→ ~e -}
-  {- ⊢-· : 
-    O.Γ ⊢ O.e₁ ∶ O.↑ₚ (O.τ₁ ⇒ O.τ₂) ≻ HM.e₁ →
-    O.Γ ⊢ O.e₂ ∶ O.↑ₚ O.τ₁ ≻ HM.e₂ →
-    -----------------------
-    O.Γ ⊢ O.e₁ O.· O.e₂ ∶ O.↑ₚ O.τ₂ ≻ HM.e₁ HM.· HM.e₂
-  ⊢-let : 
-    O.Γ ⊢ O.e₂ ∶ O.σ ≻ HM.e₂ →
-    O.Γ O.▶ O.τ ⊢ O.e₁ ∶ O.↑ₚ (O.wk-τ O.τ) ≻ HM.e₁ →
-    ----------------------------
-    O.Γ ⊢ O.`let`x= O.e₂ `in O.e₁ ∶ O.↑ₚ O.τ ≻ HM.`let`x= HM.e₂ `in HM.e₁ -}
-  
-{- type-preserving-translation : 
-  O.Γ ⊢ O.e ∶ O.σ ≻ ~e →
-  -----------------------------
-  tr-ctx O.Γ ⊢ ~e ∶ tr-ty O.σ
-type-preserving-translation a = {!   !} -}
-{- infixr 3 _⊢_∶_≻_
-data _⊢_∶_≻_ : Ctxₒ μₒ → μₒ ⊢ₒ eₘₒ → μₒ ⊢ₒ σₘₒ → μₕ ⊢ₕ eₘₕ → Set where
-    
-→σₕ_ : 
-  μₒ ⊢ₒ σₘₒ → 
-  μₕ ⊢ₕ σₘₕ
-→σₕ a = {!   !}  
-
-→Γₕ_ :
-  Ctxₒ μₒ → 
-  Ctxₕ μₕ
-→Γₕ Γ = {!   !}
-
-→ₕ_ :
-  Γₒ ⊢ eₒ ∶ σₒ ≻ eₕ →
-  (→Γₕ Γₒ) ⊢ₕ eₕ ∶ {! →σₕ σₒ !}
-→ₕ e = {!    !} -}  -}
-              
+{- ren→ : ∀ {Γ₁ : SRC.Ctx SRC.S₁} {Γ₂ : SRC.Ctx SRC.S₂} → SRC.Ren SRC.S₁ SRC.S₂ → TGT.Ren (sorts→ Γ₁) (sorts→ Γ₂) 
+ren→ {Γ₁ = Γ₁ ▶ x₁} {Γ₂ = Γ₂} ρ x = {!   !}
+ren→ {Γ₁ = Γ₁ ▸ (o , σ)} {Γ₂ = Γ₂} ρ (here refl) = {!    !}
+ren→ {S₁ ▷ s₁} {Γ₁ = Γ₁ ▸ (o , σ)} {Γ₂ = Γ₂} ρ (there x) = ren→ {Γ₁ = Γ₁} {Γ₂ = Γ₂} ρ x
+ -}             
