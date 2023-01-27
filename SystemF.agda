@@ -115,8 +115,7 @@ sub ξ (∀`α σ) = ∀`α (sub (extₛ ξ) σ)
 
 introduce :  Term S s → Sub (S ▷ s) S
 introduce t (here refl) = t
-introduce t (there x) = ` x 
-
+introduce t (there x) = ` x
 _[_] : Term (S ▷ s') s → Term S s' → Term S s
 t [ t' ] = sub (introduce t') t
 

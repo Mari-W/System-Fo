@@ -308,7 +308,7 @@ sub' : Sub S₁ S₂ → Stores S₁ s → Stores S₂ s
 sub' {s = eₛ} ρ σ = sub ρ σ
 sub' {s = oₛ} ρ _ = tt
 sub' {s = σₛ} ρ _ = tt
-   
+
 infix 3 _∶_⇒ₛ_
 data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢idₛ : ∀ {Γ} → _∶_⇒ₛ_ {S₁ = S} {S₂ = S} idₛ Γ Γ
