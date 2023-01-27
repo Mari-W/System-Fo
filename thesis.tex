@@ -2,36 +2,51 @@
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
 \usepackage{amsfonts}
+\usepackage{upgreek}
 
-\newcommand{\snip}[1]{\footnotesize{\ttfamily{#1}}}
-\newcommand{\with}[2]{\begin{#1}#2\end{#1}}
+\newcommand{\cx}{\Upgamma}
+\newcommand{\poly}{\upsigma}
 
 \begin{document}
-\title{Formal Proof for Type Preservation of the Dictionary Passing Transform from System O to Hindley Milner}
+\title{Type Preservation of the Dictionary Passing Transform}
 \author{Marius Weidner}
-\institute{Chair of Programming Languages, University of Freiburg}
+\institute{Chair for Programming Languages, University of Freiburg \email{weidner@cs.uni-freiburg.de}}
+\date\today
 \maketitle
-
 \begin{abstract}
   Abstract.
 \end{abstract}
 
 \section{Introduction}
+\subsection{Motivation}
+$\cx\cx\poly$
+\subsection{Example}
 \section{Preliminary}
-\subsection{Agda}
-\subsubsection{Curry Howard Isomorphism}
-\subsection{Sorts / ???}
-\subsection{}
-\section{Hindley-Milner System}
-\subsection{Syntax, Typing and Semantics}
-\subsection{Formalization}
-\subsection{Soundness Proof}
-\section{Overloading System}
-\subsection{Syntax, Typing and Semantics}
-\subsection{Formalization}
+\subsection{Dependently Typed Programming in Agda}
+\subsection{Pure Type Systems}
+\section{System F}
+\subsection{Specification}
+\subsubsection{Syntax.} 
+\subsubsection{Renaming.}
+\subsubsection{Substitution.}
+\subsubsection{Context.}
+\subsubsection{Typing.}
+\subsubsection{Semantic.}
+\subsection{Soundness}
+\subsubsection{Progress.}
+\subsubsection{Subject Reduction.}
+\section{System F with Overloading}
+\subsubsection{Syntax.} 
+\subsubsection{Renaming.}
+\subsubsection{Substitution.}
+\subsubsection{Context.}
+\subsubsection{Typing.}
+\subsection{Specification}
 \section{Dictionary Passing Transform}
 \subsection{Type Preservation Proof}
 \section{Conclusion and Further Work}
+\subsection{Hindley Milner}
+\subsection{Semantic Preservation}
 
 \begin{thebibliography}{8}
 

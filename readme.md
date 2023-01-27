@@ -1,5 +1,12 @@
 # Formal Proof for Type Preservation of the Dictionary Passing Transform
 
+# Example
+
+decl eq in 
+inst eq = λn. λm. n == m in
+inst eq = Λα. ƛ eq : α -> α -> Bool => λ[x : xs]. λ[y : ys]. x == y && xs == ys
+(eq * Nat)⊘ [1, 2, 3] [1, 2, 3]
+
 [Thesis](https://mari-w.github.io/bsc-thesis/thesis.pdf) [Slides](https://mari-w.github.io/bsc-thesis/slides.pdf)
 # Sources
 
@@ -8,7 +15,7 @@
 - https://www.ioc.ee/~cneste/files/system-f-fun-and-profit.pdf
 - https://dl.acm.org/doi/pdf/10.1145/582153.582176
 - https://www.microsoft.com/en-us/research/wp-content/uploads/1997/01/henk.pdf
-
+- Mark P. Jones Practical issues in the implementation of qualified types. Forthcoming technical report, Oxford University Computing Laboratory, 1992.
 # Translation
 
 ```
