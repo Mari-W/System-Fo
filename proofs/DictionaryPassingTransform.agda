@@ -213,8 +213,8 @@ sub→ Γ₁ (Γ₂ ▸ _) (⊢drop-instₛ ⊢ξ) = TGT.dropₛ (sub→ Γ₁ �
 ... | t , eq = there t , trans (cong TGT.wk eq) (⊢ren-type Γ (Γ ▶ tt) ⊢wkᵣ σ)
 ⊢resolve→ {S ▷ σₛ} (Γ ▶ σ') (under-bind {σ = σ} t) with ⊢resolve→ Γ t
 ... | t , eq = there t , trans (cong TGT.wk eq) (⊢ren-type Γ (Γ ▶ σ') ⊢wkᵣ σ)
-⊢resolve→ {S ▷ s} {σ = σ} (Γ ▸ (_ ∶ σ')) (under-inst {_} {_} {_} {_ ∶ σ'} t) with ⊢resolve→ Γ t 
-... | t , eq = there t , {!   !}
+⊢resolve→ {S ▷ s} {σ = σ} (Γ ▸ (_ ∶ σ')) (under-inst {c' = _ ∶ σ'} t) with ⊢resolve→ Γ t 
+... | t , eq = there t , {!    !}
 
 -- Terms
 
