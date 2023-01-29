@@ -1,4 +1,4 @@
-open import Common using (_▷_; _▷▷_; Ctxable; ⊤ᶜ; ⊥ᶜ; r; cong₃)
+open import Common using (_▷_; _▷▷_; Ctxable; ⊤ᶜ; ⊥ᶜ; r)
 open import SystemF
 open import SystemF-Overloading
 open import Function.Inverse using (_↔_)
@@ -79,43 +79,62 @@ ren→ : ∀ {ρ : SRC.Ren SRC.S₁ SRC.S₂} (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ 
   ρ SRC.∶ Γ₁ ⇒ᵣ Γ₂ →
   TGT.Ren (sorts→ Γ₁) (sorts→ Γ₂)
 ren→ Γ Γ ⊢idᵣ = id
-ren→ (Γ₁ ▶ _) (Γ₂ ▶ _) (⊢keepᵣ ⊢ren) = TGT.extᵣ (ren→ Γ₁ Γ₂ ⊢ren)
-ren→ Γ₁ (Γ₂ ▶ _) (⊢dropᵣ ⊢ren) = TGT.dropᵣ (ren→ Γ₁ Γ₂ ⊢ren)
-ren→ (Γ₁ ▸ _) (Γ₂ ▸ _) (⊢keep-instᵣ ⊢ren) = TGT.extᵣ (ren→ Γ₁ Γ₂ ⊢ren) 
-ren→ Γ₁ (Γ₂ ▸ _) (⊢drop-instᵣ ⊢ren) = λ x → there (ren→ Γ₁ Γ₂ ⊢ren x)
+ren→ (Γ₁ ▶ _) (Γ₂ ▶ _) (⊢keepᵣ ⊢ρ) = TGT.extᵣ (ren→ Γ₁ Γ₂ ⊢ρ)
+ren→ Γ₁ (Γ₂ ▶ _) (⊢dropᵣ ⊢ρ) = TGT.dropᵣ (ren→ Γ₁ Γ₂ ⊢ρ)
+ren→ (Γ₁ ▸ _) (Γ₂ ▸ _) (⊢keep-instᵣ ⊢ρ) = TGT.extᵣ (ren→ Γ₁ Γ₂ ⊢ρ) 
+ren→ Γ₁ (Γ₂ ▸ _) (⊢drop-instᵣ ⊢ρ) = λ x → there (ren→ Γ₁ Γ₂ ⊢ρ x)
+
+-- Substititution
+
+sub→ : ∀ (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) {ξ : SRC.Sub SRC.S₁ SRC.S₂} → 
+  ξ SRC.∶ Γ₁ ⇒ₛ Γ₂ →
+  TGT.Sub (sorts→ Γ₁) (sorts→ Γ₂)
+sub→ Γ Γ ⊢idₛ = TGT.`_
+sub→ (Γ₁ ▶ _) (Γ₂ ▶ _) (⊢keepₛ ⊢ξ) = TGT.extₛ (sub→ Γ₁ Γ₂ ⊢ξ)
+sub→ Γ₁ (Γ₂ ▶ _) (⊢dropₛ ⊢ξ) = TGT.dropₛ (sub→ Γ₁ Γ₂ ⊢ξ)
+sub→ (Γ₁ ▶ tt) Γ₂ (⊢typeₛ {σ = σ} ⊢ξ) = TGT.termₛ (sub→ Γ₁ Γ₂ ⊢ξ) (type→ Γ₂ σ)
+sub→ (Γ₁ ▸ _) (Γ₂ ▸ _) (⊢keep-instₛ ⊢ξ) = TGT.extₛ (sub→ Γ₁ Γ₂ ⊢ξ)
+sub→ Γ₁ (Γ₂ ▸ _) (⊢drop-instₛ ⊢ξ) = TGT.dropₛ (sub→ Γ₁ Γ₂ ⊢ξ)
 
 -- Type Preservation --------------------------------------------------------------------
 
 -- Context
 
 ⊢ctx : ∀ (Γ : SRC.Ctx SRC.S) {σ : SRC.Type SRC.S} {o} → 
-  (ctx→ Γ) ▶ type→ Γ σ ≡ ctx→ (Γ ▸ (` o ∶ σ)) 
+  ctx→ (Γ ▸ (` o ∶ σ)) ≡ (ctx→ Γ) ▶ type→ Γ σ 
 ⊢ctx (Γ ▶ x) = refl
 ⊢ctx {S ▷ s} (Γ ▸ c) = refl
 
 -- Renaming
 
 ⊢ren-member : (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) {ρ : SRC.Ren SRC.S₁ SRC.S₂} →
-  (ope : ρ SRC.∶ Γ₁ ⇒ᵣ Γ₂) → 
+  (⊢ρ : ρ SRC.∶ Γ₁ ⇒ᵣ Γ₂) → 
   (x : SRC.Var SRC.S₁ SRC.s) →
-  (ren→ Γ₁ Γ₂ ope) (member→ Γ₁ x) ≡ member→ Γ₂ (ρ x)   
+  (ren→ Γ₁ Γ₂ ⊢ρ) (member→ Γ₁ x) ≡ member→ Γ₂ (ρ x)   
 ⊢ren-member Γ Γ ⊢idᵣ x = refl
-⊢ren-member (Γ₁ ▶ _) (Γ₂ ▶ _) (⊢keepᵣ ⊢ren) (here refl) = refl
-⊢ren-member (Γ₁ ▶ _) (Γ₂ ▶ _) (⊢keepᵣ ⊢ren) (there x) = cong there (⊢ren-member Γ₁ Γ₂ ⊢ren x)
-⊢ren-member Γ₁ (Γ₂ ▶ _) (⊢dropᵣ ⊢ren) x = cong there (⊢ren-member Γ₁ Γ₂ ⊢ren x)
-⊢ren-member (Γ₁ ▸ _) (Γ₂ ▸ _) {- ρ-} (⊢keep-instᵣ ⊢ren) (here refl) = cong there (⊢ren-member Γ₁ Γ₂ ⊢ren (here refl))
-⊢ren-member (Γ₁ ▸ _) (Γ₂ ▸ _) (⊢keep-instᵣ ⊢ren) (there x) = cong there (⊢ren-member Γ₁ Γ₂ ⊢ren (there x))
-⊢ren-member Γ₁ (Γ₂ ▸ _) (⊢drop-instᵣ ⊢ren) x = cong there (⊢ren-member Γ₁ Γ₂ ⊢ren x)
+⊢ren-member (Γ₁ ▶ _) (Γ₂ ▶ _) (⊢keepᵣ ⊢ρ) (here refl) = refl
+⊢ren-member (Γ₁ ▶ _) (Γ₂ ▶ _) (⊢keepᵣ ⊢ρ) (there x) = cong there (⊢ren-member Γ₁ Γ₂ ⊢ρ x)
+⊢ren-member Γ₁ (Γ₂ ▶ _) (⊢dropᵣ ⊢ρ) x = cong there (⊢ren-member Γ₁ Γ₂ ⊢ρ x)
+⊢ren-member (Γ₁ ▸ _) (Γ₂ ▸ _) (⊢keep-instᵣ ⊢ρ) x = cong there (⊢ren-member Γ₁ Γ₂ ⊢ρ x)
+⊢ren-member Γ₁ (Γ₂ ▸ _) (⊢drop-instᵣ ⊢ρ) x = cong there (⊢ren-member Γ₁ Γ₂ ⊢ρ x)
 
-⊢ren-type : (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) {ρ : SRC.Ren SRC.S₁ SRC.S₂} →
-  (ope : ρ SRC.∶ Γ₁ ⇒ᵣ Γ₂) → 
+⊢ren-type :  (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) {ρ : SRC.Ren SRC.S₁ SRC.S₂} →
+  (⊢ρ : ρ SRC.∶ Γ₁ ⇒ᵣ Γ₂) → 
   (σ : SRC.Type SRC.S₁) →
-  TGT.ren (ren→ Γ₁ Γ₂ ope) (type→ Γ₁ σ) ≡ type→ Γ₂ (SRC.ren ρ σ) 
-⊢ren-type Γ₁ Γ₂ ⊢ren (` x) = cong `_ (⊢ren-member Γ₁ Γ₂ ⊢ren x)
-⊢ren-type Γ₁ Γ₂ ⊢ren `⊤ = refl
-⊢ren-type Γ₁ Γ₂ ⊢ren (σ₁ ⇒ σ₂) = cong₂ _⇒_ (⊢ren-type Γ₁ Γ₂ ⊢ren σ₁) (⊢ren-type Γ₁ Γ₂ ⊢ren σ₂)
-⊢ren-type Γ₁ Γ₂ ⊢ren (SRC.∀`α σ) = cong TGT.∀`α_ (⊢ren-type  (Γ₁ ▶ tt) (Γ₂ ▶ tt) (⊢keepᵣ ⊢ren) σ)
-⊢ren-type Γ₁ Γ₂ ⊢ren (Ø (` o ∶ σ) ⇒ σ') = cong₂ _⇒_ (⊢ren-type Γ₁ Γ₂ ⊢ren σ) (⊢ren-type Γ₁ Γ₂ ⊢ren σ') 
+  TGT.ren (ren→ Γ₁ Γ₂ ⊢ρ) (type→ Γ₁ σ) ≡ type→ Γ₂ (SRC.ren ρ σ) 
+⊢ren-type Γ₁ Γ₂ ⊢ρ (` x) = cong `_ (⊢ren-member Γ₁ Γ₂ ⊢ρ x)
+⊢ren-type Γ₁ Γ₂ ⊢ρ `⊤ = refl
+⊢ren-type Γ₁ Γ₂ ⊢ρ (σ₁ ⇒ σ₂) = cong₂ _⇒_ (⊢ren-type Γ₁ Γ₂ ⊢ρ σ₁) (⊢ren-type Γ₁ Γ₂ ⊢ρ σ₂)
+⊢ren-type Γ₁ Γ₂ ⊢ρ (∀`α σ) = cong TGT.∀`α_ (⊢ren-type  (Γ₁ ▶ tt) (Γ₂ ▶ tt) (⊢keepᵣ ⊢ρ) σ)
+⊢ren-type Γ₁ Γ₂ ⊢ρ (Ø (` o ∶ σ) ⇒ σ') = cong₂ _⇒_ (⊢ren-type Γ₁ Γ₂ ⊢ρ σ) (⊢ren-type Γ₁ Γ₂ ⊢ρ σ') 
+ 
+⊢ren-type-id : (σ : SRC.Type SRC.S) →
+  SRC.ren SRC.idᵣ σ ≡ σ
+⊢ren-type-id (` x) = refl
+⊢ren-type-id `⊤ = refl
+⊢ren-type-id (σ₁ ⇒ σ₂) = cong₂ _⇒_ (⊢ren-type-id σ₁) (⊢ren-type-id σ₂)
+⊢ren-type-id (∀`α σ) = cong ∀`α_ {!   !}
+⊢ren-type-id (Ø ` o ∶ σ ⇒ σ') = cong₂ Ø_⇒_ (cong₂ _∶_ refl (⊢ren-type-id σ)) (⊢ren-type-id σ')
 
 ⊢wk : ∀ (Γ : SRC.Ctx SRC.S) {σ : SRC.Type SRC.S} {σ' : SRC.Type SRC.S} {e : TGT.Expr (sorts→ Γ ▷ TGT.eₛ)} →
   (ctx→ Γ ▶ type→ Γ σ) TGT.⊢ e ∶ type→ (Γ ▶ σ) (SRC.wk σ') →
@@ -126,7 +145,8 @@ ren→ Γ₁ (Γ₂ ▸ _) (⊢drop-instᵣ ⊢ren) = λ x → there (ren→ Γ�
 ⊢wk-inst : ∀ (Γ : SRC.Ctx SRC.S) {σ : SRC.Type SRC.S} {σ' : SRC.Type SRC.S} {e : TGT.Expr (sorts→ Γ ▷ TGT.eₛ)} →
   ctx→ (Γ ▸ (` o ∶ σ')) TGT.⊢ e ∶ type→ (Γ ▸ (` o ∶ σ')) σ →
   (ctx→ Γ ▶ type→ Γ σ') TGT.⊢ e ∶ TGT.wk (type→ Γ σ)
-⊢wk-inst Γ {σ = σ} {σ' = σ'} {e = e} ⊢e = subst₂ (λ Γ σ → Γ TGT.⊢ e ∶ σ) (sym (⊢ctx Γ)) {! sym (⊢ren-type ? ? ? ?) !} ⊢e
+⊢wk-inst {o = o} Γ {σ = σ} {σ' = σ'} {e = e} ⊢e = subst₂ (λ Γ σ → Γ TGT.⊢ e ∶ σ) (⊢ctx Γ) 
+  (subst (λ x → type→  (Γ ▸  (` o ∶ σ')) x ≡ TGT.ren there (type→ Γ σ)) (⊢ren-type-id σ) (sym (⊢ren-type Γ (Γ ▸  (` o ∶ σ')) ⊢wk-instᵣ σ))) ⊢e
 
 ⊢wk-decl : ∀ (Γ : SRC.Ctx SRC.S) {σ : SRC.Type SRC.S} {e : TGT.Expr (sorts→ Γ ▷ eₛ)} →
   (ctx→ Γ ▶ `⊤) TGT.⊢ e ∶ type→ (SRC._▶_ {s = oₛ} Γ tt) (SRC.wk σ) →
@@ -135,10 +155,44 @@ ren→ Γ₁ (Γ₂ ▸ _) (⊢drop-instᵣ ⊢ren) = λ x → there (ren→ Γ�
 
 -- Substititution
 
-⊢sub-type : ∀ (Γ : SRC.Ctx SRC.S) {σ : SRC.Type SRC.S} {σ' : SRC.Type (SRC.S ▷ σₛ)} {e : TGT.Expr (sorts→ Γ)} →
-  ctx→ Γ TGT.⊢ e ∶ TGT.∀`α type→ (Γ SRC.▶ tt) σ' → 
-  ctx→ Γ TGT.⊢ e TGT.• type→ Γ σ ∶ type→ Γ (σ' SRC.[ σ ])
-⊢sub-type = {!   !}
+⊢sub-member :  (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) {ξ : SRC.Sub SRC.S₁ SRC.S₂} →
+  (⊢ξ : ξ SRC.∶ Γ₁ ⇒ₛ Γ₂) → 
+  (x : SRC.Var SRC.S₁ σₛ) →
+  TGT.sub (sub→ Γ₁ Γ₂ ⊢ξ) (` member→ Γ₁ x) ≡ type→ Γ₂ (SRC.sub ξ (` x))
+⊢sub-member Γ Γ ⊢idₛ x = refl
+⊢sub-member (Γ₁ ▶ _) (Γ₂ ▶ _) (⊢keepₛ ⊢ξ) (here refl) = refl
+⊢sub-member (Γ₁ ▶ st) (Γ₂ ▶ _) (⊢keepₛ {ξ = ξ} ⊢ξ) (there x) = trans 
+  (cong TGT.wk (⊢sub-member Γ₁ Γ₂ ⊢ξ x)) (⊢ren-type Γ₂ (Γ₂ ▶ SRC.sub' ξ st) ⊢wkᵣ (ξ x))
+⊢sub-member Γ₁ (Γ₂ ▶ st) (⊢dropₛ {ξ = ξ} ⊢ξ) x  = trans 
+  (cong TGT.wk (⊢sub-member Γ₁ Γ₂ ⊢ξ x)) (⊢ren-type Γ₂ (Γ₂ ▶ st) ⊢wkᵣ (ξ x))
+⊢sub-member (Γ₁ ▶ tt) Γ₂ (⊢typeₛ ⊢ξ) (here refl) = refl
+⊢sub-member (Γ₁ ▶ tt) Γ₂ (⊢typeₛ ⊢ξ) (there x) = ⊢sub-member Γ₁ Γ₂ ⊢ξ x 
+⊢sub-member (Γ₁ ▸ (o ∶ σ)) (Γ₂ ▸ c) (⊢keep-instₛ {ξ = ξ} ⊢ξ) x = trans (cong TGT.wk (⊢sub-member Γ₁ Γ₂ ⊢ξ x)) 
+  (subst (λ σ' → TGT.wk (type→ Γ₂ (SRC.sub ξ (SRC.` x))) ≡ type→ (Γ₂ SRC.▸ (SRC.sub ξ o SRC.∶ SRC.sub ξ σ)) σ') 
+  (⊢ren-type-id (ξ x)) (⊢ren-type Γ₂ (Γ₂ ▸ (SRC.sub ξ o ∶ SRC.sub ξ σ)) ⊢wk-instᵣ (ξ x)))
+⊢sub-member Γ₁ (Γ₂ ▸ (o ∶ σ)) (⊢drop-instₛ {ξ = ξ} ⊢ξ) x = trans (cong TGT.wk (⊢sub-member Γ₁ Γ₂ ⊢ξ x)) 
+  (subst (λ σ' → TGT.wk (type→ Γ₂ (SRC.sub ξ (SRC.` x))) ≡ type→ (Γ₂ SRC.▸ (o ∶ σ)) σ') 
+  (⊢ren-type-id (ξ x)) (⊢ren-type Γ₂ (Γ₂ ▸ (o ∶ σ)) ⊢wk-instᵣ (ξ x)))
+
+⊢sub-type : ∀ {ξ : SRC.Sub SRC.S₁ SRC.S₂} (Γ₁ : SRC.Ctx SRC.S₁) (Γ₂ : SRC.Ctx SRC.S₂) → 
+  (⊢ξ : ξ SRC.∶ Γ₁ ⇒ₛ Γ₂) → 
+  (σ : SRC.Type SRC.S₁) →
+  TGT.sub (sub→ Γ₁ Γ₂ ⊢ξ) (type→ Γ₁ σ) ≡ type→ Γ₂ (SRC.sub ξ σ) 
+⊢sub-type Γ₁ Γ₂ ⊢ξ (` x) = ⊢sub-member Γ₁ Γ₂ ⊢ξ x
+⊢sub-type Γ₁ Γ₂ ⊢ξ `⊤ = refl
+⊢sub-type Γ₁ Γ₂ ⊢ξ (σ₁ ⇒ σ₂) = cong₂ _⇒_ (⊢sub-type Γ₁ Γ₂ ⊢ξ σ₁) (⊢sub-type Γ₁ Γ₂ ⊢ξ σ₂)
+⊢sub-type Γ₁ Γ₂ ⊢ξ (∀`α σ) = cong TGT.∀`α_ (⊢sub-type  (Γ₁ ▶ tt) (Γ₂ ▶ tt) (⊢keepₛ ⊢ξ) σ)
+⊢sub-type Γ₁ Γ₂ ⊢ξ (Ø ` o ∶ σ ⇒ σ') = cong₂ _⇒_ (⊢sub-type Γ₁ Γ₂ ⊢ξ σ) (⊢sub-type Γ₁ Γ₂ ⊢ξ σ')
+
+⊢intro-type : (Γ : SRC.Ctx SRC.S₁) (σ : SRC.Type SRC.S₁) (σ' : SRC.Type (SRC.S₁ ▷ σₛ)) →  
+  (type→ (Γ SRC.▶ tt) σ' TGT.[ type→ Γ σ ]) ≡ type→ Γ (σ' SRC.[ σ ])
+⊢intro-type Γ σ σ' = ⊢sub-type (Γ ▶ tt) Γ ⊢intro-typeₛ σ'
+
+⊢sub : ∀ (Γ : SRC.Ctx SRC.S) {σ : SRC.Type SRC.S} {σ' : SRC.Type (SRC.S ▷ σₛ)} {e : TGT.Expr (sorts→ Γ)} →
+  ctx→ Γ TGT.⊢ e ∶ ∀`α type→ (Γ ▶ tt) σ' → 
+  ctx→ Γ TGT.⊢ e • type→ Γ σ ∶ type→ Γ (σ' SRC.[ σ ])
+⊢sub Γ {σ = σ} {σ' = σ'} {e = e} ⊢e = subst (TGT._⊢_∶_ (ctx→ Γ) (e • type→ Γ σ)) (⊢intro-type Γ σ σ') (⊢• ⊢e)
+
  
 -- Type Preserving Translation ----------------------------------------------------------
 
@@ -152,16 +206,14 @@ ren→ Γ₁ (Γ₂ ▸ _) (⊢drop-instᵣ ⊢ren) = λ x → there (ren→ Γ�
 ⊢resolve→ : ∀ (Γ : SRC.Ctx SRC.S) →
   [ ` SRC.o ∶ SRC.σ ]∈ Γ → 
   ∃[ x ] TGT.wk-ctx (ctx→ Γ) x ≡ (type→ Γ SRC.σ)
-⊢resolve→ {S ▷ s} {o} {σ} Γ'@(Γ SRC.▸ (` o ∶ σ)) (here {Γ = Γ}) = {!   !} {- with ⊢id-type→ σ
-... | eq = here refl ,  {! cong  ? (⊢ren-type Γ Γ' (wk-ope-inst Γ) σ) !} -}
-⊢resolve→ {S ▷ s} (Γ ▶ σ) (under-bind x) with ⊢resolve→ Γ x
-⊢resolve→ {S ▷ eₛ} (Γ ▶ σ') (under-bind {σ = σ} x) | t , eq = 
-  there t , trans (cong TGT.wk eq) (⊢ren-type Γ (Γ ▶ σ') ⊢wkᵣ σ)
-⊢resolve→ {S ▷ oₛ} (Γ ▶ _) (under-bind {σ = σ} x) | t , eq = 
-  there t , trans (cong TGT.wk eq) (⊢ren-type Γ (Γ ▶ tt) ⊢wkᵣ σ)
-⊢resolve→ {S ▷ σₛ} (Γ ▶ σ') (under-bind {σ = σ} x) | t , eq = 
-  there t , trans (cong TGT.wk eq) (⊢ren-type Γ (Γ ▶ σ') ⊢wkᵣ σ)
-⊢resolve→ {S ▷ s} Γ'@(Γ ▸ (_ ∶ σ')) (under-inst {c' = `o ∶ σ} t) with ⊢resolve→ Γ t
+⊢resolve→ {S ▷ s} {o} {σ} Γ'@(Γ SRC.▸ (` o ∶ σ)) (here {Γ = Γ}) = here refl , {!   !}
+⊢resolve→ {S ▷ eₛ} (Γ ▶ σ') (under-bind {σ = σ} t) with ⊢resolve→ Γ t
+... | t , eq = there t , trans (cong TGT.wk eq) (⊢ren-type Γ (Γ ▶ σ') ⊢wkᵣ σ)
+⊢resolve→ {S ▷ oₛ} (Γ ▶ _) (under-bind {σ = σ} t) with ⊢resolve→ Γ t
+... | t , eq = there t , trans (cong TGT.wk eq) (⊢ren-type Γ (Γ ▶ tt) ⊢wkᵣ σ)
+⊢resolve→ {S ▷ σₛ} (Γ ▶ σ') (under-bind {σ = σ} t) with ⊢resolve→ Γ t
+... | t , eq = there t , trans (cong TGT.wk eq) (⊢ren-type Γ (Γ ▶ σ') ⊢wkᵣ σ)
+⊢resolve→ {S ▷ s} {σ = σ} (Γ ▸ (_ ∶ σ')) (under-inst {_} {_} {_} {_ ∶ σ'} t) with ⊢resolve→ Γ t 
 ... | t , eq = there t , {!   !}
 
 -- Terms
@@ -171,7 +223,7 @@ ren→ Γ₁ (Γ₂ ▸ _) (⊢drop-instᵣ ⊢ren) = λ x → there (ren→ Γ�
   ∃[ t ] (ctx→ Γ) TGT.⊢ t ∶ (types→ Γ T)
 ⊢term→ {Γ = Γ} (⊢`x {x = x} eq) with ⊢var→ Γ {x = x} eq
 ... | x , Γx≡σ = (` x) , ⊢`x Γx≡σ
-⊢term→ {Γ = Γ} (⊢`o o) with ⊢resolve→ Γ o 
+⊢term→ {Γ = Γ} (⊢`o ⊢o) with ⊢resolve→ Γ ⊢o 
 ... | x , Γx≡σ = (` x) , ⊢`x Γx≡σ
 ⊢term→ ⊢⊤ = tt , ⊢⊤
 ⊢term→ {Γ = Γ} (⊢λ ⊢e) with ⊢term→ ⊢e  
@@ -183,12 +235,12 @@ ren→ Γ₁ (Γ₂ ▸ _) (⊢drop-instᵣ ⊢ren) = λ x → there (ren→ Γ�
 ⊢term→ (⊢· ⊢e₁ ⊢e₂) with ⊢term→ ⊢e₁ | ⊢term→ ⊢e₂ 
 ... | e₁ , ⊢e₁ | e₂ , ⊢e₂ = e₁ · e₂ , ⊢· ⊢e₁ ⊢e₂
 ⊢term→ {Γ = Γ} (⊢• {σ = σ} ⊢e) with ⊢term→ ⊢e 
-... | e , ⊢e = e • (type→ Γ σ) , ⊢sub-type Γ ⊢e
-⊢term→  {Γ = Γ} (⊢⊘ ⊢e c) with ⊢term→ ⊢e | ⊢resolve→ Γ c 
+... | e , ⊢e = e • (type→ Γ σ) , ⊢sub Γ ⊢e
+⊢term→  {Γ = Γ} (⊢⊘ ⊢e ⊢o) with ⊢term→ ⊢e | ⊢resolve→ Γ ⊢o
 ... | e , ⊢e | x , Γx≡σ = (e · ` x) , ⊢· ⊢e (⊢`x Γx≡σ)
 ⊢term→ {Γ = Γ} (⊢let ⊢e₂ ⊢e₁) with ⊢term→ ⊢e₂ | ⊢term→ ⊢e₁ 
 ... | e₂ , ⊢e₂ | e₁ , ⊢e₁  = (`let`x= e₂ `in e₁) , ⊢let ⊢e₂ (⊢wk Γ ⊢e₁)
 ⊢term→ {Γ = Γ} (⊢decl ⊢e) with ⊢term→ ⊢e
 ... | e , ⊢e = (`let`x= tt `in e) , ⊢let ⊢⊤ (⊢wk-decl Γ ⊢e)
 ⊢term→ {Γ = Γ} (⊢inst {o = o} ⊢e₂ ⊢e₁) with ⊢term→ ⊢e₂ | ⊢term→ ⊢e₁ 
-... | e₂ , ⊢e₂ | e₁ , ⊢e₁ = (`let`x= e₂ `in e₁) , ⊢let ⊢e₂ (⊢wk-inst Γ ⊢e₁)
+... | e₂ , ⊢e₂ | e₁ , ⊢e₁ = (`let`x= e₂ `in e₁) , ⊢let ⊢e₂ (⊢wk-inst Γ ⊢e₁)   

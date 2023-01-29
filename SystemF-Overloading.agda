@@ -110,7 +110,6 @@ wk = ren there
 
 variable
   ρ ρ' ρ'' ρ₁ ρ₂ : Ren S₁ S₂ 
- 
 
 -- Substitution -------------------------------------------------------------------------
 
@@ -149,12 +148,8 @@ sub ξ (τ₁ ⇒ τ₂) = sub ξ τ₁ ⇒ sub ξ τ₂
 sub ξ (∀`α σ) = ∀`α (sub (extₛ ξ) σ)
 sub ξ (Ø c ⇒ σ ) = Ø (sub ξ c) ⇒ (sub ξ σ)
 
-introduce :  Term S s → Sub (S ▷ s) S
-introduce e (here refl) = e
-introduce e (there x) = ` x 
-
-_[_] : Term (S ▷ s') s → Term S s' → Term S s
-t [ t' ] = sub (introduce t') t
+_[_] : Type (S ▷ σₛ) → Type S → Type S 
+σ [ σ' ] = sub (typeₛ idₛ σ') σ
 
 variable
   ξ ξ' ξ'' ξ₁ ξ₂ : Sub S₁ S₂ 
@@ -290,16 +285,16 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢keep-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ} {o} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
-    ρ ∶ (Γ₁ ▸ (` o ∶ σ)) ⇒ᵣ (Γ₂ ▸ (` ρ o ∶ ren ρ σ))
+    ρ ∶ (Γ₁ ▸ (o ∶ σ)) ⇒ᵣ (Γ₂ ▸ (ren ρ o ∶ ren ρ σ))
   ⊢drop-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ} {o} →
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     -------------
-    ρ ∶ Γ₁ ⇒ᵣ (Γ₂ ▸ (` o ∶ σ))
+    ρ ∶ Γ₁ ⇒ᵣ (Γ₂ ▸ (o ∶ σ))
 
 ⊢wkᵣ : ∀ {st : Stores S s} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ st)
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
 
-⊢wk-instᵣ : idᵣ ∶ Γ ⇒ᵣ (Γ ▸ (` o ∶ σ))
+⊢wk-instᵣ : ∀ {o} → idᵣ ∶ Γ ⇒ᵣ (Γ ▸ (o ∶ σ))
 ⊢wk-instᵣ = ⊢drop-instᵣ ⊢idᵣ
 
 -- Substitution Typing ------------------------------------------------------------------
@@ -327,9 +322,11 @@ data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢keep-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ} {o} → 
     ξ ∶ Γ₁ ⇒ₛ Γ₂ →
     --------------------------------------
-    ξ ∶ (Γ₁ ▸ (` o ∶ σ)) ⇒ₛ (Γ₂ ▸ (ξ o ∶ sub ξ σ))
+    ξ ∶ (Γ₁ ▸ (o ∶ σ)) ⇒ₛ (Γ₂ ▸ (sub ξ o ∶ sub ξ σ))
   ⊢drop-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ} {o} →
     ξ ∶ Γ₁ ⇒ₛ Γ₂ →
     -------------
-    ξ ∶ Γ₁ ⇒ₛ (Γ₂ ▸ (` o ∶ σ)) 
+    ξ ∶ Γ₁ ⇒ₛ (Γ₂ ▸ (o ∶ σ)) 
 
+⊢intro-typeₛ : typeₛ idₛ σ ∶ (Γ ▶ tt)  ⇒ₛ Γ
+⊢intro-typeₛ = ⊢typeₛ ⊢idₛ
