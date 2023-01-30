@@ -15,7 +15,7 @@ module SystemF where
 
 data Sort : Ctxable → Set where
   eₛ  : Sort ⊤ᶜ
-  σₛ  : Sort ⊤ᶜ
+  τₛ  : Sort ⊤ᶜ
 
 Sorts : Set
 Sorts = List (Sort ⊤ᶜ)
@@ -24,7 +24,7 @@ variable
   s s' s'' s₁ s₂ : Sort r
   S S' S'' S₁ S₂ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
-  α α' α'' α₁ α₂ : σₛ ∈ S
+  α α' α'' α₁ α₂ : τₛ ∈ S
 
 Var : Sorts → Sort ⊤ᶜ → Set
 Var S s = s ∈ S
@@ -39,23 +39,23 @@ data Term : Sorts → Sort r → Set where
   `_           : Var S s → Term S s
   tt           : Term S eₛ
   λ`x→_        : Term (S ▷ eₛ) eₛ → Term S eₛ
-  Λ`α→_        : Term (S ▷ σₛ) eₛ → Term S eₛ
+  Λ`α→_        : Term (S ▷ τₛ) eₛ → Term S eₛ
   _·_          : Term S eₛ → Term S eₛ → Term S eₛ
-  _•_          : Term S eₛ → Term S σₛ → Term S eₛ
+  _•_          : Term S eₛ → Term S τₛ → Term S eₛ
   `let`x=_`in_ : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
-  `⊤           : Term S σₛ
-  _⇒_          : Term S σₛ → Term S σₛ → Term S σₛ
-  ∀`α_         : Term (S ▷ σₛ) σₛ → Term S σₛ
+  `⊤           : Term S τₛ
+  _⇒_          : Term S τₛ → Term S τₛ → Term S τₛ
+  ∀`α_         : Term (S ▷ τₛ) τₛ → Term S τₛ
 
 Expr : Sorts → Set
 Expr S = Term S eₛ
 Type : Sorts → Set
-Type S = Term S σₛ
+Type S = Term S τₛ
  
 variable
   t t' t'' t₁ t₂ : Term S s
   e e' e'' e₁ e₂ : Expr S
-  σ σ' σ'' σ₁ σ₂ : Type S
+  τ τ' τ'' τ₁ τ₂ : Type S
 
 -- Renaming -----------------------------------------------------------------------------
 
@@ -81,11 +81,11 @@ ren ρ tt = tt
 ren ρ (λ`x→ e) = λ`x→ (ren (extᵣ ρ) e)
 ren ρ (Λ`α→ e) = Λ`α→ (ren (extᵣ ρ) e)
 ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
-ren ρ (e • σ) = (ren ρ e) • (ren ρ σ)
+ren ρ (e • τ) = (ren ρ e) • (ren ρ τ)
 ren ρ (`let`x= e₂ `in e₁) = `let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
 ren ρ `⊤ = `⊤
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
-ren ρ (∀`α σ) = ∀`α (ren (extᵣ ρ) σ)
+ren ρ (∀`α τ) = ∀`α (ren (extᵣ ρ) τ)
 
 wk : Term S s → Term (S ▷ s') s
 wk = ren there
@@ -102,39 +102,39 @@ idₛ : Sub S S
 idₛ = `_
 
 extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
-extₛ ξ (here refl) = ` here refl
-extₛ ξ (there x) = ren wkᵣ (ξ x)
+extₛ σ (here refl) = ` here refl
+extₛ σ (there x) = ren wkᵣ (σ x)
 
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
-dropₛ ξ x = wk (ξ x)
+dropₛ σ x = wk (σ x)
 
 termₛ : Sub S₁ S₂ → Term S₂ s → Sub (S₁ ▷ s) S₂
-termₛ ξ t (here refl) = t
-termₛ ξ t (there x) = ξ x
+termₛ σ t (here refl) = t
+termₛ σ t (there x) = σ x
 
 sub : Sub S₁ S₂ → (Term S₁ s → Term S₂ s)
-sub ξ (` x) = (ξ x)
-sub ξ tt = tt
-sub ξ (λ`x→ e) = λ`x→ (sub (extₛ ξ) e)
-sub ξ (Λ`α→ e) = Λ`α→ (sub (extₛ ξ) e)
-sub ξ (e₁ · e₂) = sub ξ e₁ · sub ξ e₂
-sub ξ (e • σ) = sub ξ e • sub ξ σ
-sub ξ (`let`x= e₂ `in e₁) = `let`x= sub ξ e₂ `in (sub (extₛ ξ) e₁)
-sub ξ `⊤ = `⊤
-sub ξ (τ₁ ⇒ τ₂) = sub ξ τ₁ ⇒ sub ξ τ₂
-sub ξ (∀`α σ) = ∀`α (sub (extₛ ξ) σ)
+sub σ (` x) = (σ x)
+sub σ tt = tt
+sub σ (λ`x→ e) = λ`x→ (sub (extₛ σ) e)
+sub σ (Λ`α→ e) = Λ`α→ (sub (extₛ σ) e)
+sub σ (e₁ · e₂) = sub σ e₁ · sub σ e₂
+sub σ (e • τ) = sub σ e • sub σ τ
+sub σ (`let`x= e₂ `in e₁) = `let`x= sub σ e₂ `in (sub (extₛ σ) e₁)
+sub σ `⊤ = `⊤
+sub σ (τ₁ ⇒ τ₂) = sub σ τ₁ ⇒ sub σ τ₂
+sub σ (∀`α τ) = ∀`α (sub (extₛ σ) τ)
 
 _[_] : Term (S ▷ s') s → Term S s' → Term S s
 t [ t' ] = sub (termₛ idₛ t') t
 
 variable
-  ξ ξ' ξ'' ξ₁ ξ₂ : Sub S₁ S₂ 
+  σ σ' σ'' σ₁ σ₂ : Sub S₁ S₂ 
 
 -- Context ------------------------------------------------------------------------------
 
 Stores : Sorts → Sort ⊤ᶜ → Set
 Stores S eₛ = Type S
-Stores S σₛ = ⊤
+Stores S τₛ = ⊤
 
 data Ctx : Sorts → Set where
   ∅   : Ctx []
@@ -152,8 +152,8 @@ lookup (Γ ▶ x) (here refl) = x
 lookup (Γ ▶ x) (there t) = lookup Γ t
 
 wk-stores : Stores S s → Stores (S ▷ s') s
-wk-stores {s = eₛ} σ = wk σ
-wk-stores {s = σₛ} _ = tt
+wk-stores {s = eₛ} τ = wk τ
+wk-stores {s = τₛ} _ = tt
 
 wk-stored : (v : Var S s) → Stores (drop-last v S) s → Stores S s
 wk-stored (here refl) t = wk-stores t
@@ -167,63 +167,51 @@ variable
 
 -- Typing -------------------------------------------------------------------------------
 
-Types : Sorts → Sort ⊤ᶜ → Set
-Types S eₛ = Type S
-Types S σₛ = ⊤
-
-↑ₜ : Stores S s → Types S s
-↑ₜ {s = eₛ} σ = σ
-↑ₜ {s = σₛ} _ = tt
-
-↑ₛ : Types S s → Stores S s
-↑ₛ {s = eₛ} σ = σ
-↑ₛ {s = σₛ} _ = tt 
-
 variable 
-  T T' T'' T₁ T₂ : Types S s
+  T T' T'' T₁ T₂ : Stores S s
 
 -- Expression Typing
 
 infix 3 _⊢_∶_
-data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
+data _⊢_∶_ : Ctx S → Term S s → Stores S s → Set where
   ⊢`x :  
-    wk-ctx Γ x ≡ σ →
+    wk-ctx Γ x ≡ τ →
     ----------------
-    Γ ⊢ ` x ∶ σ
+    Γ ⊢ ` x ∶ τ
   ⊢⊤ : 
     --------------
     Γ ⊢ tt ∶ `⊤
   ⊢λ : 
-    Γ ▶ σ ⊢ e ∶ wk σ' →  
+    Γ ▶ τ ⊢ e ∶ wk τ' →  
     ---------------------------
-    Γ ⊢ λ`x→ e ∶ σ ⇒ σ' 
+    Γ ⊢ λ`x→ e ∶ τ ⇒ τ' 
   ⊢Λ : 
-    Γ ▶ tt ⊢ e ∶ σ →  
+    Γ ▶ tt ⊢ e ∶ τ →  
     ---------------------------
-    Γ ⊢ Λ`α→ e ∶ ∀`α σ
+    Γ ⊢ Λ`α→ e ∶ ∀`α τ
   ⊢· : 
-    Γ ⊢ e₁ ∶ σ₁ ⇒ σ₂ →
-    Γ ⊢ e₂ ∶ σ₁ →
+    Γ ⊢ e₁ ∶ τ₁ ⇒ τ₂ →
+    Γ ⊢ e₂ ∶ τ₁ →
     -----------------------
-    Γ ⊢ e₁ · e₂ ∶ σ₂
+    Γ ⊢ e₁ · e₂ ∶ τ₂
   ⊢• : 
-    Γ ⊢ e ∶ ∀`α σ' →
+    Γ ⊢ e ∶ ∀`α τ' →
     -----------------------
-    Γ ⊢ e • σ ∶ σ' [ σ ]
+    Γ ⊢ e • τ ∶ τ' [ τ ]
   ⊢let : 
-    Γ ⊢ e₂ ∶ σ →
-    Γ ▶ σ ⊢ e₁ ∶ wk σ' →
+    Γ ⊢ e₂ ∶ τ →
+    Γ ▶ τ ⊢ e₁ ∶ wk τ' →
     ----------------------------
-    Γ ⊢ `let`x= e₂ `in e₁ ∶ σ'
-  ⊢σ :
+    Γ ⊢ `let`x= e₂ `in e₁ ∶ τ'
+  ⊢τ :
     ----------
-    Γ ⊢ σ ∶ tt
+    Γ ⊢ τ ∶ tt
 
 -- Renaming Typing
 
 ren' : Ren S₁ S₂ → Stores S₁ s → Stores S₂ s
-ren' {s = eₛ} ρ σ = ren ρ σ
-ren' {s = σₛ} ρ _ = tt   
+ren' {s = eₛ} ρ τ = ren ρ τ
+ren' {s = τₛ} ρ _ = tt   
 
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
@@ -239,17 +227,17 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
 
 -- Substitution Typing
 
-sub' : Sub S₁ S₂ → Stores S₁ s → Types S₂ s
-sub' {s = eₛ} ρ σ = sub ρ σ
-sub' {s = σₛ} ρ st = tt   
+sub' : Sub S₁ S₂ → Stores S₁ s → Stores S₂ s
+sub' {s = eₛ} ρ τ = sub ρ τ
+sub' {s = τₛ} ρ st = tt   
  
 _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set
-_∶_⇒ₛ_ {S₁ = S₁} ξ Γ₁ Γ₂ = ∀ {s} → (x : Var S₁ s) → Γ₂ ⊢ ξ x ∶ (sub' ξ (wk-ctx Γ₁ x))
+_∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub' σ (wk-ctx Γ₁ x))
 
-{- ⊢intro-termₛ : ∀ {st : Stores S s} {t : Term S s} → termₛ idₛ t ∶ (Γ ▶ st) ⇒ₛ Γ
-⊢intro-termₛ {s = eₛ} x = {!   !}
-⊢intro-termₛ {s = σₛ} x = {!   !} -}
-
+{- ⊢single-termₛ : ∀ {st : Stores S s} {t : Term S s} → termₛ idₛ t ∶ (Γ ▶ st) ⇒ₛ Γ
+⊢single-termₛ {s = eₛ} x = {!   !}
+⊢single-termₛ {s = τₛ} x = {!   !}
+ -}
 -- Semantics ----------------------------------------------------------------------------
 
 -- call by value --
@@ -266,7 +254,7 @@ data _↪_ : Expr S → Expr S → Set where
     (λ`x→ e₁) · e₂ ↪ (e₁ [ e₂ ])
   β-Λ :
     ----------------------
-    (Λ`α→ e) • σ ↪ e [ σ ]
+    (Λ`α→ e) • τ ↪ e [ τ ]
   β-let : 
      Val e₂ →
      ------------------------------------
@@ -283,7 +271,7 @@ data _↪_ : Expr S → Expr S → Set where
   ξ-• :
     e ↪ e' →
     ----------------
-    e • σ ↪ e' • σ
+    e • τ ↪ e' • τ
   ξ-let :
     e₂ ↪ e →
     ------------------------------------
@@ -294,7 +282,7 @@ data _↪_ : Expr S → Expr S → Set where
 -- Progress
 
 progress : 
-  ∅ ⊢ e ∶ σ →
+  ∅ ⊢ e ∶ τ →
   (∃[ e' ] (e ↪ e')) ⊎ Val e
 progress ⊢⊤ = inj₂ v-tt
 progress (⊢λ _) = inj₂ v-λ
@@ -303,16 +291,16 @@ progress (⊢· {e₁ = e₁} {e₂ = e₂} ⊢e₁  ⊢e₂) with progress ⊢e
 ... | inj₁ (e₁' , e₁↪e₁') | _ = inj₁ (e₁' · e₂ , ξ-·₁ e₁↪e₁')
 ... | inj₂ v | inj₁ (e₂' , e₂↪e₂') = inj₁ (e₁ · e₂' , ξ-·₂ e₂↪e₂' v)
 ... | inj₂ (v-λ {e = e₁}) | inj₂ v = inj₁ (e₁ [ e₂ ] , β-λ v)
-progress (⊢• {σ = σ} ⊢e) with progress ⊢e 
-... | inj₁ (e' , e↪e') = inj₁ (e' • σ , ξ-• e↪e')
-... | inj₂ (v-Λ {e = e}) = inj₁ (e [ σ ] , β-Λ)
+progress (⊢• {τ = τ} ⊢e) with progress ⊢e 
+... | inj₁ (e' , e↪e') = inj₁ (e' • τ , ξ-• e↪e')
+... | inj₂ (v-Λ {e = e}) = inj₁ (e [ τ ] , β-Λ)
 progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢e₂ 
 ... | inj₁ (e₂' , e₂↪e₂') = inj₁ ((`let`x= e₂' `in e₁) , ξ-let e₂↪e₂')
 ... | inj₂ v = inj₁ (e₁ [ e₂ ] , β-let v)
 
 -- Subject Reduction
 
-{- ⊢ρ-preserves : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Types S₁ s} →
+{- ⊢ρ-preserves : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Stores S₁ s} →
   ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
   Γ₁ ⊢ t ∶ T →
   Γ₂ ⊢ (ren ρ t) ∶ ↑ₜ (ren' ρ (↑ₛ T))
@@ -323,36 +311,36 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 ⊢ρ-preserves ⊢ρ (⊢· ⊢e₁ ⊢e₂) = ⊢· (⊢ρ-preserves ⊢ρ ⊢e₁) (⊢ρ-preserves ⊢ρ ⊢e₂)
 ⊢ρ-preserves ⊢ρ (⊢• ⊢e) = {!   !}
 ⊢ρ-preserves ⊢ρ (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢ρ-preserves ⊢ρ ⊢e₂) {!   !} 
-⊢ρ-preserves ⊢ρ ⊢σ = ⊢σ
+⊢ρ-preserves ⊢ρ ⊢τ = ⊢τ
 
-⊢ξ-preserves : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Types S₁ s} →
-  ξ ∶ Γ₁ ⇒ₛ Γ₂ →
+⊢σ-preserves : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Stores S₁ s} →
+  σ ∶ Γ₁ ⇒ₛ Γ₂ →
   Γ₁ ⊢ t ∶ T →
-  Γ₂ ⊢ (sub ξ t) ∶ (sub' ξ (↑ₛ T))
-⊢ξ-preserves ξ ⊢e = {!   !}
+  Γ₂ ⊢ (sub σ t) ∶ (sub' σ T)
+⊢σ-preserves σ ⊢e = {!   !}
 
-e[e]-preserves :  ∀ {Γ : Ctx S} {e₁ : Expr (S ▷ eₛ)} {e₂ : Expr S} {σ σ' : Type S} →
-  Γ ▶ σ ⊢ e₁ ∶ wk σ' →
-  Γ ⊢ e₂ ∶ σ → 
+e[e]-preserves :  ∀ {Γ : Ctx S} {e₁ : Expr (S ▷ eₛ)} {e₂ : Expr S} {τ τ' : Type S} →
+  Γ ▶ τ ⊢ e₁ ∶ wk τ' →
+  Γ ⊢ e₂ ∶ τ → 
   --------------------
-  Γ ⊢ e₁ [ e₂ ] ∶ σ'  
-e[e]-preserves ⊢e₁ ⊢e₂ = ⊢ξ-preserves {!   !} {! ⊢e₁  !}
+  Γ ⊢ e₁ [ e₂ ] ∶ τ'  
+e[e]-preserves ⊢e₁ ⊢e₂ = ⊢σ-preserves {!   !} {! ⊢e₁  !}
 
-e[σ]-preserves :  ∀ {Γ : Ctx S} {e : Expr (S ▷ σₛ)} {σ : Type S} {σ' : Type (S ▷ σₛ)} →
-  Γ ▶ tt ⊢ e ∶ σ' →
-  Γ ⊢ σ ∶ tt →
+e[τ]-preserves :  ∀ {Γ : Ctx S} {e : Expr (S ▷ τₛ)} {τ : Type S} {τ' : Type (S ▷ τₛ)} →
+  Γ ▶ tt ⊢ e ∶ τ' →
+  Γ ⊢ τ ∶ tt →
   --------------------
-  Γ ⊢ e [ σ ] ∶ σ' [ σ ]  
-e[σ]-preserves ⊢e ⊢σ = ⊢ξ-preserves ⊢intro-termₛ ⊢e
+  Γ ⊢ e [ τ ] ∶ τ' [ τ ]  
+e[τ]-preserves ⊢e ⊢τ = ⊢σ-preserves ⊢single-termₛ ⊢e
 
 subject-reduction : ∀ {Γ : Ctx S} →
-  Γ ⊢ e ∶ σ →
+  Γ ⊢ e ∶ τ →
   e ↪ e' →
-  Γ ⊢ e' ∶ σ
+  Γ ⊢ e' ∶ τ
 subject-reduction (⊢· (⊢λ ⊢e₁) ⊢e₂) (β-λ v₂) = e[e]-preserves ⊢e₁ ⊢e₂
-subject-reduction (⊢· ⊢e₁ ⊢e₂) (ξ-·₁ e₁↪e) = ⊢· (subject-reduction ⊢e₁ e₁↪e) ⊢e₂
-subject-reduction (⊢· ⊢e₁ ⊢e₂) (ξ-·₂ e₂↪e x) = ⊢· ⊢e₁ (subject-reduction ⊢e₂ e₂↪e)
-subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[σ]-preserves ⊢e ⊢σ
-subject-reduction (⊢• ⊢e) (ξ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
+subject-reduction (⊢· ⊢e₁ ⊢e₂) (σ-·₁ e₁↪e) = ⊢· (subject-reduction ⊢e₁ e₁↪e) ⊢e₂
+subject-reduction (⊢· ⊢e₁ ⊢e₂) (σ-·₂ e₂↪e x) = ⊢· ⊢e₁ (subject-reduction ⊢e₂ e₂↪e)
+subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[τ]-preserves ⊢e ⊢τ
+subject-reduction (⊢• ⊢e) (σ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (β-let v₂) = e[e]-preserves ⊢e₁ ⊢e₂
-subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁  -} 
+subject-reduction (⊢let ⊢e₂ ⊢e₁) (σ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁  -} 

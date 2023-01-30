@@ -14,6 +14,3 @@ data Ctxable : Set where
 
 variable
   r r' r'' r₁ r₂ : Ctxable
-
-{- _≡ᶠ_ : {A : Set} {B : A → Set} {C : (a : A) → B a → Set} (f g : ∀ {a : A} → (b : B a) → C a b) → Set
-_≡ᶠ_ {B = B} f g = ∀ {a} (b : B a) → f b ≡ g b -}

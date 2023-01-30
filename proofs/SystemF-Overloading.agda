@@ -17,7 +17,7 @@ data Sort : Ctxable → Set where
   eₛ  : Sort ⊤ᶜ
   oₛ  : Sort ⊤ᶜ
   cₛ  : Sort ⊥ᶜ
-  σₛ  : Sort ⊤ᶜ
+  τₛ  : Sort ⊤ᶜ
 
 Sorts : Set
 Sorts = List (Sort ⊤ᶜ)
@@ -27,7 +27,7 @@ variable
   S S' S'' S₁ S₂ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
   o o' o'' o₁ o₂ : oₛ ∈ S
-  α α' α'' α₁ α₂ : σₛ ∈ S
+  α α' α'' α₁ α₂ : τₛ ∈ S
 
 Var : Sorts → Sort ⊤ᶜ → Set
 Var S s = s ∈ S
@@ -42,32 +42,32 @@ data Term : Sorts → Sort r → Set where
   `_              : Var S s → Term S s
   tt              : Term S eₛ
   λ`x→_           : Term (S ▷ eₛ) eₛ → Term S eₛ
-  Λ`α→_           : Term (S ▷ σₛ) eₛ → Term S eₛ
+  Λ`α→_           : Term (S ▷ τₛ) eₛ → Term S eₛ
   ƛ_⇒_            : Term S cₛ → Term S eₛ → Term S eₛ 
   _·_             : Term S eₛ → Term S eₛ → Term S eₛ
-  _•_             : Term S eₛ → Term S σₛ → Term S eₛ
+  _•_             : Term S eₛ → Term S τₛ → Term S eₛ
   _⊘              : Term S eₛ → Term S eₛ
   `let`x=_`in_    : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
   decl`o`in_      : Term (S ▷ oₛ) eₛ → Term S eₛ
   inst`_`=_`in_   : Term S oₛ → Term S eₛ → Term S eₛ → Term S eₛ
-  _∶_             : Term S oₛ → Term S σₛ → Term S cₛ
-  `⊤              : Term S σₛ
-  _⇒_             : Term S σₛ → Term S σₛ → Term S σₛ
-  ∀`α_            : Term (S ▷ σₛ) σₛ → Term S σₛ
-  Ø_⇒_            : Term S cₛ → Term S σₛ → Term S σₛ 
+  _∶_             : Term S oₛ → Term S τₛ → Term S cₛ
+  `⊤              : Term S τₛ
+  _⇒_             : Term S τₛ → Term S τₛ → Term S τₛ
+  ∀`α_            : Term (S ▷ τₛ) τₛ → Term S τₛ
+  Ø_⇒_            : Term S cₛ → Term S τₛ → Term S τₛ 
 
 Expr : Sorts → Set
 Expr S = Term S eₛ
 Cstr : Sorts → Set
 Cstr S = Term S cₛ
 Type : Sorts → Set
-Type S = Term S σₛ
+Type S = Term S τₛ
 
 variable
   t t' t'' t₁ t₂ : Term S s
   e e' e'' e₁ e₂ : Expr S
   c c' c'' c₁ c₂ : Cstr S
-  σ σ' σ'' σ₁ σ₂ : Type S
+  τ τ' τ'' τ₁ τ₂ : Type S
  
 -- Renaming -----------------------------------------------------------------------------
 
@@ -94,16 +94,16 @@ ren ρ (λ`x→ e) = λ`x→ (ren (extᵣ ρ) e)
 ren ρ (Λ`α→ e) = Λ`α→ (ren (extᵣ ρ) e)
 ren ρ (ƛ c ⇒ e) = ƛ ren ρ c ⇒ ren ρ e 
 ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
-ren ρ (e • σ) = (ren ρ e) • (ren ρ σ)
+ren ρ (e • τ) = (ren ρ e) • (ren ρ τ)
 ren ρ (e ⊘) = (ren ρ e) ⊘
 ren ρ (`let`x= e₂ `in e₁) = `let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
 ren ρ (decl`o`in e) = decl`o`in ren (extᵣ ρ) e
 ren ρ (inst` o `= e₂ `in e₁) = inst` (ren ρ o) `=  ren ρ e₂ `in ren ρ e₁
-ren ρ (o ∶ σ) = ren ρ o ∶ ren ρ σ
+ren ρ (o ∶ τ) = ren ρ o ∶ ren ρ τ
 ren ρ `⊤ = `⊤
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
-ren ρ (∀`α σ) = ∀`α (ren (extᵣ ρ) σ)
-ren ρ (Ø c ⇒ σ ) = Ø (ren ρ c) ⇒ (ren ρ σ)
+ren ρ (∀`α τ) = ∀`α (ren (extᵣ ρ) τ)
+ren ρ (Ø c ⇒ τ ) = Ø (ren ρ c) ⇒ (ren ρ τ)
 
 wk : Term S s → Term (S ▷ s') s
 wk = ren there
@@ -120,46 +120,46 @@ idₛ : Sub S S
 idₛ = `_
 
 extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
-extₛ ξ (here refl) = ` here refl
-extₛ ξ (there x) = ren wkᵣ (ξ x)
+extₛ σ (here refl) = ` here refl
+extₛ σ (there x) = ren wkᵣ (σ x)
 
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
-dropₛ ξ x = wk (ξ x)
+dropₛ σ x = wk (σ x)
 
-typeₛ : Sub S₁ S₂ → Type S₂ → Sub (S₁ ▷ σₛ) S₂
-typeₛ ξ σ (here refl) = σ
-typeₛ ξ σ (there x) = ξ x
+typeₛ : Sub S₁ S₂ → Type S₂ → Sub (S₁ ▷ τₛ) S₂
+typeₛ σ τ (here refl) = τ
+typeₛ σ τ (there x) = σ x
 
 sub : Sub S₁ S₂ → (Term S₁ s → Term S₂ s)
-sub ξ (` x) = (ξ x)
-sub ξ tt = tt
-sub ξ (λ`x→ e) = λ`x→ (sub (extₛ ξ) e)
-sub ξ (Λ`α→ e) = Λ`α→ (sub (extₛ ξ) e)
-sub ξ (ƛ c ⇒ e) = ƛ sub ξ c ⇒ sub ξ e 
-sub ξ (e₁ · e₂) = sub ξ e₁ · sub ξ e₂
-sub ξ (e • σ) = sub ξ e • sub ξ σ
-sub ξ (e ⊘) = (sub ξ e) ⊘
-sub ξ (`let`x= e₂ `in e₁) = `let`x= sub ξ e₂ `in (sub (extₛ ξ) e₁)
-sub ξ (decl`o`in e) = decl`o`in sub (extₛ ξ) e
-sub ξ (inst` o `= e₂ `in e₁) = inst` sub ξ o `= sub ξ e₂ `in sub ξ e₁ 
-sub ξ (o ∶ σ) = sub ξ o ∶ sub ξ σ
-sub ξ `⊤ = `⊤
-sub ξ (τ₁ ⇒ τ₂) = sub ξ τ₁ ⇒ sub ξ τ₂
-sub ξ (∀`α σ) = ∀`α (sub (extₛ ξ) σ)
-sub ξ (Ø c ⇒ σ ) = Ø (sub ξ c) ⇒ (sub ξ σ)
+sub σ (` x) = (σ x)
+sub σ tt = tt
+sub σ (λ`x→ e) = λ`x→ (sub (extₛ σ) e)
+sub σ (Λ`α→ e) = Λ`α→ (sub (extₛ σ) e)
+sub σ (ƛ c ⇒ e) = ƛ sub σ c ⇒ sub σ e 
+sub σ (e₁ · e₂) = sub σ e₁ · sub σ e₂
+sub σ (e • τ) = sub σ e • sub σ τ
+sub σ (e ⊘) = (sub σ e) ⊘
+sub σ (`let`x= e₂ `in e₁) = `let`x= sub σ e₂ `in (sub (extₛ σ) e₁)
+sub σ (decl`o`in e) = decl`o`in sub (extₛ σ) e
+sub σ (inst` o `= e₂ `in e₁) = inst` sub σ o `= sub σ e₂ `in sub σ e₁ 
+sub σ (o ∶ τ) = sub σ o ∶ sub σ τ
+sub σ `⊤ = `⊤
+sub σ (τ₁ ⇒ τ₂) = sub σ τ₁ ⇒ sub σ τ₂
+sub σ (∀`α τ) = ∀`α (sub (extₛ σ) τ)
+sub σ (Ø c ⇒ τ ) = Ø (sub σ c) ⇒ (sub σ τ)
 
-_[_] : Type (S ▷ σₛ) → Type S → Type S 
-σ [ σ' ] = sub (typeₛ idₛ σ') σ
+_[_] : Type (S ▷ τₛ) → Type S → Type S 
+τ [ τ' ] = sub (typeₛ idₛ τ') τ
 
 variable
-  ξ ξ' ξ'' ξ₁ ξ₂ : Sub S₁ S₂ 
+  σ σ' σ'' σ₁ σ₂ : Sub S₁ S₂ 
  
 -- Context ------------------------------------------------------------------------------
 
 Stores : Sorts → Sort ⊤ᶜ → Set
 Stores S eₛ = Type S
 Stores S oₛ = ⊤
-Stores S σₛ = ⊤
+Stores S τₛ = ⊤
 
 data Ctx : Sorts → Set where
   ∅   : Ctx []
@@ -179,9 +179,9 @@ lookup (Γ ▶ x) (there t) = lookup Γ t
 lookup (Γ ▸ x) t = lookup Γ t
 
 wk-stores : Stores S s → Stores (S ▷ s') s
-wk-stores {s = eₛ} σ = wk σ
+wk-stores {s = eₛ} τ = wk τ
 wk-stores {s = oₛ} _ = tt
-wk-stores {s = σₛ} _ = tt
+wk-stores {s = τₛ} _ = tt
 
 wk-stored : (v : Var S s) → Stores (drop-last v S) s → Stores S s
 wk-stored (here refl) t = wk-stores t
@@ -196,8 +196,8 @@ variable
 -- Constraint Solving -------------------------------------------------------------------
 
 data [_]∈_ : Cstr S → Ctx S → Set where
-  here : [ (` o ∶ σ) ]∈ (Γ ▸ (` o ∶ σ)) 
-  under-bind : {s : Stores S s'} → [ (` o ∶ σ) ]∈ Γ → [ (` there o ∶ wk σ) ]∈ (Γ ▶ s) 
+  here : [ (` o ∶ τ) ]∈ (Γ ▸ (` o ∶ τ)) 
+  under-bind : {s : Stores S s'} → [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ s) 
   under-inst : [ c ]∈ Γ → [ c ]∈ (Γ ▸ c')
   
 -- Typing -------------------------------------------------------------------------------
@@ -205,7 +205,7 @@ data [_]∈_ : Cstr S → Ctx S → Set where
 Types : Sorts → Sort ⊤ᶜ → Set
 Types S eₛ = Type S
 Types S oₛ = Type S
-Types S σₛ = ⊤
+Types S τₛ = ⊤
 
 variable 
   T T' T'' T₁ T₂ : Types S s
@@ -213,63 +213,63 @@ variable
 infix 3 _⊢_∶_
 data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
   ⊢`x :  
-    wk-ctx Γ x ≡ σ →
+    wk-ctx Γ x ≡ τ →
     ----------------
-    Γ ⊢ (` x) ∶ σ
+    Γ ⊢ (` x) ∶ τ
   ⊢`o :  
-    [ ` o ∶ σ ]∈ Γ →
+    [ ` o ∶ τ ]∈ Γ →
     -----------------
-    Γ ⊢ ` o ∶ σ
+    Γ ⊢ ` o ∶ τ
   ⊢⊤ : 
     -----------
     Γ ⊢ tt ∶ `⊤
   ⊢λ : 
-    Γ ▶ σ ⊢ e ∶ wk σ' →  
+    Γ ▶ τ ⊢ e ∶ wk τ' →  
     ------------------
-    Γ ⊢ λ`x→ e ∶ σ ⇒ σ'
+    Γ ⊢ λ`x→ e ∶ τ ⇒ τ'
   ⊢Λ : 
-    Γ ▶ tt ⊢ e ∶ σ →  
+    Γ ▶ tt ⊢ e ∶ τ →  
     -------------------
-    Γ ⊢ Λ`α→ e ∶ ∀`α σ
+    Γ ⊢ Λ`α→ e ∶ ∀`α τ
   ⊢ƛ : 
-    Γ ▸ c ⊢ e ∶ σ →  
+    Γ ▸ c ⊢ e ∶ τ →  
     ---------------------
-    Γ ⊢ ƛ c ⇒ e ∶ Ø c ⇒ σ
+    Γ ⊢ ƛ c ⇒ e ∶ Ø c ⇒ τ
   ⊢· : 
-    Γ ⊢ e₁ ∶ σ₁ ⇒ σ₂ →
-    Γ ⊢ e₂ ∶ σ₁ →
+    Γ ⊢ e₁ ∶ τ₁ ⇒ τ₂ →
+    Γ ⊢ e₂ ∶ τ₁ →
     ------------------
-    Γ ⊢ e₁ · e₂ ∶ σ₂
+    Γ ⊢ e₁ · e₂ ∶ τ₂
   ⊢• : 
-    Γ ⊢ e ∶ ∀`α σ' →
+    Γ ⊢ e ∶ ∀`α τ' →
     --------------------
-    Γ ⊢ e • σ ∶ σ' [ σ ]
+    Γ ⊢ e • τ ∶ τ' [ τ ]
   ⊢⊘ : 
-    Γ ⊢ e ∶ Ø (` o ∶ σ) ⇒ σ' →
-    [ ` o ∶ σ ]∈ Γ →
+    Γ ⊢ e ∶ Ø (` o ∶ τ) ⇒ τ' →
+    [ ` o ∶ τ ]∈ Γ →
     --------------------------
-    Γ ⊢ e ⊘ ∶ σ'
+    Γ ⊢ e ⊘ ∶ τ'
   ⊢let : 
-    Γ ⊢ e₂ ∶ σ →
-    Γ ▶ σ ⊢ e₁ ∶ wk σ' →
+    Γ ⊢ e₂ ∶ τ →
+    Γ ▶ τ ⊢ e₁ ∶ wk τ' →
     --------------------------
-    Γ ⊢ `let`x= e₂ `in e₁ ∶ σ'
+    Γ ⊢ `let`x= e₂ `in e₁ ∶ τ'
   ⊢decl : 
-    Γ ▶ tt ⊢ e ∶ wk σ →
+    Γ ▶ tt ⊢ e ∶ wk τ →
     -------------------
-    Γ ⊢ decl`o`in e ∶ σ
+    Γ ⊢ decl`o`in e ∶ τ
   ⊢inst :
-    Γ ⊢ e₂ ∶ σ →
-    Γ ▸ (` o ∶ σ) ⊢ e₁ ∶ σ' →
+    Γ ⊢ e₂ ∶ τ →
+    Γ ▸ (` o ∶ τ) ⊢ e₁ ∶ τ' →
     -------------------------------
-    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ σ'    
+    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ τ'    
 
 -- Renaming Typing
 
 ren' : Ren S₁ S₂ → Stores S₁ s → Stores S₂ s
-ren' {s = eₛ} ρ σ = ren ρ σ
+ren' {s = eₛ} ρ τ = ren ρ τ
 ren' {s = oₛ} ρ _ = tt
-ren' {s = σₛ} ρ _ = tt   
+ren' {s = τₛ} ρ _ = tt   
 
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
@@ -282,51 +282,51 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     -------------
     dropᵣ ρ ∶ Γ₁ ⇒ᵣ Γ₂ ▶ st
-  ⊢keep-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ} {o} → 
+  ⊢keep-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
-    ρ ∶ (Γ₁ ▸ (o ∶ σ)) ⇒ᵣ (Γ₂ ▸ (ren ρ o ∶ ren ρ σ))
-  ⊢drop-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ} {o} →
+    ρ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ᵣ (Γ₂ ▸ (ren ρ o ∶ ren ρ τ))
+  ⊢drop-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     -------------
-    ρ ∶ Γ₁ ⇒ᵣ (Γ₂ ▸ (o ∶ σ))
+    ρ ∶ Γ₁ ⇒ᵣ (Γ₂ ▸ (o ∶ τ))
 
 ⊢wkᵣ : ∀ {st : Stores S s} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ st)
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
 
-⊢wk-instᵣ : ∀ {o} → idᵣ ∶ Γ ⇒ᵣ (Γ ▸ (o ∶ σ))
+⊢wk-instᵣ : ∀ {o} → idᵣ ∶ Γ ⇒ᵣ (Γ ▸ (o ∶ τ))
 ⊢wk-instᵣ = ⊢drop-instᵣ ⊢idᵣ
 
 -- Substitution Typing ------------------------------------------------------------------
 
 sub' : Sub S₁ S₂ → Stores S₁ s → Stores S₂ s
-sub' {s = eₛ} ρ σ = sub ρ σ
+sub' {s = eₛ} ρ τ = sub ρ τ
 sub' {s = oₛ} ρ _ = tt
-sub' {s = σₛ} ρ _ = tt
+sub' {s = τₛ} ρ _ = tt
 
 infix 3 _∶_⇒ₛ_
 data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢idₛ : ∀ {Γ} → _∶_⇒ₛ_ {S₁ = S} {S₂ = S} idₛ Γ Γ
   ⊢keepₛ  : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₁ s} → 
-    ξ ∶ Γ₁ ⇒ₛ Γ₂ →
+    σ ∶ Γ₁ ⇒ₛ Γ₂ →
     ----------------------------------
-    extₛ ξ ∶ Γ₁ ▶ st ⇒ₛ Γ₂ ▶ sub' ξ st
+    extₛ σ ∶ Γ₁ ▶ st ⇒ₛ Γ₂ ▶ sub' σ st
   ⊢dropₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₂ s} →
-    ξ ∶ Γ₁ ⇒ₛ Γ₂ →
+    σ ∶ Γ₁ ⇒ₛ Γ₂ →
     -------------------------
-    dropₛ ξ ∶ Γ₁ ⇒ₛ (Γ₂ ▶ st) 
-  ⊢typeₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ : Type S₂} →
-    ξ ∶ Γ₁ ⇒ₛ Γ₂ →
+    dropₛ σ ∶ Γ₁ ⇒ₛ (Γ₂ ▶ st) 
+  ⊢typeₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ : Type S₂} →
+    σ ∶ Γ₁ ⇒ₛ Γ₂ →
     --------------
-    typeₛ ξ σ ∶ Γ₁ ▶ tt ⇒ₛ Γ₂ 
-  ⊢keep-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ} {o} → 
-    ξ ∶ Γ₁ ⇒ₛ Γ₂ →
+    typeₛ σ τ ∶ Γ₁ ▶ tt ⇒ₛ Γ₂ 
+  ⊢keep-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
+    σ ∶ Γ₁ ⇒ₛ Γ₂ →
     --------------------------------------
-    ξ ∶ (Γ₁ ▸ (o ∶ σ)) ⇒ₛ (Γ₂ ▸ (sub ξ o ∶ sub ξ σ))
-  ⊢drop-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {σ} {o} →
-    ξ ∶ Γ₁ ⇒ₛ Γ₂ →
+    σ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ₛ (Γ₂ ▸ (sub σ o ∶ sub σ τ))
+  ⊢drop-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
+    σ ∶ Γ₁ ⇒ₛ Γ₂ →
     -------------
-    ξ ∶ Γ₁ ⇒ₛ (Γ₂ ▸ (o ∶ σ)) 
+    σ ∶ Γ₁ ⇒ₛ (Γ₂ ▸ (o ∶ τ)) 
 
-⊢intro-typeₛ : typeₛ idₛ σ ∶ (Γ ▶ tt)  ⇒ₛ Γ
-⊢intro-typeₛ = ⊢typeₛ ⊢idₛ
+⊢single-typeₛ : typeₛ idₛ τ ∶ (Γ ▶ tt)  ⇒ₛ Γ
+⊢single-typeₛ = ⊢typeₛ ⊢idₛ
