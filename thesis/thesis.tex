@@ -1,37 +1,51 @@
 \documentclass[runningheads]{llncs} 
-\usepackage[utf8]{inputenc}
+\usepackage[utf8x]{inputenc}
+\usepackage[greek,english]{babel}
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{stmaryrd}
 \usepackage{agda}
+\usepackage{bbm}
 \usepackage{newunicodechar}
+\usepackage{ucs}
+\usepackage{autofe}
 
 \input{unicode.tex}
 
 \title{ Formal Proof of Type Preservation of the Dictionary Passing Transform for System F}
+\institute{Chair of Programming Languages, University of Freiburg \\ \email{weidner@cs.uni-freiburg.de}}
 \author{Marius Weidner}
-\institute{Chair of Programming Languages, University of Freiburg \email{weidner@cs.uni-freiburg.de}}
 
 \begin{document}
 
 \maketitle
-\noindent  \makebox[\linewidth]{\small\today}
+
+%\noindent\makebox[\linewidth]{\small\today}
+%\\\\
+%\noindent\makebox[\linewidth]{Examiner: Prof. Dr. Peter Thiemann}
+%\noindent\makebox[\linewidth]{Advisor: Hannes Saffrich}
 
 \begin{abstract}
   Abstract.
 \end{abstract}
 
+\newpage
+\input{declaration.tex}
+\newpage
+\setcounter{tocdepth}{2}
+\tableofcontents
+\newpage
+
 \section{Introduction}
-\subsection{Motivation}
-\subsection{Example}
+\input{introduction.tex}
 \section{Preliminary}
-\subsection{Dependently Typed Programming in Agda}
-\subsection{Pure Type Systems}
+\input{preliminary.tex}
 \section{System F}
 \subsection{Specification}
-\subsubsection{Syntax.} 
+\subsubsection{Syntax.}
+\input{proofs/SystemF/Syntax.lagda}
 \subsubsection{Renaming.}
 \subsubsection{Substitution.}
 \subsubsection{Context.}
@@ -41,16 +55,15 @@
 \subsubsection{Progress.}
 \subsubsection{Subject Reduction.}
 \section{System F with Overloading}
+\subsection{Specification}
 \subsubsection{Syntax.} 
 \subsubsection{Renaming.}
 \subsubsection{Substitution.}
 \subsubsection{Context.}
 \subsubsection{Typing.}
-\subsection{Specification}
 \section{Dictionary Passing Transform}
 \subsection{Translation}
-\subsection{Preservation}
-\subsection{Type Preservation Proof}
+\subsection{Type Preservation}
 \section{Conclusion and Further Work}
 \subsection{Hindley Milner}
 \subsection{Semantic Preservation}

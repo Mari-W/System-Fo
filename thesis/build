@@ -1,2 +1,0 @@
-latexmk -pdf -halt-on-error thesis.tex
-mv thesis.pdf ../

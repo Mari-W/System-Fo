@@ -9,3 +9,6 @@
 *.bst
 *.cls
 *.sty
+*.ptb
+*.toc
+*.sh

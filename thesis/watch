@@ -1,2 +1,0 @@
-#!/bin/bash
-latexmk -pvc -pdf thesis.tex

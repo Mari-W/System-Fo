@@ -1,3 +1,4 @@
+{-# OPTIONS --allow-unsolved-metas #-}
 open import Common using (_▷_; _▷▷_; Ctxable; ⊤ᶜ; ⊥ᶜ; r)
 open import Data.Unit using (⊤; tt)
 open import Data.Nat using (ℕ; zero; suc)
@@ -6,7 +7,7 @@ open import Data.List.Relation.Unary.Any using (here; there)
 open import Data.List.Membership.Propositional using (_∈_)
 open import Data.Sum.Base using (_⊎_; inj₁; inj₂)
 open import Data.Product using (_×_; _,_; Σ-syntax; ∃-syntax)
-open import Relation.Binary.PropositionalEquality using (_≡_; refl)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; sym)
 open import Function using (id; _∘_)
 
 module SystemF where
@@ -22,6 +23,7 @@ Sorts = List (Sort ⊤ᶜ)
 
 variable
   s s' s'' s₁ s₂ : Sort r
+  sᶜ sᶜ' sᶜ'' sᶜ₁ sᶜ₂ : Sort ⊤ᶜ
   S S' S'' S₁ S₂ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
   α α' α'' α₁ α₂ : τₛ ∈ S
@@ -108,9 +110,9 @@ extₛ σ (there x) = ren wkᵣ (σ x)
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
 dropₛ σ x = wk (σ x)
 
-termₛ : Sub S₁ S₂ → Term S₂ s → Sub (S₁ ▷ s) S₂
-termₛ σ t (here refl) = t
-termₛ σ t (there x) = σ x
+singleₛ : Sub S₁ S₂ → Term S₂ s → Sub (S₁ ▷ s) S₂
+singleₛ σ t (here refl) = t
+singleₛ σ t (there x) = σ x
 
 sub : Sub S₁ S₂ → (Term S₁ s → Term S₂ s)
 sub σ (` x) = (σ x)
@@ -125,20 +127,20 @@ sub σ (τ₁ ⇒ τ₂) = sub σ τ₁ ⇒ sub σ τ₂
 sub σ (∀`α τ) = ∀`α (sub (extₛ σ) τ)
 
 _[_] : Term (S ▷ s') s → Term S s' → Term S s
-t [ t' ] = sub (termₛ idₛ t') t
+t [ t' ] = sub (singleₛ idₛ t') t
 
 variable
   σ σ' σ'' σ₁ σ₂ : Sub S₁ S₂ 
 
 -- Context ------------------------------------------------------------------------------
 
-Stores : Sorts → Sort ⊤ᶜ → Set
-Stores S eₛ = Type S
-Stores S τₛ = ⊤
+Types : Sorts → Sort ⊤ᶜ → Set
+Types S eₛ = Type S
+Types S τₛ = ⊤
 
 data Ctx : Sorts → Set where
   ∅   : Ctx []
-  _▶_ : Ctx S → Stores S s → Ctx (S ▷ s)
+  _▶_ : Ctx S → Types S s → Ctx (S ▷ s)
 
 depth : Var S s → ℕ
 depth (here px) = zero
@@ -147,19 +149,19 @@ depth (there x) = suc (depth x)
 drop-last : ∀ {S s} → Var S s → Sorts → Sorts
 drop-last = drop ∘ suc ∘ depth
 
-lookup : Ctx S → (v : Var S s) → Stores (drop-last v S) s 
+lookup : Ctx S → (v : Var S s) → Types (drop-last v S) s 
 lookup (Γ ▶ x) (here refl) = x
 lookup (Γ ▶ x) (there t) = lookup Γ t
 
-wk-stores : Stores S s → Stores (S ▷ s') s
+wk-stores : Types S s → Types (S ▷ s') s
 wk-stores {s = eₛ} τ = wk τ
 wk-stores {s = τₛ} _ = tt
 
-wk-stored : (v : Var S s) → Stores (drop-last v S) s → Stores S s
+wk-stored : (v : Var S s) → Types (drop-last v S) s → Types S s
 wk-stored (here refl) t = wk-stores t
 wk-stored (there x) t = wk-stores (wk-stored x t)
 
-wk-ctx : Ctx S → Var S s → Stores S s 
+wk-ctx : Ctx S → Var S s → Types S s 
 wk-ctx Γ x = wk-stored x (lookup Γ x)
 
 variable 
@@ -168,12 +170,12 @@ variable
 -- Typing -------------------------------------------------------------------------------
 
 variable 
-  T T' T'' T₁ T₂ : Stores S s
+  T T' T'' T₁ T₂ : Types S s
 
 -- Expression Typing
 
 infix 3 _⊢_∶_
-data _⊢_∶_ : Ctx S → Term S s → Stores S s → Set where
+data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
   ⊢`x :  
     wk-ctx Γ x ≡ τ →
     ----------------
@@ -209,35 +211,48 @@ data _⊢_∶_ : Ctx S → Term S s → Stores S s → Set where
 
 -- Renaming Typing
 
-ren' : Ren S₁ S₂ → Stores S₁ s → Stores S₂ s
+ren' : Ren S₁ S₂ → Types S₁ s → Types S₂ s
 ren' {s = eₛ} ρ τ = ren ρ τ
-ren' {s = τₛ} ρ _ = tt   
+ren' {s = τₛ} ρ _ = tt 
+
+wk' : Types S s → Types (S ▷ s') s
+wk' = {!   !}
 
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢keepᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₁ s} → 
+  ⊢keepᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Types S₁ s} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
-    (extᵣ ρ) ∶ (Γ₁ ▶ st) ⇒ᵣ (Γ₂ ▶ ren' ρ st)
-  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₂ s} →
+    (extᵣ ρ) ∶ (Γ₁ ▶ t') ⇒ᵣ (Γ₂ ▶ ren' ρ t')
+  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Types S₂ s} →
     ρ ∶ Γ₁  ⇒ᵣ Γ₂ →
     -------------------------
-    (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ st)
+    (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ t')
 
 -- Substitution Typing
 
-sub' : Sub S₁ S₂ → Stores S₁ s → Stores S₂ s
+sub' : Sub S₁ S₂ → Types S₁ s → Types S₂ s
 sub' {s = eₛ} ρ τ = sub ρ τ
-sub' {s = τₛ} ρ st = tt   
+sub' {s = τₛ} ρ _ = tt   
  
 _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set
 _∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub' σ (wk-ctx Γ₁ x))
 
-{- ⊢single-termₛ : ∀ {st : Stores S s} {t : Term S s} → termₛ idₛ t ∶ (Γ ▶ st) ⇒ₛ Γ
-⊢single-termₛ {s = eₛ} x = {!   !}
-⊢single-termₛ {s = τₛ} x = {!   !}
- -}
+⊢idₛ : ∀ {Γ : Ctx S} {t : Term S s} {T : Types S s} (⊢t : Γ ⊢ t ∶ T) → idₛ ∶ Γ ⇒ₛ Γ
+⊢idₛ ⊢t (here refl) = {!   !}
+⊢idₛ ⊢t (there x) = {!   !}
+
+⊢singleₛ : ∀ {t' : Types S s} (⊢t : Γ ⊢ t ∶ T) → singleₛ idₛ t ∶ (Γ ▶ t') ⇒ₛ Γ
+⊢singleₛ (⊢`x ⊢x) x = {!   !}
+⊢singleₛ ⊢⊤ x = {!  !}
+⊢singleₛ (⊢λ ⊢e) x = {!   !}
+⊢singleₛ (⊢Λ ⊢e) x = {!   !}
+⊢singleₛ (⊢· ⊢e₁ ⊢e₂) x = {!   !}
+⊢singleₛ (⊢• ⊢e) x = {!   !}
+⊢singleₛ (⊢let ⊢e₂ ⊢e₁) x = {!   !}
+⊢singleₛ ⊢τ x = {!   !}       
+
 -- Semantics ----------------------------------------------------------------------------
 
 -- call by value --
@@ -300,10 +315,10 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 
 -- Subject Reduction
 
-{- ⊢ρ-preserves : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Stores S₁ s} →
+⊢ρ-preserves : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Types S₁ s} →
   ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
   Γ₁ ⊢ t ∶ T →
-  Γ₂ ⊢ (ren ρ t) ∶ ↑ₜ (ren' ρ (↑ₛ T))
+  Γ₂ ⊢ (ren ρ t) ∶ (ren' ρ T)
 ⊢ρ-preserves ⊢ρ (⊢`x x) = {!   !}
 ⊢ρ-preserves ⊢ρ ⊢⊤ = ⊢⊤
 ⊢ρ-preserves ⊢ρ (⊢λ ⊢e) = ⊢λ {!   !}
@@ -313,34 +328,52 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 ⊢ρ-preserves ⊢ρ (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢ρ-preserves ⊢ρ ⊢e₂) {!   !} 
 ⊢ρ-preserves ⊢ρ ⊢τ = ⊢τ
 
-⊢σ-preserves : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Stores S₁ s} →
+⊢σ-preserves : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Types S₁ s} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   Γ₁ ⊢ t ∶ T →
   Γ₂ ⊢ (sub σ t) ∶ (sub' σ T)
 ⊢σ-preserves σ ⊢e = {!   !}
+
+σ↑idₛ : ∀ (t : Term S₁ s) (t' : Term S₂ sᶜ) (σ : Sub S₁ S₂) →
+  sub (singleₛ σ t') (wk t) ≡ sub σ t
+σ↑idₛ t t' σ = {!   !}
+
+⊢extₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Expr S₂} {τ : Type S₁} →
+  σ ∶ Γ₁ ⇒ₛ Γ₂ →
+  Γ₂ ⊢ t ∶ sub σ τ →
+  singleₛ σ t ∶ Γ₁ ▶ τ ⇒ₛ Γ₂ 
+⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e (here refl) = subst (_ ⊢ t ∶_) (sym (σ↑idₛ τ t σ)) ⊢e
+⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e (there x) = subst (_ ⊢ σ x ∶_) {!  sym (σ↑idₛ ? ? ?) !} (⊢σ x)
+
+τ[e]≡τ : ∀ {τ : Type S} → wk τ [ e ] ≡ τ  
+τ[e]≡τ = {!   !}
+
+idₛτ≡τ : {τ : Type S} →
+  sub idₛ τ ≡ τ
+idₛτ≡τ = {!    !}
 
 e[e]-preserves :  ∀ {Γ : Ctx S} {e₁ : Expr (S ▷ eₛ)} {e₂ : Expr S} {τ τ' : Type S} →
   Γ ▶ τ ⊢ e₁ ∶ wk τ' →
   Γ ⊢ e₂ ∶ τ → 
   --------------------
   Γ ⊢ e₁ [ e₂ ] ∶ τ'  
-e[e]-preserves ⊢e₁ ⊢e₂ = ⊢σ-preserves {!   !} {! ⊢e₁  !}
+e[e]-preserves ⊢e₁ ⊢e₂ = subst (_ ⊢ _ ∶_) τ[e]≡τ (⊢σ-preserves (⊢extₛ (⊢idₛ ⊢e₂) (subst (_ ⊢ _ ∶_) (sym (idₛτ≡τ)) ⊢e₂)) ⊢e₁) 
 
 e[τ]-preserves :  ∀ {Γ : Ctx S} {e : Expr (S ▷ τₛ)} {τ : Type S} {τ' : Type (S ▷ τₛ)} →
   Γ ▶ tt ⊢ e ∶ τ' →
   Γ ⊢ τ ∶ tt →
   --------------------
   Γ ⊢ e [ τ ] ∶ τ' [ τ ]  
-e[τ]-preserves ⊢e ⊢τ = ⊢σ-preserves ⊢single-termₛ ⊢e
+e[τ]-preserves ⊢e ⊢τ = ⊢σ-preserves (⊢singleₛ ⊢τ) ⊢e
 
 subject-reduction : ∀ {Γ : Ctx S} →
   Γ ⊢ e ∶ τ →
   e ↪ e' →
   Γ ⊢ e' ∶ τ
 subject-reduction (⊢· (⊢λ ⊢e₁) ⊢e₂) (β-λ v₂) = e[e]-preserves ⊢e₁ ⊢e₂
-subject-reduction (⊢· ⊢e₁ ⊢e₂) (σ-·₁ e₁↪e) = ⊢· (subject-reduction ⊢e₁ e₁↪e) ⊢e₂
-subject-reduction (⊢· ⊢e₁ ⊢e₂) (σ-·₂ e₂↪e x) = ⊢· ⊢e₁ (subject-reduction ⊢e₂ e₂↪e)
+subject-reduction (⊢· ⊢e₁ ⊢e₂) (ξ-·₁ e₁↪e) = ⊢· (subject-reduction ⊢e₁ e₁↪e) ⊢e₂
+subject-reduction (⊢· ⊢e₁ ⊢e₂) (ξ-·₂ e₂↪e x) = ⊢· ⊢e₁ (subject-reduction ⊢e₂ e₂↪e)
 subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[τ]-preserves ⊢e ⊢τ
-subject-reduction (⊢• ⊢e) (σ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
+subject-reduction (⊢• ⊢e) (ξ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (β-let v₂) = e[e]-preserves ⊢e₁ ⊢e₂
-subject-reduction (⊢let ⊢e₂ ⊢e₁) (σ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁  -} 
+subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁ 
