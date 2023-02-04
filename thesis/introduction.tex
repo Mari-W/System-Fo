@@ -1,2 +1,69 @@
 \subsection{Motivation}
-\subsection{Example}
+A common use cases for function overloading is operator overloading. Without overloading, code becomes less readable, since we would need to define a unique name for each operator on each type.
+Haskell, for example, solves this problem using type classes.
+Essentially, type classes allow to declare function names with multiple meanings. We can give one or more meanings to a type class by instantiating the type class on different types. 
+When we invoke an overloaded function name, we determine the correct instance based on the types of the supplied arguments. 
+\subsubsection{Example: Overloading Equality in Haskell}\hfill\\\\
+Our goal is to overload the function \mono{eq : α → α → Bool} with different meanings for different types substituted for \mono{α}. We want to be able to call \mono{eq} on both \mono{Nat} and \mono{[Nat]} respectively. In Haskell we would solve the problem as follows:
+\begin{minted}{haskell}
+class Eq α where
+  eq :: α → α → Bool 
+
+instance Eq Nat where
+  eq x y = x ≐ y
+instance Eq α ⇒ Eq [α] where
+  eq []       []       = True
+  eq (x : xs) (y : ys) = eq x y && eq xs ys 
+
+.. eq 42 0 .. eq [42, 0] [42, 0] ..
+\end{minted}
+First, type class \mono{Eq} is declared and instantiated for \mono{Nat}. 
+Next, \mono{Eq} is instantiated for \mono{[α]}, given that an instance \mono{Eq} exists for type \mono{α}. 
+Finally, we can call \mono{eq} on elements of type \mono{[Nat]}, since the constraint \mono{Eq α ⇒ ..} in the second instance resolves to the first instance.
+\subsection{Introducing System \Fo}
+In our minimal language extension to System F we give up high level language constructs like Haskell's type classes. 
+Instead, System \Fo\ desugars type class functionality to just overloaded variables. 
+Using the \mono{decl o in e'} expression we can introduce an new overloaded variable \mono{o}. 
+If declared as overloaded, \mono{o} can be instantiated for type \mono{τ} of expression \mono{e} using the \mono{inst o = e in e'} expression.
+In contrast to Haskell, it is allowed to overload \mono{o} with arbitrary types. 
+Shadowing other instances of the same type is allowed.
+Constraints can be introduced using the constraint abstraction \mono{\lbar (o : τ). e'} resulting in a expression of constraint type \mono{[o : τ] ⇒ τ'}. Constraints are eliminated implicitly by the typing rules.
+
+\subsubsection{Example: Overloading Equality in System \Fo}\hfill\\\\
+Recall the Haskell example from above. The same functionality can be expressed in System \Fo\ as follows: 
+\begin{minted}[escapeinside=||]{haskell}
+|\textcolor{mgreen}{decl}| eq in
+
+|\textcolor{mgreen}{inst}| eq : Nat → Nat → Bool 
+  = λx. λy. .. in
+|\textcolor{mgreen}{inst}| eq : ∀α. [eq : α → α → Bool] ⇒ [α] → [α] → Bool 
+  = Λα. ƛ(eq : α → α → Bool). λxs. λys. .. in
+
+.. eq 42 0 .. eq Nat [42, 0] [42, 0] .. 
+\end{minted}
+First, we declare \mono{eq} to be an overloaded identifier and instantiate \mono{eq} for \mono{Nat}. 
+Next, we instantiate \mono{eq} for \mono{[α]}, given the constraint introduced by the constraint abstraction \mono{ƛ} is satisfied.  
+For convenience type annotations for instances are given. 
+The actual implementations of the instances are omitted.
+Because System \Fo\ is based on System F, we are required to bind type variables using type abstractions \mono{Λ} and eliminate type variables using type application. 
+
+\noindent A little caveat: the second instance needs to recursively call instance \mono{eq} for sublists but System \Fo's formalization does not actually support recursive instances or recursive let bindings. Extending System \Fo\ with recursive instances and let bindings should be straight forward but is subject to further work.
+\subsection{Translating between System \Fo\ and System F}
+The Dictionary Passing Transform translates well typed System \Fo\ expressions to well typed System F expressions. 
+We drop \mono{decl o in} expressions and replace \mono{inst o = e in e'} expressions with \mono{let o$_τ$ = e in e'} expressions, where \mono{o$_τ$} is a unique name with respect to type \mono{τ} of \mono{e}.
+\subsubsection{Example: Dicitionary Passing Transform}\hfill\\\\
+Recall the System \Fo\ example from above. We use indices to ensure unique names.
+Applying the Dictionary Passing Transform results in the following well typed System F expression:
+\begin{minted}[escapeinside=||]{haskell}  
+let eq₁ : Nat → Nat → Bool 
+  = λx. λy. .. in
+let eq₂ : ∀α. (α → α → Bool) → [α] → [α] → Bool 
+  = Λα. λeq₁. λxs. λys. .. in
+
+.. eq₁ 42 0 .. eq₂ Nat eq₁ [42, 0] [42, 0] .. 
+\end{minted}
+
+\subsection{Related Work}
+- SystemO
+- SystemFc
+- ..?
