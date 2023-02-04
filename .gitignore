@@ -6,10 +6,9 @@
 *.out
 *.html
 *.agdai
-*.bst
-*.cls
-*.sty
 *.ptb
 *.toc
 *.sh
-*/*.pdf
+*/*#.tex
+*/_minted-thesis
+*/agda

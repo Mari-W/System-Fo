@@ -1,4 +1,3 @@
-open import Common using (_▷_; _▷▷_; Ctxable; ⊤ᶜ; ⊥ᶜ; r)
 open import SystemF
 open import SystemFo
 open import Data.List using (List; [])
@@ -18,7 +17,7 @@ module F = SystemF
 
 -- Sorts 
 
-s⇝s : Fᴼ.Sort ⊤ᶜ → F.Sort ⊤ᶜ
+s⇝s : Fᴼ.Sort ⊤ᶜ → F.Sort
 s⇝s eₛ = eₛ
 s⇝s oₛ = eₛ
 s⇝s τₛ = τₛ
@@ -53,7 +52,7 @@ o∶τ∈Γ⇝x (under-inst o∶τ∈Γ) = there (o∶τ∈Γ⇝x o∶τ∈Γ)
 τ⇝τ `⊤ = `⊤
 τ⇝τ (τ₁ ⇒ τ₂) = τ⇝τ τ₁ ⇒ τ⇝τ τ₂
 τ⇝τ {Γ = Γ} (Fᴼ.∀`α τ) = F.∀`α τ⇝τ {Γ = Γ ▶ tt} τ
-τ⇝τ (Ø o ∶ τ ⇒ τ') = τ⇝τ τ ⇒ τ⇝τ τ'
+τ⇝τ ([ o ∶ τ ]⇒ τ') = τ⇝τ τ ⇒ τ⇝τ τ'
 
 
 T⇝T : ∀ (Γ : Fᴼ.Ctx Fᴼ.S) →
@@ -88,9 +87,9 @@ T⇝T {s = τₛ} Γ _ = tt
 ⊢t⇝t (⊢· ⊢e₁ ⊢e₂) = ⊢t⇝t ⊢e₁ · ⊢t⇝t ⊢e₂
 ⊢t⇝t (⊢• {τ = τ} ⊢e) = ⊢t⇝t ⊢e • (τ⇝τ τ)
 ⊢t⇝t (⊢⊘ ⊢e o∶τ∈Γ) = ⊢t⇝t ⊢e · ` o∶τ∈Γ⇝x o∶τ∈Γ
-⊢t⇝t (⊢let ⊢e₂ ⊢e₁) = `let`x= ⊢t⇝t ⊢e₂ `in ⊢t⇝t ⊢e₁
-⊢t⇝t (⊢decl ⊢e) = `let`x= tt `in  ⊢t⇝t ⊢e
-⊢t⇝t (⊢inst ⊢e₂ ⊢e₁) = `let`x= ⊢t⇝t ⊢e₂ `in ⊢t⇝t ⊢e₁
+⊢t⇝t (⊢let ⊢e₂ ⊢e₁) = let`x= ⊢t⇝t ⊢e₂ `in ⊢t⇝t ⊢e₁
+⊢t⇝t (⊢decl ⊢e) = let`x= tt `in  ⊢t⇝t ⊢e
+⊢t⇝t (⊢inst ⊢e₂ ⊢e₁) = let`x= ⊢t⇝t ⊢e₂ `in ⊢t⇝t ⊢e₁
 
 -- Renaming 
 
@@ -138,7 +137,7 @@ T⇝T {s = τₛ} Γ _ = tt
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ `⊤ = refl
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ₁) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ₂)
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (∀`α τ) = cong F.∀`α_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ (⊢keepᵣ ⊢ρ) τ)
-⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (Ø (` o ∶ τ) ⇒ τ') = cong₂ _⇒_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ') 
+⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ ([ ` o ∶ τ ]⇒ τ') = cong₂ _⇒_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ') 
 
 -- Substititution
 
@@ -149,9 +148,9 @@ T⇝T {s = τₛ} Γ _ = tt
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢idₛ x = refl
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢keepₛ ⊢σ) (here refl) = refl
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢keepₛ {σ = σ} ⊢σ) (there x) = trans 
-  (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wkᵣ (σ x))
+  (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢dropₛ {σ = σ} ⊢σ) x  = trans 
-  (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wkᵣ (σ x))
+  (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (here refl) = refl
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (there x) = ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x 
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢keep-instₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
@@ -179,7 +178,7 @@ T⇝T {s = τₛ} Γ _ = tt
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ `⊤ = refl
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ₁) (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ  ⊢σ τ₂)
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (∀`α τ) = cong F.∀`α_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ (⊢keepₛ ⊢σ) τ)
-⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (Ø ` o ∶ τ ⇒ τ') = cong₂ _⇒_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ) (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ')
+⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ ([ ` o ∶ τ ]⇒ τ') = cong₂ _⇒_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ) (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ')
 
 τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] : {Γ : Fᴼ.Ctx Fᴼ.S₁} (τ : Fᴼ.Type Fᴼ.S₁) (τ' : Fᴼ.Type (Fᴼ.S₁ ▷ τₛ)) →  
   (τ⇝τ {Γ = Γ ▶ tt} τ' F.[ τ⇝τ τ ]) ≡ τ⇝τ (τ' Fᴼ.[ τ ])
@@ -190,15 +189,15 @@ T⇝T {s = τₛ} Γ _ = tt
 -- Variables
 
 Γx≡τ⇝Γx≡τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {τ : Fᴼ.Type Fᴼ.S} (x : Fᴼ.Var Fᴼ.S eₛ) →
-  Fᴼ.wk-ctx Γ x ≡ τ →  
-  F.wk-ctx (Γ⇝Γ Γ) (x⇝x x) ≡ (τ⇝τ τ)
-Γx≡τ⇝Γx≡τ {Γ = Γ ▶ τ} (here refl) refl = ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wkᵣ τ
+  Fᴼ.lookup Γ x ≡ τ →  
+  F.lookup (Γ⇝Γ Γ) (x⇝x x) ≡ (τ⇝τ τ)
+Γx≡τ⇝Γx≡τ {Γ = Γ ▶ τ} (here refl) refl = ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ τ
 Γx≡τ⇝Γx≡τ {Γ = Γ ▶ _} {τ'} (there x) refl = trans 
   (cong F.wk (Γx≡τ⇝Γx≡τ x refl)) 
-  (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wkᵣ ((Fᴼ.wk-stored x (Fᴼ.lookup Γ x))))
+  (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (Fᴼ.lookup Γ x))
 Γx≡τ⇝Γx≡τ {Γ = Γ ▸ c@(` o ∶ τ')} {τ} x refl =  (
   begin                     
-    F.wk (F.wk-stored (x⇝x x) (F.lookup (Γ⇝Γ (Γ ▸ c)) (there (x⇝x x))))   
+    F.wk (F.lookup (Γ⇝Γ Γ) (x⇝x x))   
   ≡⟨ cong F.wk (Γx≡τ⇝Γx≡τ x refl) ⟩ 
     F.wk (τ⇝τ τ)
   ≡⟨ ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wk-instᵣ τ ⟩ 
@@ -209,19 +208,19 @@ T⇝T {s = τₛ} Γ _ = tt
 
 o∶τ∈Γ⇝Γx≡τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} →
   (o∶τ∈Γ : [ ` Fᴼ.o ∶ Fᴼ.τ ]∈ Γ) → 
-  F.wk-ctx (Γ⇝Γ Γ) (o∶τ∈Γ⇝x o∶τ∈Γ) ≡ (τ⇝τ Fᴼ.τ)
+  F.lookup (Γ⇝Γ Γ) (o∶τ∈Γ⇝x o∶τ∈Γ) ≡ (τ⇝τ Fᴼ.τ)
 o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ Fᴼ.▸ c@(` o ∶ τ)} (here {Γ = Γ}) = 
   begin  
-    F.wk-ctx (Γ⇝Γ Γ ▶ τ⇝τ τ) (here refl)
+    F.lookup (Γ⇝Γ Γ ▶ τ⇝τ τ) (here refl)
   ≡⟨ ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wk-instᵣ τ ⟩
     τ⇝τ (Fᴼ.ren Fᴼ.idᵣ τ)
   ≡⟨ cong τ⇝τ (idᵣτ≡τ τ) ⟩ 
     τ⇝τ τ
   ∎
-o∶τ∈Γ⇝Γx≡τ {Γ = Γ ▶ _} (under-bind {τ = τ} x) = trans (cong F.wk (o∶τ∈Γ⇝Γx≡τ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wkᵣ τ)
+o∶τ∈Γ⇝Γx≡τ {Γ = Γ ▶ _} (under-bind {τ = τ} x) = trans (cong F.wk (o∶τ∈Γ⇝Γx≡τ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ τ)
 o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-inst {c' = _ ∶ τ'} o∶τ∈Γ) =
   begin                     
-    F.wk (F.wk-stored (o∶τ∈Γ⇝x o∶τ∈Γ) (F.lookup (Γ⇝Γ (Γ ▸ c)) (there (o∶τ∈Γ⇝x o∶τ∈Γ))))   
+    F.wk (F.lookup (Γ⇝Γ Γ) (o∶τ∈Γ⇝x o∶τ∈Γ))   
   ≡⟨ cong F.wk (o∶τ∈Γ⇝Γx≡τ o∶τ∈Γ) ⟩ 
     F.wk (τ⇝τ τ)
   ≡⟨ ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wk-instᵣ τ ⟩ 
@@ -233,7 +232,7 @@ o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-inst {c' =
 -- Terms
 
 τ⇝wk·τ≡wk·τ⇝τ : {Γ : Fᴼ.Ctx Fᴼ.S} {τ' : Fᴼ.Type Fᴼ.S} {T : Fᴼ.Stores Fᴼ.S Fᴼ.s} → τ⇝τ {Γ = Γ ▶ T} (Fᴼ.wk τ') ≡ F.wk (τ⇝τ τ')
-τ⇝wk·τ≡wk·τ⇝τ {τ' = τ'} = sym (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wkᵣ τ')
+τ⇝wk·τ≡wk·τ⇝τ {τ' = τ'} = sym (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ τ')
 
 τ⇝wk-inst·τ≡wk-inst·τ⇝τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {τ : Fᴼ.Type Fᴼ.S} {τ' : Fᴼ.Type Fᴼ.S} {o} →
   τ⇝τ {Γ = Γ ▸ (` o ∶ τ')} τ ≡ F.wk (τ⇝τ τ)

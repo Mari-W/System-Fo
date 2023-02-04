@@ -1,7 +1,6 @@
-open import Common using (_▷_; _▷▷_; Ctxable; ⊤ᶜ; ⊥ᶜ; r)
 open import Data.Unit using (⊤; tt)
 open import Data.Nat using (ℕ; zero; suc)
-open import Data.List using (List; []; drop)
+open import Data.List using (List; []; _∷_; _++_; drop)
 open import Data.List.Relation.Unary.Any using (here; there)
 open import Data.List.Membership.Propositional using (_∈_)
 open import Data.Sum.Base using (_⊎_; inj₁; inj₂)
@@ -13,6 +12,13 @@ module SystemFo where
 
 -- Sorts --------------------------------------------------------------------------------
 
+data Ctxable : Set where
+  ⊤ᶜ : Ctxable
+  ⊥ᶜ : Ctxable
+
+variable
+  r r' r'' r₁ r₂ : Ctxable
+
 data Sort : Ctxable → Set where
   eₛ  : Sort ⊤ᶜ
   oₛ  : Sort ⊤ᶜ
@@ -21,6 +27,11 @@ data Sort : Ctxable → Set where
 
 Sorts : Set
 Sorts = List (Sort ⊤ᶜ)
+
+infix 25 _▷_ _▷▷_
+pattern _▷_ xs x = x ∷ xs
+_▷▷_ : {A : Set} → List A → List A → List A
+xs ▷▷ ys = ys ++ xs
 
 variable
   s s' s'' s₁ s₂ : Sort r
@@ -34,7 +45,7 @@ Var S s = s ∈ S
 
 -- Syntax -------------------------------------------------------------------------------
 
-infixr 4 λ`x→_ Λ`α→_ `let`x=_`in_ inst`_`=_`in_ ∀`α_ _∶_
+infixr 4 λ`x→_ Λ`α→_ let`x=_`in_ inst`_`=_`in_ ∀`α_ _∶_
 infixr 5 _⇒_ _·_ _•_ 
 infix  6 `_ decl`o`in_
 
@@ -46,14 +57,14 @@ data Term : Sorts → Sort r → Set where
   ƛ_⇒_            : Term S cₛ → Term S eₛ → Term S eₛ 
   _·_             : Term S eₛ → Term S eₛ → Term S eₛ
   _•_             : Term S eₛ → Term S τₛ → Term S eₛ
-  `let`x=_`in_    : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
+  let`x=_`in_    : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
   decl`o`in_      : Term (S ▷ oₛ) eₛ → Term S eₛ
   inst`_`=_`in_   : Term S oₛ → Term S eₛ → Term S eₛ → Term S eₛ
   _∶_             : Term S oₛ → Term S τₛ → Term S cₛ
   `⊤              : Term S τₛ
   _⇒_             : Term S τₛ → Term S τₛ → Term S τₛ
   ∀`α_            : Term (S ▷ τₛ) τₛ → Term S τₛ
-  Ø_⇒_            : Term S cₛ → Term S τₛ → Term S τₛ 
+  [_]⇒_            : Term S cₛ → Term S τₛ → Term S τₛ
 
 Expr : Sorts → Set
 Expr S = Term S eₛ
@@ -94,14 +105,14 @@ ren ρ (Λ`α→ e) = Λ`α→ (ren (extᵣ ρ) e)
 ren ρ (ƛ c ⇒ e) = ƛ ren ρ c ⇒ ren ρ e 
 ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
 ren ρ (e • τ) = (ren ρ e) • (ren ρ τ)
-ren ρ (`let`x= e₂ `in e₁) = `let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
+ren ρ (let`x= e₂ `in e₁) = let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
 ren ρ (decl`o`in e) = decl`o`in ren (extᵣ ρ) e
 ren ρ (inst` o `= e₂ `in e₁) = inst` (ren ρ o) `=  ren ρ e₂ `in ren ρ e₁
 ren ρ (o ∶ τ) = ren ρ o ∶ ren ρ τ
 ren ρ `⊤ = `⊤
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
 ren ρ (∀`α τ) = ∀`α (ren (extᵣ ρ) τ)
-ren ρ (Ø c ⇒ τ ) = Ø (ren ρ c) ⇒ (ren ρ τ)
+ren ρ ([ c ]⇒ τ) = [ ren ρ c ]⇒ (ren ρ τ)
 
 wk : Term S s → Term (S ▷ s') s
 wk = ren there
@@ -136,14 +147,14 @@ sub σ (Λ`α→ e) = Λ`α→ (sub (extₛ σ) e)
 sub σ (ƛ c ⇒ e) = ƛ sub σ c ⇒ sub σ e 
 sub σ (e₁ · e₂) = sub σ e₁ · sub σ e₂
 sub σ (e • τ) = sub σ e • sub σ τ
-sub σ (`let`x= e₂ `in e₁) = `let`x= sub σ e₂ `in (sub (extₛ σ) e₁)
+sub σ (let`x= e₂ `in e₁) = let`x= sub σ e₂ `in (sub (extₛ σ) e₁)
 sub σ (decl`o`in e) = decl`o`in sub (extₛ σ) e
 sub σ (inst` o `= e₂ `in e₁) = inst` sub σ o `= sub σ e₂ `in sub σ e₁ 
 sub σ (o ∶ τ) = sub σ o ∶ sub σ τ
 sub σ `⊤ = `⊤
 sub σ (τ₁ ⇒ τ₂) = sub σ τ₁ ⇒ sub σ τ₂
 sub σ (∀`α τ) = ∀`α (sub (extₛ σ) τ)
-sub σ (Ø c ⇒ τ ) = Ø (sub σ c) ⇒ (sub σ τ)
+sub σ ([ c ]⇒ τ ) = [ sub σ c ]⇒ (sub σ τ)
 
 _[_] : Type (S ▷ τₛ) → Type S → Type S 
 τ [ τ' ] = sub (single-typeₛ idₛ τ') τ
@@ -158,6 +169,14 @@ Stores S eₛ = Type S
 Stores S oₛ = ⊤
 Stores S τₛ = ⊤
 
+ren-S : Ren S₁ S₂ → Stores S₁ s → Stores S₂ s
+ren-S {s = eₛ} ρ τ = ren ρ τ
+ren-S {s = oₛ} ρ _ = tt 
+ren-S {s = τₛ} ρ _ = tt 
+
+wk-S : Stores S s → Stores (S ▷ s') s
+wk-S S = ren-S there S
+
 data Ctx : Sorts → Set where
   ∅   : Ctx []
   _▶_ : Ctx S → Stores S s → Ctx (S ▷ s)
@@ -170,22 +189,10 @@ depth (there x) = suc (depth x)
 drop-last : ∀ {S s} → Var S s → Sorts → Sorts
 drop-last = drop ∘ suc ∘ depth
 
-lookup : Ctx S → (v : Var S s) → Stores (drop-last v S) s 
-lookup (Γ ▶ x) (here refl) = x
-lookup (Γ ▶ x) (there t) = lookup Γ t
-lookup (Γ ▸ x) t = lookup Γ t
-
-wk-stores : Stores S s → Stores (S ▷ s') s
-wk-stores {s = eₛ} τ = wk τ
-wk-stores {s = oₛ} _ = tt
-wk-stores {s = τₛ} _ = tt
-
-wk-stored : (v : Var S s) → Stores (drop-last v S) s → Stores S s
-wk-stored (here refl) t = wk-stores t
-wk-stored (there x) t = wk-stores (wk-stored x t)
-
-wk-ctx : Ctx S → Var S s → Stores S s 
-wk-ctx Γ x = wk-stored x (lookup Γ x)
+lookup : Ctx S → Var S s → Stores S s 
+lookup (Γ ▶ S) (here refl) = wk-S S
+lookup (Γ ▶ S) (there x) = wk-S (lookup Γ x)
+lookup (Γ ▸ c) x = lookup Γ x
 
 variable 
   Γ Γ' Γ'' Γ₁ Γ₂ : Ctx S
@@ -210,7 +217,7 @@ variable
 infix 3 _⊢_∶_
 data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
   ⊢`x :  
-    wk-ctx Γ x ≡ τ →
+    lookup Γ x ≡ τ →
     ----------------
     Γ ⊢ (` x) ∶ τ
   ⊢`o :  
@@ -231,7 +238,7 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
   ⊢ƛ : 
     Γ ▸ c ⊢ e ∶ τ →  
     ---------------------
-    Γ ⊢ ƛ c ⇒ e ∶ Ø c ⇒ τ
+    Γ ⊢ ƛ c ⇒ e ∶ [ c ]⇒ τ
   ⊢· : 
     Γ ⊢ e₁ ∶ τ₁ ⇒ τ₂ →
     Γ ⊢ e₂ ∶ τ₁ →
@@ -242,7 +249,7 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
     --------------------
     Γ ⊢ e • τ ∶ τ' [ τ ]
   ⊢⊘ : 
-    Γ ⊢ e ∶ Ø (` o ∶ τ) ⇒ τ' →
+    Γ ⊢ e ∶ [ ` o ∶ τ ]⇒ τ' →
     [ ` o ∶ τ ]∈ Γ →
     --------------------------
     Γ ⊢ e ∶ τ'
@@ -250,7 +257,7 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
     Γ ⊢ e₂ ∶ τ →
     Γ ▶ τ ⊢ e₁ ∶ wk τ' →
     --------------------------
-    Γ ⊢ `let`x= e₂ `in e₁ ∶ τ'
+    Γ ⊢ let`x= e₂ `in e₁ ∶ τ'
   ⊢decl : 
     Γ ▶ tt ⊢ e ∶ wk τ →
     -------------------
@@ -263,18 +270,13 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
 
 -- Renaming Typing
 
-ren' : Ren S₁ S₂ → Stores S₁ s → Stores S₂ s
-ren' {s = eₛ} ρ τ = ren ρ τ
-ren' {s = oₛ} ρ _ = tt
-ren' {s = τₛ} ρ _ = tt   
-
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
   ⊢keepᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₁ s} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
-    extᵣ ρ ∶ Γ₁ ▶ st ⇒ᵣ Γ₂ ▶ ren' ρ st
+    extᵣ ρ ∶ Γ₁ ▶ st ⇒ᵣ Γ₂ ▶ ren-S ρ st
   ⊢dropᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₂ s} →
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     -------------
@@ -311,7 +313,7 @@ extᵣidᵣ≡idᵣ (there x) = refl
 ρ₁≡ρ₂→ρ₁τ≡ρ₂τ {τ = `⊤} ρ₁≡ρ₂ = refl
 ρ₁≡ρ₂→ρ₁τ≡ρ₂τ {τ = τ₁ ⇒ τ₂} ρ₁≡ρ₂ = cong₂ _⇒_ (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ ρ₁≡ρ₂) (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ ρ₁≡ρ₂)
 ρ₁≡ρ₂→ρ₁τ≡ρ₂τ {τ = ∀`α τ} ρ₁≡ρ₂ = cong ∀`α_ (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ (⊢ext-ρ₁≡ext-ρ₂ ρ₁≡ρ₂))
-ρ₁≡ρ₂→ρ₁τ≡ρ₂τ {τ = Ø (` o ∶ τ) ⇒ τ'} ρ₁≡ρ₂ = cong₂ Ø_⇒_ (cong₂ _∶_ (cong `_ (ρ₁≡ρ₂ o)) (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ ρ₁≡ρ₂)) (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ ρ₁≡ρ₂) 
+ρ₁≡ρ₂→ρ₁τ≡ρ₂τ {τ = [ ` o ∶ τ ]⇒ τ'} ρ₁≡ρ₂ = cong₂ [_]⇒_ (cong₂ _∶_ (cong `_ (ρ₁≡ρ₂ o)) (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ ρ₁≡ρ₂)) (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ ρ₁≡ρ₂) 
 
 idᵣτ≡τ : (τ : Type S) →
   ren idᵣ τ ≡ τ
@@ -319,8 +321,7 @@ idᵣτ≡τ (` x) = refl
 idᵣτ≡τ `⊤ = refl
 idᵣτ≡τ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (idᵣτ≡τ τ₁) (idᵣτ≡τ τ₂)
 idᵣτ≡τ (∀`α τ) = cong ∀`α_ (trans (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ extᵣidᵣ≡idᵣ) (idᵣτ≡τ τ))
-idᵣτ≡τ (Ø ` o ∶ τ ⇒ τ') = cong₂ Ø_⇒_ (cong₂ _∶_ refl (idᵣτ≡τ τ)) (idᵣτ≡τ τ')
-
+idᵣτ≡τ ([ ` o ∶ τ ]⇒ τ') = cong₂ [_]⇒_ (cong₂ _∶_ refl (idᵣτ≡τ τ)) (idᵣτ≡τ τ')
 
 -- Substitution Typing ------------------------------------------------------------------
 
