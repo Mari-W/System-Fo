@@ -3,6 +3,8 @@
 \usepackage[T1]{fontenc}
 \usepackage{alphabeta}
 \usepackage{graphicx}
+\usepackage{stix}
+\usepackage{mathtools}
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{amsfonts}
@@ -12,15 +14,19 @@
 \usepackage{newunicodechar}
 \usepackage{minted}
 \usepackage{xcolor}
-\AtBeginEnvironment{minted}{%
-  \renewcommand{\fcolorbox}[4][]{#4}}
+
+\renewcommand{\fcolorbox}[4][]{#4}
 \definecolor{mgreen}{HTML}{008000}
-
-\input{unicode}
-
+\newcommand{\inl}[1]{\mintinline[escapeinside=||]{haskell}{#1}}
 \newcommand{\mono}[1]{\footnotesize{\ttfamily{#1}}}
 \newcommand{\Fo}[0]{F$_\text{O}$} 
 \newcommand{\lbar}[0]{\ensuremath{\mkern0.75mu\mathchar '26\mkern -9.75mu\mathnormal\lambda}}
+\newcommand{\Inst}[0]{\textcolor{mgreen}{inst}}
+\newcommand{\Decl}[0]{\textcolor{mgreen}{decl}}
+\newcommand{\Blk}[1]{\textcolor{black}{#1}}
+\newcommand{\Red}[1]{\textcolor{red}{#1}}
+
+\input{unicode}
 
 \title{Formal Proof of Type Preservation of the Dictionary Passing Transform for System F}
 \titlerunning{Type Preservation Proof of the Dictionary Passing Transform for System F}
@@ -38,7 +44,9 @@
 \noindent\makebox[\linewidth]{Examiner: Prof. Dr. Peter Thiemann}
 \noindent\makebox[\linewidth]{Advisor: Hannes Saffrich}
 
-\input{agda/SystemF}
+\input{SystemF}
+\input{SystemFo}
+\input{DictionaryPassingTransform}
 
 \begin{abstract}
   \input{abstract}
@@ -51,7 +59,6 @@
 \section{System F}
 \input{systemf}
 \section{System \Fo}
-\subsection{Specification}
 \input{systemfo}
 \section{Dictionary Passing Transform}
 \input{dictionarypassingtransform}

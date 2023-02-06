@@ -1,3 +1,5 @@
+-- [latex] prefix(F)
+-- [latex] hide
 {-# OPTIONS --allow-unsolved-metas #-}
 open import Data.Unit using (⊤; tt)
 open import Data.Nat using (ℕ; zero; suc)
@@ -14,12 +16,16 @@ module SystemF where
 
 -- Sorts --------------------------------------------------------------------------------
 
+-- [latex] block(Sort)
+
 data Sort : Set where
   eₛ  : Sort
   τₛ  : Sort
 
 Sorts : Set
 Sorts = List Sort
+
+-- [latex] hide
 
 infix 25 _▷_ _▷▷_
 pattern _▷_ xs x = x ∷ xs
@@ -39,6 +45,8 @@ infixr 4 λ`x→_ Λ`α→_ let`x=_`in_ ∀`α_
 infixr 5 _⇒_ _·_ _•_
 infix  6 `_ 
 
+-- [latex] block(Term)
+
 data Term : Sorts → Sort → Set where
   `_           : s ∈ S → Term S s
   tt           : Term S eₛ
@@ -46,18 +54,28 @@ data Term : Sorts → Sort → Set where
   Λ`α→_        : Term (S ▷ τₛ) eₛ → Term S eₛ
   _·_          : Term S eₛ → Term S eₛ → Term S eₛ
   _•_          : Term S eₛ → Term S τₛ → Term S eₛ
-  let`x=_`in_ : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
+  let`x=_`in_  : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
   `⊤           : Term S τₛ
   _⇒_          : Term S τₛ → Term S τₛ → Term S τₛ
   ∀`α_         : Term (S ▷ τₛ) τₛ → Term S τₛ
 
+-- [latex] hide
 Var : Sorts → Sort → Set
-Var S s = s ∈ S
+-- [latex] inline(Var)
+Var S s = s ∈ S 
+
+-- [latex] hide
 Expr : Sorts → Set
+-- [latex] inline(Expr)
 Expr S = Term S eₛ
+
+-- [latex] hide
 Type : Sorts → Set
+-- [latex] inline(Type)
 Type S = Term S τₛ
- 
+
+-- [latex] hide
+
 variable
   t t' t'' t₁ t₂ : Term S s
   e e' e'' e₁ e₂ : Expr S
@@ -65,8 +83,12 @@ variable
 
 -- Renaming -----------------------------------------------------------------------------
 
+-- [latex] block(Ren)
+
 Ren : Sorts → Sorts → Set
 Ren S₁ S₂ = ∀ {s} → Var S₁ s → Var S₂ s
+
+-- [latex] hide
 
 idᵣ : Ren S S
 idᵣ = id
@@ -81,6 +103,8 @@ extᵣ ρ (there x) = there (ρ x)
 dropᵣ : Ren S₁ S₂ → Ren S₁ (S₂ ▷ s) 
 dropᵣ ρ x = there (ρ x)
 
+-- [latex] block(ren)
+
 ren : Ren S₁ S₂ → (Term S₁ s → Term S₂ s)
 ren ρ (` x) = ` (ρ x)
 ren ρ tt = tt
@@ -93,16 +117,24 @@ ren ρ `⊤ = `⊤
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
 ren ρ (∀`α τ) = ∀`α (ren (extᵣ ρ) τ)
 
+-- [latex] block(wk)
+
 wk : Term S s → Term (S ▷ s') s
 wk = ren there
+
+-- [latex] hide
 
 variable
   ρ ρ' ρ'' ρ₁ ρ₂ : Ren S₁ S₂
 
 -- Substitution -------------------------------------------------------------------------
 
+-- [latex] block(Sub)
+
 Sub : Sorts → Sorts → Set
 Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
+
+-- [latex] hide
 
 idₛ : Sub S S
 idₛ = `_
@@ -118,6 +150,8 @@ singleₛ : Sub S₁ S₂ → Term S₂ s → Sub (S₁ ▷ s) S₂
 singleₛ σ t (here refl) = t
 singleₛ σ t (there x) = σ x
 
+-- [latex] block(sub)
+
 sub : Sub S₁ S₂ → (Term S₁ s → Term S₂ s)
 sub σ (` x) = (σ x)
 sub σ tt = tt
@@ -130,8 +164,12 @@ sub σ `⊤ = `⊤
 sub σ (τ₁ ⇒ τ₂) = sub σ τ₁ ⇒ sub σ τ₂
 sub σ (∀`α τ) = ∀`α (sub (extₛ σ) τ)
 
+-- [latex] block(subs)
+
 _[_] : Term (S ▷ s') s → Term S s' → Term S s
 t [ t' ] = sub (singleₛ idₛ t') t
+
+-- [latex] block(hide)
 
 variable
   σ σ' σ'' σ₁ σ₂ : Sub S₁ S₂ 
@@ -141,6 +179,9 @@ variable
 Types : Sorts → Sort → Set
 Types S eₛ = Type S
 Types S τₛ = ⊤
+
+variable 
+  T T' T'' T₁ T₂ : Types S s
 
 ren-T : Ren S₁ S₂ → Types S₁ s → Types S₂ s
 ren-T {s = eₛ} ρ τ = ren ρ τ
@@ -153,13 +194,6 @@ data Ctx : Sorts → Set where
   ∅   : Ctx []
   _▶_ : Ctx S → Types S s → Ctx (S ▷ s)
 
-depth : Var S s → ℕ
-depth (here px) = zero
-depth (there x) = suc (depth x)
-
-drop-last : ∀ {S s} → Var S s → Sorts → Sorts
-drop-last = drop ∘ suc ∘ depth
-
 lookup : Ctx S → Var S s → Types S s 
 lookup (Γ ▶ T) (here refl) = wk-T T
 lookup (Γ ▶ T) (there x) = wk-T (lookup Γ x)
@@ -168,9 +202,6 @@ variable
   Γ Γ' Γ'' Γ₁ Γ₂ : Ctx S
 
 -- Typing -------------------------------------------------------------------------------
-
-variable 
-  T T' T'' T₁ T₂ : Types S s
 
 -- Expression Typing
 
@@ -228,12 +259,12 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
 
 -- Substitution Typing
 
-sub' : Sub S₁ S₂ → Types S₁ s → Types S₂ s
-sub' {s = eₛ} ρ τ = sub ρ τ
-sub' {s = τₛ} ρ _ = tt   
+sub-T : Sub S₁ S₂ → Types S₁ s → Types S₂ s
+sub-T {s = eₛ} ρ τ = sub ρ τ
+sub-T {s = τₛ} ρ _ = tt   
 
 _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set
-_∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub' σ (lookup Γ₁ x))
+_∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub-T σ (lookup Γ₁ x))
 
 extₛidₛ≡idₛ : ∀ (x : Var (S ▷ s') s) → extₛ idₛ x ≡ idₛ x
 extₛidₛ≡idₛ (here refl) = refl
@@ -265,7 +296,7 @@ idₛτ≡τ (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁τ≡σ₂�
 ⊢idₛ ⊢t {τₛ} x = ⊢τ
 
 ⊢singleₛ : ∀ {T' : Types S s} (⊢t : Γ ⊢ t ∶ T) → singleₛ idₛ t ∶ (Γ ▶ T') ⇒ₛ Γ
-⊢singleₛ ⊢t {eₛ} x = {!   !}
+⊢singleₛ ⊢t {eₛ} x = {!   !} 
 ⊢singleₛ ⊢t {τₛ} x = ⊢τ
 
 -- Semantics ----------------------------------------------------------------------------
@@ -383,7 +414,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 
 ⊢σ↑ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T : Types S₁ s} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
-  extₛ σ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub' σ T)
+  extₛ σ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub-T σ T)
 ⊢σ↑ {σ = σ} {T = τ} ⊢σ {eₛ} (here refl) = ⊢`x (sym (σ↑·wkt≡wk·σt σ τ))
 ⊢σ↑ ⊢σ {τₛ} (here refl) = ⊢τ
 ⊢σ↑ ⊢σ (there x) = {!   !}
@@ -391,7 +422,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 ⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Types S₁ s} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   Γ₁ ⊢ t ∶ T →
-  Γ₂ ⊢ (sub σ t) ∶ (sub' σ T)
+  Γ₂ ⊢ (sub σ t) ∶ (sub-T σ T)
 ⊢σ-preserves ⊢σ (⊢`x {x = x} refl) = ⊢σ x
 ⊢σ-preserves ⊢σ ⊢⊤ = ⊢⊤
 ⊢σ-preserves {σ = σ} ⊢σ (⊢λ {τ' = τ'} ⊢e) = ⊢λ 
@@ -430,3 +461,4 @@ subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[τ]-preserves ⊢e ⊢τ
 subject-reduction (⊢• ⊢e) (ξ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (β-let v₂) = e[e]-preserves ⊢e₁ ⊢e₂
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁    
+-- [latex] end   

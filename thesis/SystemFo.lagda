@@ -1,5 +1,4 @@
--- [latex] prefix(Fo)
--- [latex] hide
+\begin{code}[hide]
 open import Data.Unit using (⊤; tt)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.List using (List; []; _∷_; _++_; drop)
@@ -350,4 +349,5 @@ data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
 
 ⊢single-typeₛ : single-typeₛ idₛ τ ∶ (Γ ▶ tt)  ⇒ₛ Γ
 ⊢single-typeₛ = ⊢typeₛ ⊢idₛ
--- [latex] end   
+
+\end{code}
