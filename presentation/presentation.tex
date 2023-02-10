@@ -1,0 +1,150 @@
+\documentclass{beamer}
+\usetheme{Boadilla}
+\useoutertheme{infolines}
+\setbeamertemplate{navigation symbols}{} 
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{alphabeta}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage[conor,links]{agda}
+\usepackage{bbm}
+\usepackage{newunicodechar}
+\usepackage{minted}
+\usepackage{xcolor}
+
+\input{../thesis/commands}
+
+\input{../thesis/unicode}
+
+\title[Formal Dictionary Passing Transform]{Formal Proof of Type Preservation of the\\Dictionary Passing Transform for System F}
+\institute[Uni Freiburg]{Chair of Programming Languages, University of Freiburg}
+\author{Marius Weidner}
+
+
+\begin{document}
+
+\input{SystemF}
+\input{SystemFo}
+\input{DictionaryPassingTransform}
+
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\section{Introduction}
+
+\begin{frame}[fragile]
+  \frametitle{Type Classes in Haskell}
+  \begin{block}{Overloading Equality in Haskell}
+    \begin{center}
+      ~
+      \begin{minted}[escapeinside=||]{haskell}
+ class Eq α where
+   eq :: α → α → Bool
+ 
+ instance Eq Nat where
+   eq x y = x ≐ y
+ instance Eq α ⇒ Eq [α] where
+   eq []       []       = True
+   eq (x : xs) (y : ys) = eq x y && eq xs ys 
+     
+ .. eq 42 0 .. eq [42, 0] [42, 0] ..
+      \end{minted}
+      ~
+    \end{center}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Desugaring Type Classes}
+  \begin{block}{Overloading Equality in System \Fo}
+    \begin{center}
+      ~
+      \begin{minted}[escapeinside=||]{haskell}
+ |\Decl| eq in
+
+ |\Inst| eq : Nat → Nat → Bool 
+   = λx. λy. .. in
+ |\Inst| eq : ∀α. [eq : α → α → Bool] ⇒ [α] → [α] → Bool 
+   = Λα. ƛ(eq : α → α → Bool). λxs. λys. .. in
+    
+ .. eq 42 0 .. eq Nat [42, 0] [42, 0] .. 
+      \end{minted}
+      ~
+    \end{center}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dictionary Passing Transform}
+  \begin{block}{Overloading Equality in System \Fo\ }
+    \begin{center}
+      \begin{minted}[escapeinside=||]{haskell}
+ |\Decl| eq in
+ |\Inst| eq : Nat → Nat → Bool 
+   = λx. λy. .. in
+ |\Inst| eq : ∀α. [eq : α → α → Bool] ⇒ [α] → [α] → Bool 
+   = Λα. ƛ(eq : α → α → Bool). λxs. λys. .. in
+ .. eq 42 0 .. eq Nat [42, 0] [42, 0] .. 
+      \end{minted}
+    \end{center}
+  \end{block}
+  \begin{block}{System \Fo\ Transformed to System F}
+    \begin{center}
+      \begin{minted}[escapeinside=||]{haskell}
+ let eq₁ : Nat → Nat → Bool 
+   = λx. λy. .. in
+ let eq₂ : ∀α. (α → α → Bool) → [α] → [α] → Bool 
+   = Λα. λeq₁. λxs. λys. .. in
+  
+ .. eq₁ 42 0 .. eq₂ Nat eq₁ [42, 0] [42, 0] .. 
+      \end{minted}
+    \end{center}
+  \end{block}
+\end{frame}
+
+\section{Agda Formalization}
+
+\begin{frame}[fragile]
+  \frametitle{Agda Formalization of System \Fo}
+  \begin{block}{Syntax Representation in Agda}
+    \begin{small}
+      
+        \FoTerm
+     
+    \end{small}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Agda Formalization of System \Fo}
+  \begin{block}{Context}
+    \FoCtx
+  \end{block}
+  \begin{block}{Constraint Solving}
+    \FoCstrSolve
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{The Dectionary Passing Transform}
+\end{frame}
+
+\section{Agda Formalization of the Dictionary Passing Transform}
+\begin{frame}[fragile]
+  \frametitle{Fun Lemmas on Our Way to Type Preservation}
+  
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Type Preservation of the Dictionary Passing Transform}
+  
+\end{frame}
+
+
+\end{document}

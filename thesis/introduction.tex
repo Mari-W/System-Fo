@@ -1,11 +1,15 @@
-\subsection{Motivation}
-A common use cases for function overloading is operator overloading. Without overloading, code becomes less readable, since we would need to define a unique name for each operator on each type.
-Haskell, for example, solves this problem using type classes.
-Essentially, type classes allow to declare function names with multiple meanings. We can give one or more meanings to a type class by instantiating the type class on concrete types. 
-When we invoke an overloaded function name, we determine the correct instance based on the types of the supplied arguments.
+\subsection{Overloading in Haskell}
+Without overloaded function names code becomes less readable, since we would need to define a unique name for every function, for example equality, on each type.
+Haskell, solves this problem using type classes.
+Essentially, type classes allow to declare overloaded function names with generic type signatures.
+We can give one of many specific meanings to a type class, by instantiating the type class for concrete types.
+When we invoke the overloaded function name, we determine the correct instance based on the concrete types of the applied arguments. 
+Furthermore, Haskell allows to constrain bound type variables \mono{α} via type constraints \inl{Tc α  ⇒ ..} to only be substituted by a concrete type \mono{τ}, if there exists an instance of \inl{Tc}  for \mono{τ}. 
+
 \subsubsection{Example: Overloading Equality in Haskell}\hfill\\\\
 Our goal is to overload the function \inl{|\Blk eq| : α → α → Bool} with different meanings for different types substituted for \mono{α}.
-We want to be able to call \mono{eq} on both \inl{Nat} and \inl{[Nat]} respectively. In Haskell we would solve the problem as follows:
+We want to call \mono{eq} on both \inl{Nat} and \inl{[Nat]} respectively. 
+In Haskell we would solve the problem as follows:
 \begin{minted}[escapeinside=||]{haskell}
     class Eq α where
       eq :: α → α → Bool 
@@ -18,17 +22,19 @@ We want to be able to call \mono{eq} on both \inl{Nat} and \inl{[Nat]} respectiv
 
     .. eq 42 0 .. eq [42, 0] [42, 0] ..
 \end{minted}
-First, type class \inl{Eq} is declared and instantiated for \inl{Nat}. 
+First, type class \inl{Eq} with a single generic function \mono{eq} is declared and instantiated for \inl{Nat}. 
 Next, \inl{Eq} is instantiated for \inl{[α]}, given that an instance \inl{Eq} exists for type \mono{α}. 
 Finally, we can call \mono{eq} on elements of type \inl{[Nat]}, since the constraint \inl{Eq α ⇒ ..} in the second instance resolves to the first instance.
+
 \subsection{Introducing System \Fo}
-In our minimal language extension to System F we give up high level language constructs like Haskell's type classes. 
-Instead, System \Fo\ desugars type class functionality to just overloaded variables. 
+In our language extension to System F we give up high level language constructs. 
+Instead, System \Fo\ desugars type class functionality to overloaded variables. 
 Using the \inl{|\Decl o| in e'} expression we can introduce an new overloaded variable \mono{o}. 
 If declared as overloaded, \mono{o} can be instantiated for type \mono{τ} of expression \mono{e} using the \inl{|\Inst o| = e in e'} expression.
 In contrast to Haskell, it is allowed to overload \mono{o} with arbitrary types. 
 Shadowing other instances of the same type is allowed.
-Constraints can be introduced using the constraint abstraction \inl{|\lbar| (o : τ). e'} resulting in a expression of constraint type \inl{[o : τ] ⇒ τ'}. Constraints are eliminated implicitly by the typing rules.
+Constraints can be introduced using the constraint abstraction \inl{|\lambdabar| (o : τ). e'}, resulting in expressions of constraint type \inl{[o : τ] ⇒ τ'}. 
+Constraints are eliminated implicitly by the typing rules.
 
 \subsubsection{Example: Overloading Equality in System \Fo}\hfill\\\\
 Recall the Haskell example from above. The same functionality can be expressed in System \Fo\ as follows: 
@@ -42,20 +48,23 @@ Recall the Haskell example from above. The same functionality can be expressed i
 
     .. eq 42 0 .. eq Nat [42, 0] [42, 0] .. 
 \end{minted}
+For convenience type annotations for instances are given. 
 First, we declare \mono{eq} to be an overloaded identifier and instantiate \mono{eq} for \inl{Nat}. 
 Next, we instantiate \mono{eq} for \inl{[α]}, given the constraint introduced by the constraint abstraction \mono{ƛ} is satisfied.  
-For convenience type annotations for instances are given. 
 The actual implementations of the instances are omitted.
 Because System \Fo\ is based on System F, we are required to bind type variables using type abstractions \inl{Λ} and eliminate type variables using type application. 
 
-\noindent A little caveat: the second instance needs to recursively call instance \mono{eq} for sublists but System \Fo's formalization does not actually support recursive instances or recursive let bindings. Extending System \Fo\ with recursive instances and let bindings should be straight forward but is subject to further work.
+\noindent A little caveat: the second instance needs to recursively call \mono{eq} for sublists but System \Fo's formalization does not actually support recursive recursive let bindings or recursive instances. Extending System \Fo\ recursive let bindings or instances should be straight forward but is subject to further work.
+
 \subsection{Translating between System \Fo\ and System F}
 The Dictionary Passing Transform translates well typed System \Fo\ expressions to well typed System F expressions. 
 The overall goal will be to formally show that the Dictionary Passing Transform is in fact correct.
 The translation drops \inl{|\Decl o| in} expressions and replaces \inl{|\Inst o| = e in e'} expressions with \inl{let o|$_τ$| = e in e'} expressions, where \mono{o$_τ$} is an unique name with respect to type \mono{τ} of \mono{e}. 
-Constraint abstractions \inl{|\lbar|(o : τ). e'} translate to normal lambda bindings \mono{λo$_τ$. e'}. Similarly constraint types \inl{[o : τ] ⇒ τ'} are translated to function types \mono{τ → τ'}. 
-Invocations of overloaded function names are translated to the let binding they would have resolved to.
-Implicitly resolved constraints in System \Fo\ must be explicitly applied in System F.
+Constraint abstractions \inl{|\lambdabar|(o : τ). e'} translate to normal lambda bindings \mono{λo$_τ$. e'}. 
+Similarly constraint types \inl{[o : τ] ⇒ τ'} are translated to function types \mono{τ → τ'}. 
+Invocations of overloaded function names are translated to the correct variable name bound by the former instance, now let binding.
+Implicitly resolved constraints in System \Fo\ must be explicitly passed as arguments in System F.
+
 \subsubsection{Example: Dicitionary Passing Transform}\hfill\\\\
 Recall the System \Fo\ example from above. We use indices to ensure unique names.
 Applying the Dictionary Passing Transform results in the following well typed System F expression:
@@ -67,8 +76,15 @@ Applying the Dictionary Passing Transform results in the following well typed Sy
     
     .. eq₁ 42 0 .. eq₂ Nat eq₁ [42, 0] [42, 0] .. 
 \end{minted}
-First we drop the \inl{|\Decl|}expression and replace \inl{|\Inst|}definitions with \inl{let} bindings. Inside the second instance the constraint abstraction is translated into a normal function. Invocations of \mono{eq} are translated to the correct unique names \mono{eq$_i$}. When invoking \mono{eq$_2$} the correct instance to resolve the former constraint must be eliminated explicitly by applying \mono{eq$_1$}.
+First we drop the \inl{|\Decl|}expression and replace \inl{|\Inst|}definitions with \inl{let} bindings. 
+Inside the second instance the constraint abstraction is translated into a normal function. 
+Invocations of \mono{eq} are translated to the correct unique names \mono{eq$_i$}.
+When invoking \mono{eq$_2$} the correct instance to resolve the former constraint must be eliminated explicitly by passing \mono{eq$_1$} as argument.
+
 \subsection{Related Work}
-- SystemO
-- SystemFc
-- ..?
+There exist other Systems to formalize overloading. 
+
+Bla, Bla \& Bla introduced System O [CITE], a language extension to the Hindley Milner System, preserving full type inference. 
+Aside from using Hindley Milner as base system, System O differs from System \Fo\ by embedding constraints into $\forall$-types. 
+Constraints can not be introduced on the expression level, instead constraints are introduced via explicit type annotations of instances. 
+... ?

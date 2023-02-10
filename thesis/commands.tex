@@ -1,0 +1,33 @@
+\renewcommand{\fcolorbox}[4][]{#4}
+\definecolor{mgreen}{HTML}{008000}
+\newcommand{\inl}[1]{\mintinline[escapeinside=||]{haskell}{#1}}
+\newcommand{\mono}[1]{\footnotesize{\ttfamily{#1}}}
+\newcommand{\Fo}[0]{F$_\text{O}$} 
+\newcommand{\Inst}[0]{\textcolor{mgreen}{inst}}
+\newcommand{\Decl}[0]{\textcolor{mgreen}{decl}}
+\newcommand{\Blk}[1]{\textcolor{black}{#1}}
+\makeatletter
+\newcommand{\lambdabar}{\ensuremath{\mathchoice
+  {\smash@bar\textfont\displaystyle{0.25}{1.2}\lambda}
+  {\smash@bar\textfont\textstyle{0.25}{1.2}\lambda}
+  {\smash@bar\scriptfont\scriptstyle{0.25}{1.2}\lambda}
+  {\smash@bar\scriptscriptfont\scriptscriptstyle{0.25}{1.2}\lambda}
+}}
+\newcommand{\smash@bar}[4]{%
+  \smash{\rlap{\raisebox{-#3\fontdimen5#10}{$\m@th#2\mkern#4mu\mathchar'26$}}}%
+}
+\newcommand{\Sym}[1]{\AgdaSymbol{#1}}
+\newcommand{\Data}[1]{\AgdaDatatype{#1}}
+\newcommand{\Constr}[1]{\AgdaInductiveConstructor{#1}}
+\newcommand{\Prim}[1]{\AgdaPrimitive{#1}}
+\makeatletter
+\newcommand{\Scalecenter}[2][1]{\mathpalette\Scalecenter@{{#1}{#2}}}
+\newcommand{\Scalecenter@}[2]{\Scalecenter@@#1#2}
+\newcommand{\Scalecenter@@}[3]{%
+  \vcenter{\hbox{\scalebox{#2}{$\m@th#1#3$}}}%
+}
+\makeatother
+
+\newcommand{\smallblacktriangleright}{%
+  \Scalecenter[0.75]{\blacktriangleright}%
+}

@@ -10,6 +10,8 @@
 *.toc
 *.sh
 *.pyg
-*/_minted-thesis
+*/_minted*
 */agda
 */*.py
+*.snm
+*.nav

@@ -3,7 +3,6 @@
 \usepackage[T1]{fontenc}
 \usepackage{alphabeta}
 \usepackage{graphicx}
-\usepackage{stix}
 \usepackage{mathtools}
 \usepackage{amssymb}
 \usepackage{amsmath}
@@ -15,16 +14,9 @@
 \usepackage{minted}
 \usepackage{xcolor}
 
-\renewcommand{\fcolorbox}[4][]{#4}
-\definecolor{mgreen}{HTML}{008000}
-\newcommand{\inl}[1]{\mintinline[escapeinside=||]{haskell}{#1}}
-\newcommand{\mono}[1]{\footnotesize{\ttfamily{#1}}}
-\newcommand{\Fo}[0]{F$_\text{O}$} 
-\newcommand{\lbar}[0]{\ensuremath{\mkern0.75mu\mathchar '26\mkern -9.75mu\mathnormal\lambda}}
-\newcommand{\Inst}[0]{\textcolor{mgreen}{inst}}
-\newcommand{\Decl}[0]{\textcolor{mgreen}{decl}}
-\newcommand{\Blk}[1]{\textcolor{black}{#1}}
-\newcommand{\Red}[1]{\textcolor{red}{#1}}
+\input{commands}
+
+\makeatother
 
 \input{unicode}
 

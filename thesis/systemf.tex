@@ -1,12 +1,32 @@
 \subsection{Specification}
+We will first look at System F, our target language of the Dictionary Passing Transform. The specification includes Syntax, Typing and Semantic. 
 \subsubsection{Sorts}\hfill\\\\
+System F only requires two sorts, \Constr{eₛ} for expressions and \Constr{τₛ} for types. 
 \FSort
+Going forward, we use \Sym{s} as variable name for sorts and \Sym{S} for a list of sorts.
 \subsubsection{Syntax}\hfill\\\\
-
+System F's syntax is represented in a single data type \Data{Term} indexed by a list of sorts \Sym{S} and a sort \Sym{s}. The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list provide the sort of the variable bound at that position. The second index \Sym{s} represents the sort of the term itself.
+\FTerm
+Variables \Constr{`}\ \Sym{x} are represented as references \Sym{s} \Prim{∈} \Sym{S} to an element in \Sym{S}. Memberships of type \Sym{s} \Prim{∈} \Sym{S} are defined analogous to natural numbers and can either be \Constr{here} or \Constr{there} \Sym{x} where \Sym{x} is another membership. In consequence we can only reference already bound variables, in a similar fashion to debruijn indices. The unit element \Constr{tt} and unit type \Constr{`⊤} represent base types. 
+We will use shorthands \FVar, \FExpr\ and \FType\ and variable names \Sym{x}, \Sym{e} and \Sym{τ} respectively.
 \subsubsection{Renaming}\hfill\\\\
+Renamings \Sym{ρ} of type \Data{Ren} \Sym{S$_1$} \Sym{S$_2$} are defined as total functions mapping variables \Data{Var} \Sym{S$_1$} \Sym{s} to variables \Data{Var} \Sym{S$_2$} \Sym{s} preserving the sort \Sym{s} of the variable.
+\FRen
+Applying a renaming \Data{Ren} \Sym{S$_1$} \Sym{S$_2$} to a term \Data{Term} \Sym{S$_1$} \Sym{s} yield a new term \Data{Term} \Sym{S$_2$} \Sym{s} where variables are references to elements in \Sym{S$_2$}.
+\Fren
+Under binders we need to extend the renaming using \Frenext. The weakening of a term can be defined as shifting all variables by one.
+\Fwk 
+Because variables are represented as references to a list, we shift them by wrapping a given reference in the \Constr{there} constructor.
 
 \subsubsection{Substitution}\hfill\\\\
+Substitutions \Sym{σ} of type \Data{Sub} \Sym{S$_1$} \Sym{S$_2$} are similar to renamings but rather than mapping variables to variables, substitutions map variables to terms.
+\FSub
 
 \subsubsection{Context}\hfill\\\\
 
+\subsubsection{Typing}
+\subsubsection{Semantics}
+
 \subsection{Soundness}
+\subsubsection{Progress}\hfill\\\\
+\subsubsection{Subject Reduction}

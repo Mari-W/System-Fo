@@ -34,7 +34,6 @@ xs ▷▷ ys = ys ++ xs
 
 variable
   s s' s'' s₁ s₂ : Sort 
-  sᶜ sᶜ' sᶜ'' sᶜ₁ sᶜ₂ : Sort
   S S' S'' S₁ S₂ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
   α α' α'' α₁ α₂ : τₛ ∈ S
@@ -96,7 +95,9 @@ idᵣ = id
 wkᵣ : Ren S (S ▷ s) 
 wkᵣ = there
 
+-- [latex] inline(renext)
 extᵣ : Ren S₁ S₂ → Ren (S₁ ▷ s) (S₂ ▷ s)
+-- [latex] hide
 extᵣ ρ (here refl) = here refl
 extᵣ ρ (there x) = there (ρ x)
 
@@ -384,7 +385,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   Γ ▶ T' ⊢ wk t ∶ wk-T T 
 ⊢wk-preserves ⊢e = ⊢ρ-preserves (⊢dropᵣ ⊢idᵣ) ⊢e
 
-σ↑idₛ≡σ : ∀ (t : Term S₁ s) (t' : Term S₂ sᶜ) (σ : Sub S₁ S₂) →
+σ↑idₛ≡σ : ∀ (t : Term S₁ s) (t' : Term S₂ s') (σ : Sub S₁ S₂) →
   sub (singleₛ σ t') (wk t) ≡ sub σ t
 σ↑idₛ≡σ t t' σ = {!   !}
 
