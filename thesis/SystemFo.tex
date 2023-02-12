@@ -110,8 +110,6 @@
 \AgdaGeneralizable{r₂}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Ctxable}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\FoSort}[0]{\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -157,8 +155,6 @@
 \AgdaDatatype{List}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaDatatype{Sort}\AgdaSpace{}%
 \AgdaInductiveConstructor{⊤ᶜ}\AgdaSymbol{)}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaKeyword{infix}\AgdaSpace{}%
@@ -298,8 +294,6 @@
 \>[7]\AgdaNumber{6}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{`\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{decl`o`in\AgdaUnderscore{}}}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\FoTerm}[0]{\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -515,8 +509,6 @@
 \AgdaDatatype{Term}\AgdaSpace{}%
 \AgdaGeneralizable{S}\AgdaSpace{}%
 \AgdaInductiveConstructor{τₛ}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaFunction{Expr}\AgdaSpace{}%
@@ -537,8 +529,6 @@
 \AgdaFunction{Sorts}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaPrimitive{Set}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\FoCstr}[0]{\begin{code}[inline]%
 \>[0]\AgdaFunction{Cstr}\AgdaSpace{}%
@@ -547,8 +537,6 @@
 \AgdaDatatype{Term}\AgdaSpace{}%
 \AgdaBound{S}\AgdaSpace{}%
 \AgdaInductiveConstructor{cₛ}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaFunction{Type}\AgdaSpace{}%
@@ -1300,8 +1288,6 @@
 \AgdaSymbol{(}\AgdaFunction{sub}\AgdaSpace{}%
 \AgdaBound{σ}\AgdaSpace{}%
 \AgdaBound{τ}\AgdaSymbol{)}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\Fosubs}[0]{\begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}[\AgdaUnderscore{}]}}\AgdaSpace{}%
@@ -1327,8 +1313,6 @@
 \AgdaFunction{idₛ}\AgdaSpace{}%
 \AgdaBound{τ'}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{τ}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaKeyword{variable}\<%
@@ -1347,8 +1331,6 @@
 \>[0]\<%
 \\
 \>[0]\AgdaComment{--\ Context\ ------------------------------------------------------------------------------}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\FoStores}[0]{\begin{code}%
 \>[0]\AgdaFunction{Stores}\AgdaSpace{}%
@@ -1378,8 +1360,6 @@
 \AgdaInductiveConstructor{τₛ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaRecord{⊤}\<%
-\\
-\>[0]\<%
 \end{code}}
 \newcommand{\Fohide}[0]{\begin{code}%
 \>[0]\AgdaFunction{ren-S}\AgdaSpace{}%
@@ -1445,8 +1425,6 @@
 \AgdaFunction{ren-S}\AgdaSpace{}%
 \AgdaInductiveConstructor{there}\AgdaSpace{}%
 \AgdaBound{S}\<%
-\\
-\>[0]\<%
 \end{code}}
 \newcommand{\FoCtx}[0]{\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -1489,8 +1467,6 @@
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{S}\<%
-\\
-\>[0]\<%
 \end{code}}
 \newcommand{\Folookup}[0]{\begin{code}%
 \>[0]\AgdaFunction{lookup}\AgdaSpace{}%
@@ -1555,8 +1531,6 @@
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaComment{--\ Constraint\ Solving\ -------------------------------------------------------------------}\<%
-\\
-\>[0]\<%
 \end{code}}
 \newcommand{\FoCstrSolve}[0]{\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
@@ -1590,13 +1564,15 @@
 %
 \>[2]\AgdaInductiveConstructor{under-bind}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{s}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{ST}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Stores}\AgdaSpace{}%
 \AgdaGeneralizable{S}\AgdaSpace{}%
 \AgdaGeneralizable{s'}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{[}}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaOperator{\AgdaDatatype{[}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{`}}\AgdaSpace{}%
 \AgdaGeneralizable{o}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∶}}\AgdaSpace{}%
@@ -1614,7 +1590,7 @@
 \AgdaOperator{\AgdaDatatype{]∈}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaGeneralizable{Γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{▶}}\AgdaSpace{}%
-\AgdaBound{s}\AgdaSymbol{)}\<%
+\AgdaBound{ST}\AgdaSymbol{)}\<%
 \\
 %
 \>[2]\AgdaInductiveConstructor{under-inst}\AgdaSpace{}%
@@ -1630,13 +1606,9 @@
 \AgdaSymbol{(}\AgdaGeneralizable{Γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{▸}}\AgdaSpace{}%
 \AgdaGeneralizable{c'}\AgdaSymbol{)}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaComment{--\ Typing\ -------------------------------------------------------------------------------}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\FoTypes}[0]{\begin{code}%
 \>[0]\AgdaFunction{Types}\AgdaSpace{}%
@@ -1667,8 +1639,6 @@
 \AgdaInductiveConstructor{τₛ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaRecord{⊤}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaKeyword{variable}\<%
@@ -1683,8 +1653,6 @@
 \AgdaFunction{Types}\AgdaSpace{}%
 \AgdaGeneralizable{S}\AgdaSpace{}%
 \AgdaGeneralizable{s}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\FoTyping}[0]{\begin{code}%
 \>[0]\AgdaKeyword{infix}\AgdaSpace{}%
@@ -2056,13 +2024,9 @@
 \AgdaGeneralizable{e₁}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{∶}}\AgdaSpace{}%
 \AgdaGeneralizable{τ'}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaComment{--\ Renaming\ Typing}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\FoRenTyping}[0]{\begin{code}%
 \>[0]\AgdaKeyword{infix}\AgdaSpace{}%
@@ -2269,8 +2233,6 @@
 \AgdaSymbol{(}\AgdaBound{o}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∶}}\AgdaSpace{}%
 \AgdaBound{τ}\AgdaSymbol{))}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaFunction{⊢wkᵣ}\AgdaSpace{}%
@@ -2529,8 +2491,6 @@
 \AgdaBound{ρ₁≡ρ₂}\AgdaSymbol{))}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{ρ₁≡ρ₂→ρ₁τ≡ρ₂τ}\AgdaSpace{}%
 \AgdaBound{ρ₁≡ρ₂}\AgdaSymbol{)}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\FoRenIdEq}[0]{\begin{code}%
 \>[0]\AgdaFunction{idᵣτ≡τ}\AgdaSpace{}%
@@ -2601,8 +2561,6 @@
 \AgdaBound{τ}\AgdaSymbol{))}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{idᵣτ≡τ}\AgdaSpace{}%
 \AgdaBound{τ'}\AgdaSymbol{)}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaComment{--\ Substitution\ Typing\ ------------------------------------------------------------------}\<%
@@ -2651,8 +2609,6 @@
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{tt}\<%
-\\
-\>[0]\<%
 \end{code}
 \newcommand{\FoSubTyping}[0]{\begin{code}%
 \>[0]\AgdaKeyword{infix}\AgdaSpace{}%
@@ -2899,8 +2855,6 @@
 \AgdaSymbol{(}\AgdaBound{o}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∶}}\AgdaSpace{}%
 \AgdaBound{τ}\AgdaSymbol{))}\<%
-\\
-\>[0]\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaFunction{⊢single-typeₛ}\AgdaSpace{}%
@@ -2919,6 +2873,4 @@
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{⊢typeₛ}\AgdaSpace{}%
 \AgdaInductiveConstructor{⊢idₛ}\<%
-\\
-\>[0]\<%
 \end{code}

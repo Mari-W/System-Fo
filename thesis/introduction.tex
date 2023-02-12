@@ -54,7 +54,7 @@ Next, we instantiate \mono{eq} for \inl{[α]}, given the constraint introduced b
 The actual implementations of the instances are omitted.
 Because System \Fo\ is based on System F, we are required to bind type variables using type abstractions \inl{Λ} and eliminate type variables using type application. 
 
-\noindent A little caveat: the second instance needs to recursively call \mono{eq} for sublists but System \Fo's formalization does not actually support recursive recursive let bindings or recursive instances. Extending System \Fo\ recursive let bindings or instances should be straight forward but is subject to further work.
+\noindent A little caveat: the second instance needs to recursively call \mono{eq} for sublists but System \Fo's formalization does not actually support recursive let bindings. Extending System F and System \Fo\ with recursive let bindings and thus recursive instances is known to be sound. 
 
 \subsection{Translating between System \Fo\ and System F}
 The Dictionary Passing Transform translates well typed System \Fo\ expressions to well typed System F expressions. 

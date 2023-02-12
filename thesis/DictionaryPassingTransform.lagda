@@ -67,11 +67,11 @@ T⇝T {s = τₛ} Γ _ = tt
 
 Γ⇝Γ : (Γ : Fᴼ.Ctx Fᴼ.S) → F.Ctx (Γ⇝S Γ)
 Γ⇝Γ ∅ = ∅
-Γ⇝Γ (Γ ▶ st) = (Γ⇝Γ Γ) ▶ st⇝T st
-  where st⇝T : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} → Fᴼ.Stores Fᴼ.S Fᴼ.s → F.Types (Γ⇝S Γ) (s⇝s Fᴼ.s)
-        st⇝T {s = eₛ} τ = τ⇝τ τ
-        st⇝T {s = oₛ} tt = `⊤
-        st⇝T {s = τₛ} tt = tt
+Γ⇝Γ (Γ ▶ st) = (Γ⇝Γ Γ) ▶ St⇝T st
+  where St⇝T : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} → Fᴼ.Stores Fᴼ.S Fᴼ.s → F.Types (Γ⇝S Γ) (s⇝s Fᴼ.s)
+        St⇝T {s = eₛ} τ = τ⇝τ τ
+        St⇝T {s = oₛ} tt = `⊤
+        St⇝T {s = τₛ} tt = tt
 Γ⇝Γ (Γ ▸ (` o ∶ τ)) = (Γ⇝Γ Γ) ▶ τ⇝τ τ
 
 -- Terms
@@ -261,5 +261,4 @@ o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-inst {c' =
 ⊢t⇝⊢t (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢t⇝⊢t ⊢e₂) (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e₁))
 ⊢t⇝⊢t (⊢decl ⊢e) = ⊢let ⊢⊤ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e))
 ⊢t⇝⊢t (⊢inst {o = o} ⊢e₂ ⊢e₁) = ⊢let (⊢t⇝⊢t ⊢e₂) (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk-inst·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e₁))
-
 \end{code}

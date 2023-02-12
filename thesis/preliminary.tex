@@ -6,5 +6,4 @@ Hence, if a type checked Agda program implies that our proofs are sound, given w
 Agda is appealing to programmers, because proving in Agda is similar to functional programming using common concepts, for example pattern matching, currying and inductive data types.
 Further, Agda has a couple useful support features, for example proving with interactive holes and automatic proof search.
 \subsection{Design Decisions for the Agda Formalization}
--- Sorts
--- Extrinsic typing
+To formalize System F and System \Fo\ in Agda we will use a single data type \Data{Term} indexed by sorts \Sym{s} to represent the syntax. Sorts distinguish between different kind of terms, for example sort \Constr{eₛ} for expressions and \Constr{τₛ} for types. Using only a single data type to formalize the syntax yields more elegant proofs involving contexts, substitutions and renamings. In consequence we must use extrinsic typing, because intrinsically typed terms \Data{Term} eₛ ⊢ \Data{Term} τₛ would need to be indexed by themselves. 

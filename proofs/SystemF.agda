@@ -138,7 +138,9 @@ Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
 -- [latex] hide
 
 idₛ : Sub S S
+-- [latex] inline(idsub)
 idₛ = `_
+-- [latex] hide
 
 extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
 extₛ σ (here refl) = ` here refl
@@ -147,13 +149,15 @@ extₛ σ (there x) = ren wkᵣ (σ x)
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
 dropₛ σ x = wk (σ x)
 
+-- [latex] inline(singlesub)
 singleₛ : Sub S₁ S₂ → Term S₂ s → Sub (S₁ ▷ s) S₂
+-- [latex] hide
 singleₛ σ t (here refl) = t
 singleₛ σ t (there x) = σ x
 
--- [latex] block(sub)
-
+-- [latex] inline(sub)
 sub : Sub S₁ S₂ → (Term S₁ s → Term S₂ s)
+-- [latex] hide
 sub σ (` x) = (σ x)
 sub σ tt = tt
 sub σ (λ`x→ e) = λ`x→ (sub (extₛ σ) e)
@@ -177,9 +181,13 @@ variable
 
 -- Context ------------------------------------------------------------------------------
 
+-- [latex] block(Types)
+
 Types : Sorts → Sort → Set
 Types S eₛ = Type S
 Types S τₛ = ⊤
+
+-- [latex] hide
 
 variable 
   T T' T'' T₁ T₂ : Types S s
@@ -191,13 +199,19 @@ ren-T {s = τₛ} ρ _ = tt
 wk-T : Types S s → Types (S ▷ s') s
 wk-T T = ren-T there T
 
+-- [latex] block(Ctx)
+
 data Ctx : Sorts → Set where
   ∅   : Ctx []
   _▶_ : Ctx S → Types S s → Ctx (S ▷ s)
 
+-- [latex] block(lookup)
+
 lookup : Ctx S → Var S s → Types S s 
 lookup (Γ ▶ T) (here refl) = wk-T T
 lookup (Γ ▶ T) (there x) = wk-T (lookup Γ x)
+
+-- [latex] hide
 
 variable 
   Γ Γ' Γ'' Γ₁ Γ₂ : Ctx S
@@ -207,6 +221,7 @@ variable
 -- Expression Typing
 
 infix 3 _⊢_∶_
+-- [latex] block(Typing)
 data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
   ⊢`x :  
     lookup Γ x ≡ τ →
@@ -241,7 +256,11 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
     ----------
     Γ ⊢ τ ∶ tt
 
+-- [latex] hide
+
 -- Renaming Typing
+
+-- [latex] block(RenTyping)
 
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
@@ -255,6 +274,8 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
     -------------------------
     (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ t')
 
+-- [latex] hide
+
 ⊢wkᵣ : ∀ {T : Types S s} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ T)
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
 
@@ -264,8 +285,12 @@ sub-T : Sub S₁ S₂ → Types S₁ s → Types S₂ s
 sub-T {s = eₛ} ρ τ = sub ρ τ
 sub-T {s = τₛ} ρ _ = tt   
 
+-- [latex] block(SubTyping)
+
 _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set
 _∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub-T σ (lookup Γ₁ x))
+
+-- [latex] hide
 
 extₛidₛ≡idₛ : ∀ (x : Var (S ▷ s') s) → extₛ idₛ x ≡ idₛ x
 extₛidₛ≡idₛ (here refl) = refl
