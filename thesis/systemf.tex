@@ -41,13 +41,6 @@ Single substitution is constructed by composing \Fsinglesub\ with identity subst
 The typing context \Data{Ctx} \Sym{S} is indexed by sorts \Sym{S} similar to terms. 
 \FCtx
 A context can either be empty \Constr{∅} or cons \Sym{Γ} \Constr{▶} \Sym{T} where \Sym{T} is of type \Data{Types} \Sym{S} \Sym{s}. 
-Type \Data{Types} \Sym{S} \Sym{s} is defined as 
-\FTypes
-and has two overlapping meanings. 
-First, \Data{Types} \Sym{S} \Sym{s} represents the type of what is stored in the context for a variable of sort \Sym{s}. 
-For expressions \Sym{e} we expect the context to store the corresponding type \Sym{τ}.
-For types \Sym{τ} we store the corresponding kind of unit type \Data{⊤}, since System F only has one kind for types.
-Additionally \Data{Types} \Sym{S} \Sym{s} represents the outcome of the typing relation \Sym{Γ} \Data{⊢} \Sym{t} \Data{:} \Sym{T} for terms.
 
 \subsubsection{Typing}\hfill\\\\
 The typing relation \Sym{Γ} \Data{⊢} \Sym{t} \Data{:} \Sym{T} relates terms \Sym{t} to their typing of type \Data{Types} \Sym{S} \Sym{s} in context \Sym{Γ}.
