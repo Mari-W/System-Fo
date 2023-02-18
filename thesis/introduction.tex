@@ -3,8 +3,8 @@ Without overloaded function names code becomes less readable, since we would nee
 Haskell, solves this problem using type classes.
 Essentially, type classes allow to declare overloaded function names with generic type signatures.
 We can give one of many specific meanings to a type class, by instantiating the type class for concrete types.
-When we invoke the overloaded function name, we determine the correct instance based on the concrete types of the applied arguments. 
-Furthermore, Haskell allows to constrain bound type variables \mono{α} via type constraints \inl{Tc α  ⇒ ..} to only be substituted by a concrete type \mono{τ}, if there exists an instance of \inl{Tc}  for \mono{τ}. 
+When we invoke the overloaded function name, the type checker determines the correct instance based on the types of the applied arguments. 
+Furthermore, Haskell allows to constrain bound type variables \mono{α} via type constraints \inl{Tc α  ⇒ ..} to only be substituted by a concrete type \mono{τ}, if there exists an instance of \inl{Tc} for \mono{τ}. 
 
 \subsubsection{Example: Overloading Equality in Haskell}\hfill\\\\
 Our goal is to overload the function \inl{|\Blk eq| : α → α → Bool} with different meanings for different types substituted for \mono{α}.

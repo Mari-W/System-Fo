@@ -19,7 +19,7 @@ module F = SystemF
 
 -- Sorts 
 
-s⇝s : Fᴼ.Sort ⊤ᶜ → F.Sort
+s⇝s : Fᴼ.Sort ⊤ᶜ → F.Sort ⊤ᶜ
 s⇝s eₛ = eₛ
 s⇝s oₛ = eₛ
 s⇝s τₛ = τₛ
@@ -53,31 +53,31 @@ o∶τ∈Γ⇝x (under-inst o∶τ∈Γ) = there (o∶τ∈Γ⇝x o∶τ∈Γ)
 τ⇝τ (` x) = ` x⇝x x
 τ⇝τ `⊤ = `⊤
 τ⇝τ (τ₁ ⇒ τ₂) = τ⇝τ τ₁ ⇒ τ⇝τ τ₂
-τ⇝τ {Γ = Γ} (Fᴼ.∀`α τ) = F.∀`α τ⇝τ {Γ = Γ ▶ tt} τ
+τ⇝τ {Γ = Γ} (Fᴼ.∀`α τ) = F.∀`α τ⇝τ {Γ = Γ ▶ ⋆} τ
 τ⇝τ ([ o ∶ τ ]⇒ τ') = τ⇝τ τ ⇒ τ⇝τ τ'
 
 
 T⇝T : ∀ (Γ : Fᴼ.Ctx Fᴼ.S) →
-  Fᴼ.Types Fᴼ.S Fᴼ.s →
-  F.Types (Γ⇝S Γ) (s⇝s Fᴼ.s)
+  Fᴼ.Term Fᴼ.S (Fᴼ.kind-of Fᴼ.s) →
+  F.Term (Γ⇝S Γ) (F.kind-of (s⇝s Fᴼ.s))
 T⇝T {s = eₛ} Γ τ = τ⇝τ τ
 T⇝T {s = oₛ} Γ τ = τ⇝τ τ
-T⇝T {s = τₛ} Γ _ = tt 
+T⇝T {s = τₛ} Γ _ = ⋆ 
 
 -- Context 
 
 Γ⇝Γ : (Γ : Fᴼ.Ctx Fᴼ.S) → F.Ctx (Γ⇝S Γ)
 Γ⇝Γ ∅ = ∅
-Γ⇝Γ (Γ ▶ st) = (Γ⇝Γ Γ) ▶ St⇝T st
-  where St⇝T : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} → Fᴼ.Stores Fᴼ.S Fᴼ.s → F.Types (Γ⇝S Γ) (s⇝s Fᴼ.s)
-        St⇝T {s = eₛ} τ = τ⇝τ τ
-        St⇝T {s = oₛ} tt = `⊤
-        St⇝T {s = τₛ} tt = tt
+Γ⇝Γ (Γ ▶ I) = (Γ⇝Γ Γ) ▶ I⇝T I
+  where I⇝T : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} → Fᴼ.Term Fᴼ.S (item-of Fᴼ.s) → F.Term (Γ⇝S Γ) (F.kind-of (s⇝s Fᴼ.s))
+        I⇝T {s = eₛ} τ = τ⇝τ τ
+        I⇝T {s = oₛ} ⋆ = `⊤
+        I⇝T {s = τₛ} ⋆ = ⋆
 Γ⇝Γ (Γ ▸ (` o ∶ τ)) = (Γ⇝Γ Γ) ▶ τ⇝τ τ
 
 -- Terms
 
-⊢t⇝t : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {t : Fᴼ.Term Fᴼ.S Fᴼ.s} {T : Fᴼ.Types Fᴼ.S Fᴼ.s} →
+⊢t⇝t : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {t : Fᴼ.Term Fᴼ.S Fᴼ.s} {T : Fᴼ.Term Fᴼ.S (Fᴼ.kind-of Fᴼ.s)} →
   Γ Fᴼ.⊢ t ∶ T →
   F.Term (Γ⇝S Γ) (s⇝s Fᴼ.s)
 ⊢t⇝t (⊢`x {x = x} Γx≡τ) = ` x⇝x x
@@ -183,7 +183,7 @@ T⇝T {s = τₛ} Γ _ = tt
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ ([ ` o ∶ τ ]⇒ τ') = cong₂ _⇒_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ) (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ')
 
 τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] : {Γ : Fᴼ.Ctx Fᴼ.S₁} (τ : Fᴼ.Type Fᴼ.S₁) (τ' : Fᴼ.Type (Fᴼ.S₁ ▷ τₛ)) →  
-  (τ⇝τ {Γ = Γ ▶ tt} τ' F.[ τ⇝τ τ ]) ≡ τ⇝τ (τ' Fᴼ.[ τ ])
+  (τ⇝τ {Γ = Γ ▶ ⋆} τ' F.[ τ⇝τ τ ]) ≡ τ⇝τ (τ' Fᴼ.[ τ ])
 τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] τ τ' = ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢single-typeₛ τ'
 
 -- Type Preserving Translation ----------------------------------------------------------
@@ -233,7 +233,7 @@ o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-inst {c' =
 
 -- Terms
 
-τ⇝wk·τ≡wk·τ⇝τ : {Γ : Fᴼ.Ctx Fᴼ.S} {τ' : Fᴼ.Type Fᴼ.S} {T : Fᴼ.Stores Fᴼ.S Fᴼ.s} → τ⇝τ {Γ = Γ ▶ T} (Fᴼ.wk τ') ≡ F.wk (τ⇝τ τ')
+τ⇝wk·τ≡wk·τ⇝τ : {Γ : Fᴼ.Ctx Fᴼ.S} {τ' : Fᴼ.Type Fᴼ.S} {I : Fᴼ.Term Fᴼ.S (item-of Fᴼ.s)} → τ⇝τ {Γ = Γ ▶ I} (Fᴼ.wk τ') ≡ F.wk (τ⇝τ τ')
 τ⇝wk·τ≡wk·τ⇝τ {τ' = τ'} = sym (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ τ')
 
 τ⇝wk-inst·τ≡wk-inst·τ⇝τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {τ : Fᴼ.Type Fᴼ.S} {τ' : Fᴼ.Type Fᴼ.S} {o} →
@@ -247,7 +247,7 @@ o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-inst {c' =
     F.wk (τ⇝τ τ)
   ∎
   
-⊢t⇝⊢t : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {t : Fᴼ.Term Fᴼ.S Fᴼ.s} {T : Fᴼ.Types Fᴼ.S Fᴼ.s} →
+⊢t⇝⊢t : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {t : Fᴼ.Term Fᴼ.S Fᴼ.s} {T : Fᴼ.Term Fᴼ.S (Fᴼ.kind-of Fᴼ.s)} →
   (⊢t : Γ Fᴼ.⊢ t ∶ T) →
   (Γ⇝Γ Γ) F.⊢ (⊢t⇝t ⊢t) ∶ (T⇝T Γ T)
 ⊢t⇝⊢t {Γ = Γ} (⊢`x {x = x} Γxᴼ≡τ) = ⊢`x  (Γx≡τ⇝Γx≡τ x Γxᴼ≡τ)
@@ -262,4 +262,4 @@ o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-inst {c' =
 ⊢t⇝⊢t (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢t⇝⊢t ⊢e₂) (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e₁))
 ⊢t⇝⊢t (⊢decl ⊢e) = ⊢let ⊢⊤ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e))
 ⊢t⇝⊢t (⊢inst {o = o} ⊢e₂ ⊢e₁) = ⊢let (⊢t⇝⊢t ⊢e₂) (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk-inst·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e₁))
--- [latex] end    
+-- [latex] end     

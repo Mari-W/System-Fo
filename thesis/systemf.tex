@@ -17,7 +17,7 @@ Memberships of type \Sym{s} \Prim{∈} \Sym{S} are defined similar to natural nu
 In consequence we can only reference already bound variables, in a similar fashion to debruijn indices. 
 The unit element \Constr{tt} and unit type \Constr{`⊤} represent base types. Lambda abstractions \Constr{λ`x→} \Sym{e'} result in function types \Sym{τ₁} \Constr{⇒} \Sym{τ₂} and type abstractions \Constr{Λ`α→} \Sym{e'} result in forall types \Constr{∀`α} \Sym{τ'}. 
 To eliminate abstractions we use application \Sym{e₁} \Constr{·} \Sym{e₂} for lambda abstractions and type application \Sym{e} \Constr{•} \Sym{τ} for type abstractions. 
-Let bindings \Constr{let`x= \Sym{e₂} `in \Sym{e₁}} combine abstraction and application. 
+Let bindings \Constr{let`x=} \Sym{e₂} \Constr{`in} \Sym{e₁} combine abstraction and application. 
 We will use shorthands \FVar, \FExpr\ and \FType\ and variable names \Sym{x}, \Sym{e} and \Sym{τ} respectively as well as \Sym{t} for arbitrary \Data{Term} \Sym{S} \Sym{s}.
 
 \subsubsection{Renaming}\hfill\\\\
@@ -52,6 +52,7 @@ Additionally \Data{Types} \Sym{S} \Sym{s} represents the outcome of the typing r
 \subsubsection{Typing}\hfill\\\\
 The typing relation \Sym{Γ} \Data{⊢} \Sym{t} \Data{:} \Sym{T} relates terms \Sym{t} to their typing of type \Data{Types} \Sym{S} \Sym{s} in context \Sym{Γ}.
 \FTyping
+Rule \Constr{⊢`x} says that variables \Constr{`} \Sym{x} have type \Sym{τ} if \Sym{x} has type \Sym{τ} in \Sym{Γ}.
 
 \subsubsection{Semantics}
 

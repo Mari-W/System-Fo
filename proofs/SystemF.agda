@@ -16,14 +16,19 @@ module SystemF where
 
 -- Sorts --------------------------------------------------------------------------------
 
+data Ctxable : Set where
+  ⊤ᶜ : Ctxable
+  ⊥ᶜ : Ctxable
+
 -- [latex] block(Sort)
 
-data Sort : Set where
-  eₛ  : Sort
-  τₛ  : Sort
+data Sort : Ctxable → Set where
+  eₛ  : Sort ⊤ᶜ
+  τₛ  : Sort ⊤ᶜ
+  κₛ  : Sort ⊥ᶜ
 
 Sorts : Set
-Sorts = List Sort
+Sorts = List (Sort ⊤ᶜ)
 
 -- [latex] hide
 
@@ -33,7 +38,8 @@ _▷▷_ : {A : Set} → List A → List A → List A
 xs ▷▷ ys = ys ++ xs
 
 variable
-  s s' s'' s₁ s₂ : Sort 
+  r r' r'' r₁ r₂ : Ctxable
+  s s' s'' s₁ s₂ : Sort r
   S S' S'' S₁ S₂ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
   α α' α'' α₁ α₂ : τₛ ∈ S
@@ -46,7 +52,7 @@ infix  6 `_
 
 -- [latex] block(Term)
 
-data Term : Sorts → Sort → Set where
+data Term : Sorts → Sort r → Set where
   `_           : s ∈ S → Term S s
   tt           : Term S eₛ
   λ`x→_        : Term (S ▷ eₛ) eₛ → Term S eₛ
@@ -57,9 +63,10 @@ data Term : Sorts → Sort → Set where
   `⊤           : Term S τₛ
   _⇒_          : Term S τₛ → Term S τₛ → Term S τₛ
   ∀`α_         : Term (S ▷ τₛ) τₛ → Term S τₛ
+  ⋆            : Term S κₛ
 
 -- [latex] hide
-Var : Sorts → Sort → Set
+Var : Sorts → Sort ⊤ᶜ → Set
 -- [latex] inline(Var)
 Var S s = s ∈ S 
 
@@ -74,11 +81,17 @@ Type : Sorts → Set
 Type S = Term S τₛ
 
 -- [latex] hide
+Kind : Sorts → Set
+-- [latex] inline(Kind)
+Kind S = Term S κₛ
+
+-- [latex] hide
 
 variable
   t t' t'' t₁ t₂ : Term S s
   e e' e'' e₁ e₂ : Expr S
   τ τ' τ'' τ₁ τ₂ : Type S
+  κ κ' κ'' κ₁ κ₂ : Type S
 
 -- Renaming -----------------------------------------------------------------------------
 
@@ -117,6 +130,7 @@ ren ρ (let`x= e₂ `in e₁) = let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
 ren ρ `⊤ = `⊤
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
 ren ρ (∀`α τ) = ∀`α (ren (extᵣ ρ) τ)
+ren ρ ⋆ = ⋆
 
 -- [latex] block(wk)
 
@@ -168,6 +182,7 @@ sub σ (let`x= e₂ `in e₁) = let`x= sub σ e₂ `in (sub (extₛ σ) e₁)
 sub σ `⊤ = `⊤
 sub σ (τ₁ ⇒ τ₂) = sub σ τ₁ ⇒ sub σ τ₂
 sub σ (∀`α τ) = ∀`α (sub (extₛ σ) τ)
+sub σ ⋆ = ⋆
 
 -- [latex] block(subs)
 
@@ -181,35 +196,29 @@ variable
 
 -- Context ------------------------------------------------------------------------------
 
--- [latex] block(Types)
-
-Types : Sorts → Sort → Set
-Types S eₛ = Type S
-Types S τₛ = ⊤
-
--- [latex] hide
-
-variable 
-  T T' T'' T₁ T₂ : Types S s
-
-ren-T : Ren S₁ S₂ → Types S₁ s → Types S₂ s
-ren-T {s = eₛ} ρ τ = ren ρ τ
-ren-T {s = τₛ} ρ _ = tt 
-
-wk-T : Types S s → Types (S ▷ s') s
-wk-T T = ren-T there T
+kind-ctxable : Sort ⊤ᶜ → Ctxable
+kind-ctxable eₛ = ⊤ᶜ
+kind-ctxable τₛ = ⊥ᶜ
 
 -- [latex] block(Ctx)
 
+kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
+kind-of eₛ = τₛ
+kind-of τₛ = κₛ
+
+
+variable 
+  T T' T'' T₁ T₂ : Term S (kind-of s)
+
 data Ctx : Sorts → Set where
   ∅   : Ctx []
-  _▶_ : Ctx S → Types S s → Ctx (S ▷ s)
+  _▶_ : Ctx S → Term S (kind-of s) → Ctx (S ▷ s)
 
--- [latex] block(lookup)
-
-lookup : Ctx S → Var S s → Types S s 
-lookup (Γ ▶ T) (here refl) = wk-T T
-lookup (Γ ▶ T) (there x) = wk-T (lookup Γ x)
+-- [latex] inline(lookup)
+lookup : Ctx S → Var S s → Term S (kind-of s) 
+-- [latex] hide
+lookup (Γ ▶ T) (here refl) = wk T
+lookup (Γ ▶ T) (there x) = wk (lookup Γ x)
 
 -- [latex] hide
 
@@ -222,39 +231,31 @@ variable
 
 infix 3 _⊢_∶_
 -- [latex] block(Typing)
-data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
+data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
   ⊢`x :  
     lookup Γ x ≡ τ →
-    ----------------
     Γ ⊢ ` x ∶ τ
   ⊢⊤ : 
-    --------------
     Γ ⊢ tt ∶ `⊤
   ⊢λ : 
     Γ ▶ τ ⊢ e ∶ wk τ' →  
-    ---------------------------
     Γ ⊢ λ`x→ e ∶ τ ⇒ τ' 
   ⊢Λ : 
-    Γ ▶ tt ⊢ e ∶ τ →  
-    ---------------------------
+    Γ ▶ ⋆ ⊢ e ∶ τ →  
     Γ ⊢ Λ`α→ e ∶ ∀`α τ
   ⊢· : 
     Γ ⊢ e₁ ∶ τ₁ ⇒ τ₂ →
     Γ ⊢ e₂ ∶ τ₁ →
-    -----------------------
     Γ ⊢ e₁ · e₂ ∶ τ₂
   ⊢• : 
     Γ ⊢ e ∶ ∀`α τ' →
-    -----------------------
     Γ ⊢ e • τ ∶ τ' [ τ ]
   ⊢let : 
     Γ ⊢ e₂ ∶ τ →
     Γ ▶ τ ⊢ e₁ ∶ wk τ' →
-    ----------------------------
     Γ ⊢ let`x= e₂ `in e₁ ∶ τ'
   ⊢τ :
-    ----------
-    Γ ⊢ τ ∶ tt
+    Γ ⊢ τ ∶ ⋆
 
 -- [latex] hide
 
@@ -265,30 +266,23 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢keepᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Types S₁ s} → 
+  ⊢keepᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Term S₁ (kind-of s)} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
-    --------------------------------------
-    (extᵣ ρ) ∶ (Γ₁ ▶ t') ⇒ᵣ (Γ₂ ▶ ren-T ρ t')
-  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Types S₂ s} →
+    (extᵣ ρ) ∶ (Γ₁ ▶ t') ⇒ᵣ (Γ₂ ▶ ren ρ t')
+  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Term S₂ (kind-of s)} →
     ρ ∶ Γ₁  ⇒ᵣ Γ₂ →
-    -------------------------
     (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ t')
 
 -- [latex] hide
 
-⊢wkᵣ : ∀ {T : Types S s} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ T)
+⊢wkᵣ : ∀ {T : Term S (kind-of s)} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ T)
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
 
--- Substitution Typing
-
-sub-T : Sub S₁ S₂ → Types S₁ s → Types S₂ s
-sub-T {s = eₛ} ρ τ = sub ρ τ
-sub-T {s = τₛ} ρ _ = tt   
 
 -- [latex] block(SubTyping)
 
 _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set
-_∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub-T σ (lookup Γ₁ x))
+_∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub σ (lookup Γ₁ x))
 
 -- [latex] hide
 
@@ -317,17 +311,17 @@ idₛτ≡τ `⊤ = refl
 idₛτ≡τ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (idₛτ≡τ τ₁) (idₛτ≡τ τ₂)
 idₛτ≡τ (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁τ≡σ₂τ τ extₛidₛ≡idₛ) (idₛτ≡τ τ))
 
-⊢idₛ : ∀ {Γ : Ctx S} {t : Term S s} {T : Types S s} (⊢t : Γ ⊢ t ∶ T) → idₛ ∶ Γ ⇒ₛ Γ
+⊢idₛ : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (kind-of s)} (⊢t : Γ ⊢ t ∶ T) → idₛ ∶ Γ ⇒ₛ Γ
 ⊢idₛ {Γ = Γ} ⊢t {eₛ} x = ⊢`x (sym (idₛτ≡τ (lookup Γ x)))
-⊢idₛ ⊢t {τₛ} x = ⊢τ
+⊢idₛ {Γ = Γ} ⊢t {τₛ} x with lookup Γ x
+... | ⋆ = ⊢τ
 
-⊢singleₛ : ∀ {T' : Types S s} (⊢t : Γ ⊢ t ∶ T) → singleₛ idₛ t ∶ (Γ ▶ T') ⇒ₛ Γ
+⊢singleₛ : ∀ {T' : Term S (kind-of s)} (⊢t : Γ ⊢ t ∶ T) → singleₛ idₛ t ∶ (Γ ▶ T') ⇒ₛ Γ
 ⊢singleₛ ⊢t {eₛ} x = {!   !} 
-⊢singleₛ ⊢t {τₛ} x = ⊢τ
+⊢singleₛ ⊢t {τₛ} x = {!   !}
 
 -- Semantics ----------------------------------------------------------------------------
 
--- call by value --
 data Val : Expr S → Set where
   v-λ : Val (λ`x→ e)
   v-Λ : Val (Λ`α→ e)
@@ -389,13 +383,13 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 
 ⊢ρ-preserves-Γ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} (x : Var S₁ s) →
   ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
-  ren-T ρ (lookup Γ₁ x) ≡ lookup Γ₂ (ρ x)
+  ren ρ (lookup Γ₁ x) ≡ lookup Γ₂ (ρ x)
 ⊢ρ-preserves-Γ x ⊢ρ = {!       !}
 
-⊢ρ-preserves : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Types S₁ s} →
+⊢ρ-preserves : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (kind-of s)} →
   ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
   Γ₁ ⊢ t ∶ T →
-  Γ₂ ⊢ (ren ρ t) ∶ (ren-T ρ T)
+  Γ₂ ⊢ (ren ρ t) ∶ (ren ρ T)
 ⊢ρ-preserves ⊢ρ (⊢`x {x = x} refl) = ⊢`x (sym (⊢ρ-preserves-Γ x ⊢ρ))
 ⊢ρ-preserves ⊢ρ ⊢⊤ = ⊢⊤
 ⊢ρ-preserves ⊢ρ (⊢λ ⊢e) = {!   !} -- ⊢λ (subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves (⊢keepᵣ ⊢ρ) ⊢e)))
@@ -405,9 +399,9 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 ⊢ρ-preserves ⊢ρ (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢ρ-preserves ⊢ρ ⊢e₂) {!   !} 
 ⊢ρ-preserves ⊢ρ ⊢τ = ⊢τ
 
-⊢wk-preserves : ∀ {Γ : Ctx S} {t : Term S s} {T : Types S s} {T' : Types S s'} →
+⊢wk-preserves : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (kind-of s)} {T' : Term S (kind-of s')} →
   Γ ⊢ t ∶ T →
-  Γ ▶ T' ⊢ wk t ∶ wk-T T 
+  Γ ▶ T' ⊢ wk t ∶ wk T 
 ⊢wk-preserves ⊢e = ⊢ρ-preserves (⊢dropᵣ ⊢idᵣ) ⊢e
 
 σ↑idₛ≡σ : ∀ (t : Term S₁ s) (t' : Term S₂ s') (σ : Sub S₁ S₂) →
@@ -420,7 +414,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   singleₛ σ t ∶ Γ₁ ▶ τ ⇒ₛ Γ₂ 
 ⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e (here refl) = subst (_ ⊢ t ∶_) (sym (σ↑idₛ≡σ τ t σ)) ⊢e
 ⊢extₛ {σ = σ} {Γ₁ = Γ₁} {t = t} {τ = τ} ⊢σ ⊢e {eₛ} (there x) = subst (_ ⊢ σ x ∶_) (sym (σ↑idₛ≡σ (lookup Γ₁ x) t σ)) (⊢σ x)
-⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e {τₛ} (there x) = subst (_ ⊢ σ x ∶_) refl (⊢σ x)
+⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e {τₛ} (there x) = {!   !}
 
 τ[e]≡τ : ∀ {τ : Type S} {e : Expr S} → wk τ [ e ] ≡ τ  
 τ[e]≡τ {τ = τ} {e = e} = 
@@ -438,17 +432,17 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   sub σ (t [ t' ]) ≡ (sub (extₛ σ) t) [ sub σ t' ]  
 σ·t[t']≡σ↑·t[σ·t'] = {!   !}
 
-⊢σ↑ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T : Types S₁ s} →
+⊢σ↑ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T : Term S₁ (kind-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
-  extₛ σ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub-T σ T)
+  extₛ σ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub σ T)
 ⊢σ↑ {σ = σ} {T = τ} ⊢σ {eₛ} (here refl) = ⊢`x (sym (σ↑·wkt≡wk·σt σ τ))
-⊢σ↑ ⊢σ {τₛ} (here refl) = ⊢τ
+⊢σ↑ ⊢σ {τₛ} (here refl) = {!   !}
 ⊢σ↑ ⊢σ (there x) = {!   !}
 
-⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Types S₁ s} →
+⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (kind-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   Γ₁ ⊢ t ∶ T →
-  Γ₂ ⊢ (sub σ t) ∶ (sub-T σ T)
+  Γ₂ ⊢ (sub σ t) ∶ (sub σ T)
 ⊢σ-preserves ⊢σ (⊢`x {x = x} refl) = ⊢σ x
 ⊢σ-preserves ⊢σ ⊢⊤ = ⊢⊤
 ⊢σ-preserves {σ = σ} ⊢σ (⊢λ {τ' = τ'} ⊢e) = ⊢λ 
@@ -470,8 +464,8 @@ e[e]-preserves {τ = τ} ⊢e₁ ⊢e₂ = subst (_ ⊢ _ ∶_) τ[e]≡τ
   (⊢σ-preserves (⊢extₛ (⊢idₛ ⊢e₂) (subst (_ ⊢ _ ∶_) (sym (idₛτ≡τ τ)) ⊢e₂)) ⊢e₁) 
 
 e[τ]-preserves :  ∀ {Γ : Ctx S} {e : Expr (S ▷ τₛ)} {τ : Type S} {τ' : Type (S ▷ τₛ)} →
-  Γ ▶ tt ⊢ e ∶ τ' →
-  Γ ⊢ τ ∶ tt →
+  Γ ▶ ⋆ ⊢ e ∶ τ' →
+  Γ ⊢ τ ∶ ⋆ →
   --------------------
   Γ ⊢ e [ τ ] ∶ τ' [ τ ]  
 e[τ]-preserves ⊢e ⊢τ = ⊢σ-preserves (⊢singleₛ ⊢τ) ⊢e
@@ -487,4 +481,4 @@ subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[τ]-preserves ⊢e ⊢τ
 subject-reduction (⊢• ⊢e) (ξ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (β-let v₂) = e[e]-preserves ⊢e₁ ⊢e₂
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁    
--- [latex] end   
+-- [latex] end    

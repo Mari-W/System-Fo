@@ -27,6 +27,7 @@ data Sort : Ctxable → Set where
   oₛ  : Sort ⊤ᶜ
   cₛ  : Sort ⊥ᶜ
   τₛ  : Sort ⊤ᶜ
+  κₛ  : Sort ⊥ᶜ
 
 Sorts : Set
 Sorts = List (Sort ⊤ᶜ)
@@ -72,6 +73,7 @@ data Term : Sorts → Sort r → Set where
   _⇒_             : Term S τₛ → Term S τₛ → Term S τₛ
   ∀`α_            : Term (S ▷ τₛ) τₛ → Term S τₛ
   [_]⇒_           : Term S cₛ → Term S τₛ → Term S τₛ
+  ⋆               : Term S κₛ
 
 -- [latex] hide
 
@@ -124,6 +126,7 @@ ren ρ `⊤ = `⊤
 ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
 ren ρ (∀`α τ) = ∀`α (ren (extᵣ ρ) τ)
 ren ρ ([ c ]⇒ τ) = [ ren ρ c ]⇒ (ren ρ τ)
+ren ρ ⋆ = ⋆
 
 wk : Term S s → Term (S ▷ s') s
 wk = ren there
@@ -166,6 +169,7 @@ sub σ `⊤ = `⊤
 sub σ (τ₁ ⇒ τ₂) = sub σ τ₁ ⇒ sub σ τ₂
 sub σ (∀`α τ) = ∀`α (sub (extₛ σ) τ)
 sub σ ([ c ]⇒ τ ) = [ sub σ c ]⇒ (sub σ τ)
+sub σ ⋆ = ⋆
 
 -- [latex] block(subs)
 
@@ -179,35 +183,35 @@ variable
  
 -- Context ------------------------------------------------------------------------------
 
+item-ctxable : Sort ⊤ᶜ → Ctxable
+item-ctxable eₛ = ⊤ᶜ
+item-ctxable τₛ = ⊥ᶜ
+item-ctxable oₛ = ⊥ᶜ
+
 -- [latex] block(Stores)
 
-Stores : Sorts → Sort ⊤ᶜ → Set
-Stores S eₛ = Type S
-Stores S oₛ = ⊤
-Stores S τₛ = ⊤
+item-of : (s : Sort ⊤ᶜ) → Sort (item-ctxable s)
+item-of eₛ = τₛ
+item-of τₛ = κₛ
+item-of oₛ = κₛ
 
--- [latex] block(hide)
+-- [latex] hide
 
-ren-S : Ren S₁ S₂ → Stores S₁ s → Stores S₂ s
-ren-S {s = eₛ} ρ τ = ren ρ τ
-ren-S {s = oₛ} ρ _ = tt 
-ren-S {s = τₛ} ρ _ = tt 
-
-wk-S : Stores S s → Stores (S ▷ s') s
-wk-S S = ren-S there S
+variable
+  I I' I'' I₁ I₂ : Term S (item-of s)
 
 -- [latex] block(Ctx)
 
 data Ctx : Sorts → Set where
   ∅   : Ctx []
-  _▶_ : Ctx S → Stores S s → Ctx (S ▷ s)
+  _▶_ : Ctx S → Term S (item-of s) → Ctx (S ▷ s)
   _▸_ : Ctx S → Cstr S → Ctx S
 
 -- [latex] block(lookup)
 
-lookup : Ctx S → Var S s → Stores S s 
-lookup (Γ ▶ S) (here refl) = wk-S S
-lookup (Γ ▶ S) (there x) = wk-S (lookup Γ x)
+lookup : Ctx S → Var S s → Term S (item-of s) 
+lookup (Γ ▶ S) (here refl) = wk S
+lookup (Γ ▶ S) (there x) = wk (lookup Γ x)
 lookup (Γ ▸ c) x = lookup Γ x
 
 variable 
@@ -219,30 +223,35 @@ variable
 
 data [_]∈_ : Cstr S → Ctx S → Set where
   here : [ (` o ∶ τ) ]∈ (Γ ▸ (` o ∶ τ)) 
-  under-bind : {ST : Stores S s'} → 
-    [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ ST) 
+  under-bind : {I : Term S (item-of s')} → 
+    [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ I) 
   under-inst : [ c ]∈ Γ → [ c ]∈ (Γ ▸ c')
 
 -- [latex] hide
   
 -- Typing -------------------------------------------------------------------------------
 
+kind-ctxable : Sort ⊤ᶜ → Ctxable
+kind-ctxable eₛ = ⊤ᶜ
+kind-ctxable τₛ = ⊥ᶜ
+kind-ctxable oₛ = ⊤ᶜ
+
 -- [latex] block(Types)
 
-Types : Sorts → Sort ⊤ᶜ → Set
-Types S eₛ = Type S
-Types S oₛ = Type S
-Types S τₛ = ⊤
+kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
+kind-of eₛ = τₛ
+kind-of τₛ = κₛ
+kind-of oₛ = τₛ
 
 -- [latex] hide
 
 variable 
-  T T' T'' T₁ T₂ : Types S s
+  T T' T'' T₁ T₂ : Term S (kind-of s)
 
 -- [latex] block(Typing)
 
 infix 3 _⊢_∶_
-data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
+data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
   ⊢`x :  
     lookup Γ x ≡ τ →
     ----------------
@@ -259,7 +268,7 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
     ------------------
     Γ ⊢ λ`x→ e ∶ τ ⇒ τ'
   ⊢Λ : 
-    Γ ▶ tt ⊢ e ∶ τ →  
+    Γ ▶ ⋆ ⊢ e ∶ τ →  
     -------------------
     Γ ⊢ Λ`α→ e ∶ ∀`α τ
   ⊢ƛ : 
@@ -286,7 +295,7 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
     --------------------------
     Γ ⊢ let`x= e₂ `in e₁ ∶ τ'
   ⊢decl : 
-    Γ ▶ tt ⊢ e ∶ wk τ →
+    Γ ▶ ⋆ ⊢ e ∶ wk τ →
     -------------------
     Γ ⊢ decl`o`in e ∶ τ
   ⊢inst :
@@ -304,14 +313,14 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢keepᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₁ s} → 
+  ⊢keepᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
-    extᵣ ρ ∶ Γ₁ ▶ st ⇒ᵣ Γ₂ ▶ ren-S ρ st
-  ⊢dropᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₂ s} →
+    extᵣ ρ ∶ Γ₁ ▶ I ⇒ᵣ Γ₂ ▶ ren ρ I
+  ⊢dropᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₂ (item-of s)} →
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     -------------
-    dropᵣ ρ ∶ Γ₁ ⇒ᵣ Γ₂ ▶ st
+    dropᵣ ρ ∶ Γ₁ ⇒ᵣ Γ₂ ▶ I
   ⊢keep-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
@@ -323,7 +332,7 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
 
 -- [latex] hide
 
-⊢wkᵣ : ∀ {st : Stores S s} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ st)
+⊢wkᵣ : ∀ {I : Term S (item-of s)} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ I)
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
 
 ⊢wk-instᵣ : ∀ {o} → idᵣ ∶ Γ ⇒ᵣ (Γ ▸ (o ∶ τ))
@@ -362,28 +371,23 @@ idᵣτ≡τ ([ ` o ∶ τ ]⇒ τ') = cong₂ [_]⇒_ (cong₂ _∶_ refl (id�
 
 -- Substitution Typing ------------------------------------------------------------------
 
-sub' : Sub S₁ S₂ → Stores S₁ s → Stores S₂ s
-sub' {s = eₛ} ρ τ = sub ρ τ
-sub' {s = oₛ} ρ _ = tt
-sub' {s = τₛ} ρ _ = tt
-
 -- [latex] block(SubTyping)
 
 infix 3 _∶_⇒ₛ_
 data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢idₛ : ∀ {Γ} → _∶_⇒ₛ_ {S₁ = S} {S₂ = S} idₛ Γ Γ
-  ⊢keepₛ  : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₁ s} → 
+  ⊢keepₛ  : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     ----------------------------------
-    extₛ σ ∶ Γ₁ ▶ st ⇒ₛ Γ₂ ▶ sub' σ st
-  ⊢dropₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {st : Stores S₂ s} →
+    extₛ σ ∶ Γ₁ ▶ I ⇒ₛ Γ₂ ▶ sub σ I
+  ⊢dropₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₂ (item-of s)} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     -------------------------
-    dropₛ σ ∶ Γ₁ ⇒ₛ (Γ₂ ▶ st) 
+    dropₛ σ ∶ Γ₁ ⇒ₛ (Γ₂ ▶ I) 
   ⊢typeₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ : Type S₂} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     --------------
-    single-typeₛ σ τ ∶ Γ₁ ▶ tt ⇒ₛ Γ₂ 
+    single-typeₛ σ τ ∶ Γ₁ ▶ ⋆ ⇒ₛ Γ₂ 
   ⊢keep-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     --------------------------------------
@@ -395,7 +399,7 @@ data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
 
 -- [latex] hide
 
-⊢single-typeₛ : single-typeₛ idₛ τ ∶ (Γ ▶ tt)  ⇒ₛ Γ
+⊢single-typeₛ : single-typeₛ idₛ τ ∶ (Γ ▶ ⋆)  ⇒ₛ Γ
 ⊢single-typeₛ = ⊢typeₛ ⊢idₛ
 
 -- [latex] end    

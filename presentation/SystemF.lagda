@@ -130,21 +130,29 @@ Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
 \end{code}}
 \begin{code}[hide]
 idₛ : Sub S S
+\end{code}
+\newcommand{\Fidsub}[0]{\begin{code}[inline]
 idₛ = `_
-
+\end{code}}
+\begin{code}[hide]
 extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
 extₛ σ (here refl) = ` here refl
 extₛ σ (there x) = ren wkᵣ (σ x)
 
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
 dropₛ σ x = wk (σ x)
-
+\end{code}
+\newcommand{\Fsinglesub}[0]{\begin{code}[inline]
 singleₛ : Sub S₁ S₂ → Term S₂ s → Sub (S₁ ▷ s) S₂
+\end{code}}
+\begin{code}[hide]
 singleₛ σ t (here refl) = t
 singleₛ σ t (there x) = σ x
 \end{code}
-\newcommand{\Fsub}[0]{\begin{code}
+\newcommand{\Fsub}[0]{\begin{code}[inline]
 sub : Sub S₁ S₂ → (Term S₁ s → Term S₂ s)
+\end{code}}
+\begin{code}[hide]
 sub σ (` x) = (σ x)
 sub σ tt = tt
 sub σ (λ`x→ e) = λ`x→ (sub (extₛ σ) e)
@@ -155,7 +163,7 @@ sub σ (let`x= e₂ `in e₁) = let`x= sub σ e₂ `in (sub (extₛ σ) e₁)
 sub σ `⊤ = `⊤
 sub σ (τ₁ ⇒ τ₂) = sub σ τ₁ ⇒ sub σ τ₂
 sub σ (∀`α τ) = ∀`α (sub (extₛ σ) τ)
-\end{code}}
+\end{code}
 \newcommand{\Fsubs}[0]{\begin{code}
 _[_] : Term (S ▷ s') s → Term S s' → Term S s
 t [ t' ] = sub (singleₛ idₛ t') t
@@ -165,11 +173,13 @@ variable
   σ σ' σ'' σ₁ σ₂ : Sub S₁ S₂ 
 
 -- Context ------------------------------------------------------------------------------
-
+\end{code}}
+\newcommand{\FTypes}[0]{\begin{code}
 Types : Sorts → Sort → Set
 Types S eₛ = Type S
 Types S τₛ = ⊤
-
+\end{code}}
+\begin{code}[hide]
 variable 
   T T' T'' T₁ T₂ : Types S s
 
@@ -179,15 +189,18 @@ ren-T {s = τₛ} ρ _ = tt
 
 wk-T : Types S s → Types (S ▷ s') s
 wk-T T = ren-T there T
-
+\end{code}
+\newcommand{\FCtx}[0]{\begin{code}
 data Ctx : Sorts → Set where
   ∅   : Ctx []
   _▶_ : Ctx S → Types S s → Ctx (S ▷ s)
-
+\end{code}}
+\newcommand{\Flookup}[0]{\begin{code}
 lookup : Ctx S → Var S s → Types S s 
 lookup (Γ ▶ T) (here refl) = wk-T T
 lookup (Γ ▶ T) (there x) = wk-T (lookup Γ x)
-
+\end{code}}
+\begin{code}[hide]
 variable 
   Γ Γ' Γ'' Γ₁ Γ₂ : Ctx S
 
@@ -196,6 +209,8 @@ variable
 -- Expression Typing
 
 infix 3 _⊢_∶_
+\end{code}
+\newcommand{\FTyping}[0]{\begin{code}
 data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
   ⊢`x :  
     lookup Γ x ≡ τ →
@@ -229,9 +244,11 @@ data _⊢_∶_ : Ctx S → Term S s → Types S s → Set where
   ⊢τ :
     ----------
     Γ ⊢ τ ∶ tt
-
+\end{code}}
+\begin{code}[hide]
 -- Renaming Typing
-
+\end{code}
+\newcommand{\FRenTyping}[0]{\begin{code}
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
@@ -243,7 +260,8 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
     ρ ∶ Γ₁  ⇒ᵣ Γ₂ →
     -------------------------
     (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ t')
-
+\end{code}}
+\begin{code}[hide]
 ⊢wkᵣ : ∀ {T : Types S s} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ T)
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
 
@@ -252,10 +270,12 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
 sub-T : Sub S₁ S₂ → Types S₁ s → Types S₂ s
 sub-T {s = eₛ} ρ τ = sub ρ τ
 sub-T {s = τₛ} ρ _ = tt   
-
+\end{code}
+\newcommand{\FSubTyping}[0]{\begin{code}
 _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set
 _∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub-T σ (lookup Γ₁ x))
-
+\end{code}}
+\begin{code}[hide]
 extₛidₛ≡idₛ : ∀ (x : Var (S ▷ s') s) → extₛ idₛ x ≡ idₛ x
 extₛidₛ≡idₛ (here refl) = refl
 extₛidₛ≡idₛ (there x) = refl 
@@ -451,4 +471,4 @@ subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[τ]-preserves ⊢e ⊢τ
 subject-reduction (⊢• ⊢e) (ξ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (β-let v₂) = e[e]-preserves ⊢e₁ ⊢e₂
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁    
-\end{code}}
+\end{code}
