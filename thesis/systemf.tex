@@ -1,15 +1,13 @@
 \subsection{Specification}
-We will first look at System F, our target language of the Dictionary Passing Transform. 
-The specification includes Syntax, Typing and Semantic. 
-
 \subsubsection{Sorts}\hfill\\\\
-System F only requires two sorts, \Constr{eₛ} for expressions and \Constr{τₛ} for types. 
+The formalization of System F requires three sorts: \Constr{eₛ} for expressions, \Constr{τₛ} for types and \Constr{κₛ} for kinds. 
 \FSort
-Going forward, we use \Sym{s} as variable name for sorts and \Sym{S} for a list of sorts.
+Sorts are indexed by boolean data type \Data{Ctxable} indicating if terms of the sort can appear in contexts.
+Going forward, we use \Sym{s} as variable name for sorts and \Sym{S} for lists of sorts.
 
 \subsubsection{Syntax}\hfill\\\\
-System F's syntax is represented in a single data type \Data{Term} indexed by a list of sorts \Sym{S} and a sort \Sym{s}. 
-The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list provide the sort of the variable bound at that position. 
+System F's syntax is represented in a single data type \Data{Term} indexed by a list of sorts \Sym{S} and sort \Sym{s}. 
+The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list represent the sort of the variable bound at that position. 
 The second index \Sym{s} represents the sort of the term itself.
 \FTerm
 Variables \Constr{`}\ \Sym{x} are represented as references \Sym{s} \Prim{∈} \Sym{S} to an element in \Sym{S}.
@@ -17,15 +15,15 @@ Memberships of type \Sym{s} \Prim{∈} \Sym{S} are defined similar to natural nu
 In consequence we can only reference already bound variables, in a similar fashion to debruijn indices. 
 The unit element \Constr{tt} and unit type \Constr{`⊤} represent base types. Lambda abstractions \Constr{λ`x→} \Sym{e'} result in function types \Sym{τ₁} \Constr{⇒} \Sym{τ₂} and type abstractions \Constr{Λ`α→} \Sym{e'} result in forall types \Constr{∀`α} \Sym{τ'}. 
 To eliminate abstractions we use application \Sym{e₁} \Constr{·} \Sym{e₂} for lambda abstractions and type application \Sym{e} \Constr{•} \Sym{τ} for type abstractions. 
-Let bindings \Constr{let`x=} \Sym{e₂} \Constr{`in} \Sym{e₁} combine abstraction and application. 
+Let bindings \Constr{let`x=} \Sym{e₂} \Constr{`in} \Sym{e₁} combine abstraction and application. All types \Sym{τ} have kind \Constr{⋆}.
 We will use shorthands \FVar, \FExpr\ and \FType\ and variable names \Sym{x}, \Sym{e} and \Sym{τ} respectively as well as \Sym{t} for arbitrary \Data{Term} \Sym{S} \Sym{s}.
 
 \subsubsection{Renaming}\hfill\\\\
 Renamings \Sym{ρ} of type \Data{Ren} \Sym{S₁} \Sym{S₂} are defined as total functions mapping variables \Data{Var} \Sym{S₁} \Sym{s} to variables \Data{Var} \Sym{S₂} \Sym{s} preserving the sort \Sym{s} of the variable.
 \FRen
-Applying a renaming \Data{Ren} \Sym{S₁} \Sym{S₂} to a term \Data{Term} \Sym{S₁} \Sym{s} yield a new term \Data{Term} \Sym{S₂} \Sym{s} where variables are represented as references \Sym{s} \Prim{∈} \Sym{S₂} to elements in \Sym{S₂}.
+Applying a renaming \Data{Ren} \Sym{S₁} \Sym{S₂} to a term \Data{Term} \Sym{S₁} \Sym{s} yields a new term \Data{Term} \Sym{S₂} \Sym{s} where variables are now represented as references \Sym{s} \Prim{∈} \Sym{S₂} to elements in \Sym{S₂}.
 \Fren
-When going under a binder, the renaming is extended using \Frenext. 
+When we encounter a binder, the renaming is extended using \Frenext. 
 The weakening of a term can be defined as shifting all variables by one.
 \Fwk 
 Since variables are represented as references to a list, we shift them by wrapping a given reference in the \Constr{there} constructor.
@@ -34,21 +32,41 @@ Since variables are represented as references to a list, we shift them by wrappi
 Substitutions \Sym{σ} of type \Data{Sub} \Sym{S₁} \Sym{S₂} are similar to renamings but rather than mapping variables to variables, substitutions map variables to terms.
 \FSub
 Applying a substitution to a term \Fsub\ is analogous to the applying a renaming. 
-Single substitution is constructed by composing \Fsinglesub\ with identity substitution \Fidsub\ of type \Data{Sub} \Sym{S S}.
+Single substitution \Sym{t} \Data{[} \Sym{t'} \Data{]} substitutes the last bound variable in \Sym{t} with \Sym{t'}.
 \Fsubs
+% TODO 
 
 \subsubsection{Context}\hfill\\\\
 The typing context \Data{Ctx} \Sym{S} is indexed by sorts \Sym{S} similar to terms. 
 \FCtx
-A context can either be empty \Constr{∅} or cons \Sym{Γ} \Constr{▶} \Sym{T} where \Sym{T} is of type \Data{Types} \Sym{S} \Sym{s}. 
+A context can either be empty \Constr{∅} or cons \Sym{Γ} \Constr{▶} \Sym{T} where \Sym{T} is a term of the kind of sort \Sym{s}. The function \Data{kind-of} maps sorts that can appear in contexts to the sorts of their kind.
+\Fkind
+Expressions have kind \Constr{τₛ}, while types have kind \Constr{κₛ}. We will use \Sym{T} as shorthand for the term with sort \Data{kind-of} \Sym{s}.
 
 \subsubsection{Typing}\hfill\\\\
-The typing relation \Sym{Γ} \Data{⊢} \Sym{t} \Data{:} \Sym{T} relates terms \Sym{t} to their typing of type \Data{Types} \Sym{S} \Sym{s} in context \Sym{Γ}.
+The typing relation \Sym{Γ} \Data{⊢} \Sym{t} \Data{:} \Sym{T} relates terms \Sym{t} to their typing kind \Sym{T} in context \Sym{Γ}.
 \FTyping
-Rule \Constr{⊢`x} says that variables \Constr{`} \Sym{x} have type \Sym{τ} if \Sym{x} has type \Sym{τ} in \Sym{Γ}.
+Rule \Constr{⊢`x} says that variables \Constr{`} \Sym{x} have type \Sym{τ} if \Sym{x} has type \Sym{τ} in \Sym{Γ}. Next, \Constr{⊢⊤} states that unit expressions \Constr{tt} has type \Constr{`⊤}. 
+%TODO
+Finally, rule \Constr{⊢τ} indicates that all types \Sym{τ} are well formed and have kind \Constr{⋆}. Type variables are correctly typed per definition and type constructors \Constr{∀`α} and \Constr{⇒} accept arbitrary types as their arguments.
 
-\subsubsection{Semantics}
+\subsubsection{Typing Renaming \& Substitution}\hfill\\\\
+\FRenTyping
+\FSubTyping
 
+\subsubsection{Semantics}\hfill\\\\
+Our semantics will be formalized call-by-value, that is there is no reduction under binders. Values are indexed by there irreducible expression.
+\FVal
+System F has three values. The two closure values \Constr{v-λ} and \Constr{v-Λ} for abstractions waiting for their argument and unit value \Constr{v-tt}.
+We formalize semantics as small step semantics, where each constructor represents a single reduction step \Sym{e} \Constr{↪} \Sym{e'}.
+We distinguish between \Sym{β} and \Sym{ξ} rules. Meaningful computation in the form of substitution is handled by \Sym{β} rules while \Sym{ξ} rules reduce sub expressions.
+\FSemantics
+Rules \Constr{β-λ} and \Constr{β-Λ} give meaning to application and type application in the form of substituting the applied expression. Further, \Constr{β-let} is equivalent to application rule \Constr{β-λ}. Rules \Constr{ξ-·$_i$} and \Constr{ξ-•} evaluate sub expressions of application until \Sym{e₁} and \Sym{e₂}, or \Sym{e} respectively, are values. Finally, \Constr{ξ-let} reduces the bound expression \Sym{e₂} until \Sym{e₂} is a value and \Constr{β-let} can be applied.    
 \subsection{Soundness}
+
 \subsubsection{Progress}\hfill\\\\
-\subsubsection{Subject Reduction}
+We prove progress, that is, a typed expression \Sym{⊢e} can either be further reduced to some \Sym{e'} or \Sym{e} is a value, by induction over the typing rules. 
+\FProgress
+
+\subsubsection{Subject Reduction}\hfill\\\\
+\FSubjectReduction

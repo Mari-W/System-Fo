@@ -1,14 +1,15 @@
-\subsection{Overloading in Haskell}
-Without overloaded function names code becomes less readable, since we would need to define a unique name for every function, for example equality, on each type.
-Haskell, solves this problem using type classes.
-Essentially, type classes allow to declare overloaded function names with generic type signatures.
+\subsection{Overloading in General}
+Overloading function names is a practical technique to overcome verbosity in real world programming languages. In every language there exist commonly used function names, especially in the form of infix operators, for example equality and arithmetics, that are defined for a variety of type combinations. Overloading the meaning of common function names and operators for multiple types eliminates the necessity for a unique name for each operator on each type. 
+For example, Python uses so called magic methods, that allow to overload commonly used operators used on user defined classes and Java utilizes method overloading. Both Python and Java implement rather restricted forms of overloading. Rust, for example, supports overloading in a less restricted fashion in the form of traits. Loosely speaking, traits group multiple overloaded abstract function definitions into one construct. A trait can be implemented on specific types. The implementation must give all functions defined by the trait a concrete meaning based on the type it is implemented for. Further, Rust allows type variables to be restricted by trait bounds, that is, a type variable is only to be substituted by a concrete type, if there exist an implementation for some trait on that type. Haskell has a feature similar to traits, called type classes, to solve the overloading problem.
+\subsection{Overloading in Haskell using Typeclasses}
+Essentially, typeclasses allow to declare overloaded function names with generic type signatures.
 We can give one of many specific meanings to a type class, by instantiating the type class for concrete types.
 When we invoke the overloaded function name, the type checker determines the correct instance based on the types of the applied arguments. 
-Furthermore, Haskell allows to constrain bound type variables \mono{α} via type constraints \inl{Tc α  ⇒ ..} to only be substituted by a concrete type \mono{τ}, if there exists an instance of \inl{Tc} for \mono{τ}. 
+Furthermore, Haskell allows to constrain bound type variables \mono{α} via type constraints \inl{Tc α ⇒ ..} to only be substituted by a concrete type \mono{τ}, if there exists an instance \inl{Tc} \mono{τ}.
 
 \subsubsection{Example: Overloading Equality in Haskell}\hfill\\\\
 Our goal is to overload the function \inl{|\Blk eq| : α → α → Bool} with different meanings for different types substituted for \mono{α}.
-We want to call \mono{eq} on both \inl{Nat} and \inl{[Nat]} respectively. 
+We want to be able to call \mono{eq} on both \inl{Nat} and \inl{[α]}, where \mono{α} is a type that \mono{eq} is already defined on. 
 In Haskell we would solve the problem as follows:
 \begin{minted}[escapeinside=||]{haskell}
     class Eq α where
@@ -23,12 +24,12 @@ In Haskell we would solve the problem as follows:
     .. eq 42 0 .. eq [42, 0] [42, 0] ..
 \end{minted}
 First, type class \inl{Eq} with a single generic function \mono{eq} is declared and instantiated for \inl{Nat}. 
-Next, \inl{Eq} is instantiated for \inl{[α]}, given that an instance \inl{Eq} exists for type \mono{α}. 
-Finally, we can call \mono{eq} on elements of type \inl{[Nat]}, since the constraint \inl{Eq α ⇒ ..} in the second instance resolves to the first instance.
+Next, \ \inl{Eq} is instantiated for \inl{[α]}, given that an instance \inl{Eq} exists for type \mono{α}. 
+Finally, we can call \mono{eq} on elements of both \inl{Nat} and \inl{[Nat]}, where in the latter case, the type constraint \inl{Eq α ⇒ ..} in the second instance resolves to the first instance.
 
 \subsection{Introducing System \Fo}
-In our language extension to System F we give up high level language constructs. 
-Instead, System \Fo\ desugars type class functionality to overloaded variables. 
+In our language extension to System F [CITE] we give up high level language constructs. 
+System \Fo\ desugars type class functionality to overloaded variables. 
 Using the \inl{|\Decl o| in e'} expression we can introduce an new overloaded variable \mono{o}. 
 If declared as overloaded, \mono{o} can be instantiated for type \mono{τ} of expression \mono{e} using the \inl{|\Inst o| = e in e'} expression.
 In contrast to Haskell, it is allowed to overload \mono{o} with arbitrary types. 
@@ -54,13 +55,12 @@ Next, we instantiate \mono{eq} for \inl{[α]}, given the constraint introduced b
 The actual implementations of the instances are omitted.
 Because System \Fo\ is based on System F, we are required to bind type variables using type abstractions \inl{Λ} and eliminate type variables using type application. 
 
-\noindent A little caveat: the second instance needs to recursively call \mono{eq} for sublists but System \Fo's formalization does not actually support recursive let bindings. Extending System F and System \Fo\ with recursive let bindings and thus recursive instances is known to be sound. 
+\noindent A little caveat: the second instance needs to recursively call \mono{eq} for sublists but System \Fo's formalization does not actually support recursive let bindings. Extending System F and System \Fo\ with recursive let bindings and thus recursive instances is known to be straight forward. 
 
 \subsection{Translating between System \Fo\ and System F}
 The Dictionary Passing Transform translates well typed System \Fo\ expressions to well typed System F expressions. 
-The overall goal will be to formally show that the Dictionary Passing Transform is in fact correct.
 The translation drops \inl{|\Decl o| in} expressions and replaces \inl{|\Inst o| = e in e'} expressions with \inl{let o|$_τ$| = e in e'} expressions, where \mono{o$_τ$} is an unique name with respect to type \mono{τ} of \mono{e}. 
-Constraint abstractions \inl{|\lambdabar|(o : τ). e'} translate to normal lambda bindings \mono{λo$_τ$. e'}. 
+Constraint abstractions \inl{|\lambdabar|(o : τ). e'} translate to lambda bindings \mono{λo$_τ$. e'}. 
 Similarly constraint types \inl{[o : τ] ⇒ τ'} are translated to function types \mono{τ → τ'}. 
 Invocations of overloaded function names are translated to the correct variable name bound by the former instance, now let binding.
 Implicitly resolved constraints in System \Fo\ must be explicitly passed as arguments in System F.
@@ -76,8 +76,8 @@ Applying the Dictionary Passing Transform results in the following well typed Sy
     
     .. eq₁ 42 0 .. eq₂ Nat eq₁ [42, 0] [42, 0] .. 
 \end{minted}
-First we drop the \inl{|\Decl|}expression and replace \inl{|\Inst|}definitions with \inl{let} bindings. 
-Inside the second instance the constraint abstraction is translated into a normal function. 
+First we drop the \inl{|\Decl|}expression and transform \inl{|\Inst|}definitions to \inl{let} bindings with unique names. 
+Inside the second instance the constraint abstraction is translated into a lambda abstraction. 
 Invocations of \mono{eq} are translated to the correct unique names \mono{eq$_i$}.
 When invoking \mono{eq$_2$} the correct instance to resolve the former constraint must be eliminated explicitly by passing \mono{eq$_1$} as argument.
 

@@ -80,17 +80,10 @@ Type : Sorts → Set
 Type S = Term S τₛ
 \end{code}}
 \begin{code}[hide]
-Kind : Sorts → Set
-\end{code}
-\newcommand{\FKind}[0]{\begin{code}[inline]
-Kind S = Term S κₛ
-\end{code}}
-\begin{code}[hide]
 variable
   t t' t'' t₁ t₂ : Term S s
   e e' e'' e₁ e₂ : Expr S
   τ τ' τ'' τ₁ τ₂ : Type S
-  κ κ' κ'' κ₁ κ₂ : Type S
 
 -- Renaming -----------------------------------------------------------------------------
 \end{code}
@@ -193,16 +186,19 @@ variable
 kind-ctxable : Sort ⊤ᶜ → Ctxable
 kind-ctxable eₛ = ⊤ᶜ
 kind-ctxable τₛ = ⊥ᶜ
-\end{code}}
-\newcommand{\FCtx}[0]{\begin{code}
+
+
 kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
+\end{code}}
+\newcommand{\Fkind}[0]{\begin{code}
 kind-of eₛ = τₛ
 kind-of τₛ = κₛ
-
-
+\end{code}}
+\begin{code}[hide]
 variable 
   T T' T'' T₁ T₂ : Term S (kind-of s)
-
+\end{code}
+\newcommand{\FCtx}[0]{\begin{code}
 data Ctx : Sorts → Set where
   ∅   : Ctx []
   _▶_ : Ctx S → Term S (kind-of s) → Ctx (S ▷ s)
@@ -258,7 +254,7 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢keepᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Term S₁ (kind-of s)} → 
+  ⊢extᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Term S₁ (kind-of s)} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     (extᵣ ρ) ∶ (Γ₁ ▶ t') ⇒ᵣ (Γ₂ ▶ ren ρ t')
   ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Term S₂ (kind-of s)} →
@@ -380,8 +376,8 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   Γ₂ ⊢ (ren ρ t) ∶ (ren ρ T)
 ⊢ρ-preserves ⊢ρ (⊢`x {x = x} refl) = ⊢`x (sym (⊢ρ-preserves-Γ x ⊢ρ))
 ⊢ρ-preserves ⊢ρ ⊢⊤ = ⊢⊤
-⊢ρ-preserves ⊢ρ (⊢λ ⊢e) = {!   !} -- ⊢λ (subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves (⊢keepᵣ ⊢ρ) ⊢e)))
-⊢ρ-preserves ⊢ρ (⊢Λ ⊢e) = ⊢Λ (⊢ρ-preserves (⊢keepᵣ ⊢ρ) ⊢e)
+⊢ρ-preserves ⊢ρ (⊢λ ⊢e) = {!   !} -- ⊢λ (subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves (⊢extᵣ ⊢ρ) ⊢e)))
+⊢ρ-preserves ⊢ρ (⊢Λ ⊢e) = ⊢Λ (⊢ρ-preserves (⊢extᵣ ⊢ρ) ⊢e)
 ⊢ρ-preserves ⊢ρ (⊢· ⊢e₁ ⊢e₂) = ⊢· (⊢ρ-preserves ⊢ρ ⊢e₁) (⊢ρ-preserves ⊢ρ ⊢e₂)
 ⊢ρ-preserves ⊢ρ (⊢• ⊢e) = {!   !} -- subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves ⊢ρ ⊢e))
 ⊢ρ-preserves ⊢ρ (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢ρ-preserves ⊢ρ ⊢e₂) {!   !} 
@@ -424,7 +420,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   extₛ σ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub σ T)
 ⊢σ↑ {σ = σ} {T = τ} ⊢σ {eₛ} (here refl) = ⊢`x (sym (σ↑·wkt≡wk·σt σ τ))
-⊢σ↑ ⊢σ {τₛ} (here refl) = {!   !}
+⊢σ↑ ⊢σ {τₛ} (here refl) = {!    !}
 ⊢σ↑ ⊢σ (there x) = {!   !}
 
 ⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (kind-of s)} →
@@ -441,6 +437,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   subst (_ ⊢ sub σ (e • τ) ∶_) (sym (σ·t[t']≡σ↑·t[σ·t'] σ τ' τ)) (⊢• (⊢σ-preserves ⊢σ ⊢e))
 ⊢σ-preserves {σ = σ} ⊢σ (⊢let {τ' = τ'} ⊢e₂ ⊢e₁) = ⊢let (⊢σ-preserves ⊢σ ⊢e₂) 
   (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e₁))
+  
 ⊢σ-preserves ⊢σ ⊢τ = ⊢τ
 
 e[e]-preserves :  ∀ {Γ : Ctx S} {e₁ : Expr (S ▷ eₛ)} {e₂ : Expr S} {τ τ' : Type S} →

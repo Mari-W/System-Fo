@@ -297,7 +297,7 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
 infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢keepᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 
+  ⊢extᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
     extᵣ ρ ∶ Γ₁ ▶ I ⇒ᵣ Γ₂ ▶ ren ρ I
@@ -305,7 +305,7 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     -------------
     dropᵣ ρ ∶ Γ₁ ⇒ᵣ Γ₂ ▶ I
-  ⊢keep-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
+  ⊢ext-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
     ρ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ᵣ (Γ₂ ▸ (ren ρ o ∶ ren ρ τ))

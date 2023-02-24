@@ -21,18 +21,19 @@ variable
   r r' r'' r₁ r₂ : Ctxable
 
 -- [latex] block(Sort)
-
 data Sort : Ctxable → Set where
-  eₛ  : Sort ⊤ᶜ
   oₛ  : Sort ⊤ᶜ
   cₛ  : Sort ⊥ᶜ
-  τₛ  : Sort ⊤ᶜ
   κₛ  : Sort ⊥ᶜ
+  -- ...
+  -- [latex] hide
+  eₛ  : Sort ⊤ᶜ
+  τₛ  : Sort ⊤ᶜ
+
+-- [latex] hide
 
 Sorts : Set
 Sorts = List (Sort ⊤ᶜ)
-
--- [latex] hide
 
 infix 25 _▷_ _▷▷_
 pattern _▷_ xs x = x ∷ xs
@@ -56,26 +57,26 @@ infixr 5 _⇒_ _·_ _•_
 infix  6 `_ decl`o`in_
 
 -- [latex] block(Term)
-
 data Term : Sorts → Sort r → Set where
-  `_              : Var S s → Term S s
-  tt              : Term S eₛ
-  λ`x→_           : Term (S ▷ eₛ) eₛ → Term S eₛ
-  Λ`α→_           : Term (S ▷ τₛ) eₛ → Term S eₛ
-  ƛ_⇒_            : Term S cₛ → Term S eₛ → Term S eₛ 
-  _·_             : Term S eₛ → Term S eₛ → Term S eₛ
-  _•_             : Term S eₛ → Term S τₛ → Term S eₛ
-  let`x=_`in_     : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
   decl`o`in_      : Term (S ▷ oₛ) eₛ → Term S eₛ
   inst`_`=_`in_   : Term S oₛ → Term S eₛ → Term S eₛ → Term S eₛ
   _∶_             : Term S oₛ → Term S τₛ → Term S cₛ
+  ƛ_⇒_            : Term S cₛ → Term S eₛ → Term S eₛ 
+  [_]⇒_           : Term S cₛ → Term S τₛ → Term S τₛ
+  -- ...
+  -- [latex] hide
+  `_              : s ∈ S → Term S s
+  tt              : Term S eₛ
+  λ`x→_           : Term (S ▷ eₛ) eₛ → Term S eₛ
+  Λ`α→_           : Term (S ▷ τₛ) eₛ → Term S eₛ
+  _·_             : Term S eₛ → Term S eₛ → Term S eₛ
+  _•_             : Term S eₛ → Term S τₛ → Term S eₛ
+  let`x=_`in_     : Term S eₛ → Term (S ▷ eₛ) eₛ → Term S eₛ
   `⊤              : Term S τₛ
   _⇒_             : Term S τₛ → Term S τₛ → Term S τₛ
   ∀`α_            : Term (S ▷ τₛ) τₛ → Term S τₛ
-  [_]⇒_           : Term S cₛ → Term S τₛ → Term S τₛ
   ⋆               : Term S κₛ
 
--- [latex] hide
 
 Expr : Sorts → Set
 Expr S = Term S eₛ
@@ -188,9 +189,8 @@ item-ctxable eₛ = ⊤ᶜ
 item-ctxable τₛ = ⊥ᶜ
 item-ctxable oₛ = ⊥ᶜ
 
--- [latex] block(Stores)
-
 item-of : (s : Sort ⊤ᶜ) → Sort (item-ctxable s)
+-- [latex] block(item)
 item-of eₛ = τₛ
 item-of τₛ = κₛ
 item-of oₛ = κₛ
@@ -207,7 +207,7 @@ data Ctx : Sorts → Set where
   _▶_ : Ctx S → Term S (item-of s) → Ctx (S ▷ s)
   _▸_ : Ctx S → Cstr S → Ctx S
 
--- [latex] block(lookup)
+-- [latex] hide
 
 lookup : Ctx S → Var S s → Term S (item-of s) 
 lookup (Γ ▶ S) (here refl) = wk S
@@ -236,9 +236,8 @@ kind-ctxable eₛ = ⊤ᶜ
 kind-ctxable τₛ = ⊥ᶜ
 kind-ctxable oₛ = ⊤ᶜ
 
--- [latex] block(Types)
-
 kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
+-- [latex] block(kind)
 kind-of eₛ = τₛ
 kind-of τₛ = κₛ
 kind-of oₛ = τₛ
@@ -248,18 +247,38 @@ kind-of oₛ = τₛ
 variable 
   T T' T'' T₁ T₂ : Term S (kind-of s)
 
--- [latex] block(Typing)
 
 infix 3 _⊢_∶_
+-- [latex] block(Typing)
 data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
-  ⊢`x :  
-    lookup Γ x ≡ τ →
-    ----------------
-    Γ ⊢ (` x) ∶ τ
   ⊢`o :  
     [ ` o ∶ τ ]∈ Γ →
     -----------------
     Γ ⊢ ` o ∶ τ
+  ⊢decl : 
+    Γ ▶ ⋆ ⊢ e ∶ wk τ →
+    -------------------
+    Γ ⊢ decl`o`in e ∶ τ
+  ⊢inst :
+    Γ ⊢ e₂ ∶ τ →
+    Γ ▸ (` o ∶ τ) ⊢ e₁ ∶ τ' →
+    -------------------------------
+    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ τ'    
+  ⊢ƛ : 
+    Γ ▸ c ⊢ e ∶ τ →  
+    ---------------------
+    Γ ⊢ ƛ c ⇒ e ∶ [ c ]⇒ τ
+  ⊢⊘ : 
+    Γ ⊢ e ∶ [ ` o ∶ τ ]⇒ τ' →
+    [ ` o ∶ τ ]∈ Γ →
+    --------------------------
+    Γ ⊢ e ∶ τ'
+  -- ...
+  -- [latex] hide
+  ⊢`x :  
+    lookup Γ x ≡ τ →
+    ----------------
+    Γ ⊢ (` x) ∶ τ
   ⊢⊤ : 
     -----------
     Γ ⊢ tt ∶ `⊤
@@ -271,10 +290,6 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
     Γ ▶ ⋆ ⊢ e ∶ τ →  
     -------------------
     Γ ⊢ Λ`α→ e ∶ ∀`α τ
-  ⊢ƛ : 
-    Γ ▸ c ⊢ e ∶ τ →  
-    ---------------------
-    Γ ⊢ ƛ c ⇒ e ∶ [ c ]⇒ τ
   ⊢· : 
     Γ ⊢ e₁ ∶ τ₁ ⇒ τ₂ →
     Γ ⊢ e₂ ∶ τ₁ →
@@ -284,44 +299,20 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
     Γ ⊢ e ∶ ∀`α τ' →
     --------------------
     Γ ⊢ e • τ ∶ τ' [ τ ]
-  ⊢⊘ : 
-    Γ ⊢ e ∶ [ ` o ∶ τ ]⇒ τ' →
-    [ ` o ∶ τ ]∈ Γ →
-    --------------------------
-    Γ ⊢ e ∶ τ'
   ⊢let : 
     Γ ⊢ e₂ ∶ τ →
     Γ ▶ τ ⊢ e₁ ∶ wk τ' →
     --------------------------
     Γ ⊢ let`x= e₂ `in e₁ ∶ τ'
-  ⊢decl : 
-    Γ ▶ ⋆ ⊢ e ∶ wk τ →
-    -------------------
-    Γ ⊢ decl`o`in e ∶ τ
-  ⊢inst :
-    Γ ⊢ e₂ ∶ τ →
-    Γ ▸ (` o ∶ τ) ⊢ e₁ ∶ τ' →
-    -------------------------------
-    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ τ'    
 
--- [latex] hide
 
 -- Renaming Typing
 
--- [latex] block(RenTyping)
 
 infix 3 _∶_⇒ᵣ_
+-- [latex] block(RenTyping)
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
-  ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢keepᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 
-    ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
-    --------------------------------------
-    extᵣ ρ ∶ Γ₁ ▶ I ⇒ᵣ Γ₂ ▶ ren ρ I
-  ⊢dropᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₂ (item-of s)} →
-    ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
-    -------------
-    dropᵣ ρ ∶ Γ₁ ⇒ᵣ Γ₂ ▶ I
-  ⊢keep-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
+  ⊢ext-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
     ρ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ᵣ (Γ₂ ▸ (ren ρ o ∶ ren ρ τ))
@@ -329,8 +320,17 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     -------------
     ρ ∶ Γ₁ ⇒ᵣ (Γ₂ ▸ (o ∶ τ))
-
--- [latex] hide
+  -- ...
+  -- [latex] hide
+  ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
+  ⊢extᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 
+    ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
+    --------------------------------------
+    extᵣ ρ ∶ Γ₁ ▶ I ⇒ᵣ Γ₂ ▶ ren ρ I
+  ⊢dropᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₂ (item-of s)} →
+    ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
+    -------------
+    dropᵣ ρ ∶ Γ₁ ⇒ᵣ Γ₂ ▶ I
 
 ⊢wkᵣ : ∀ {I : Term S (item-of s)} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ I)
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
@@ -371,9 +371,9 @@ idᵣτ≡τ ([ ` o ∶ τ ]⇒ τ') = cong₂ [_]⇒_ (cong₂ _∶_ refl (id�
 
 -- Substitution Typing ------------------------------------------------------------------
 
--- [latex] block(SubTyping)
 
 infix 3 _∶_⇒ₛ_
+-- [latex] block(SubTyping)
 data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢idₛ : ∀ {Γ} → _∶_⇒ₛ_ {S₁ = S} {S₂ = S} idₛ Γ Γ
   ⊢keepₛ  : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 

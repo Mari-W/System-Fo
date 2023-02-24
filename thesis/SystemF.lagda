@@ -80,17 +80,10 @@ Type : Sorts → Set
 Type S = Term S τₛ
 \end{code}}
 \begin{code}[hide]
-Kind : Sorts → Set
-\end{code}
-\newcommand{\FKind}[0]{\begin{code}[inline]
-Kind S = Term S κₛ
-\end{code}}
-\begin{code}[hide]
 variable
   t t' t'' t₁ t₂ : Term S s
   e e' e'' e₁ e₂ : Expr S
   τ τ' τ'' τ₁ τ₂ : Type S
-  κ κ' κ'' κ₁ κ₂ : Type S
 
 -- Renaming -----------------------------------------------------------------------------
 \end{code}
@@ -193,16 +186,19 @@ variable
 kind-ctxable : Sort ⊤ᶜ → Ctxable
 kind-ctxable eₛ = ⊤ᶜ
 kind-ctxable τₛ = ⊥ᶜ
-\end{code}}
-\newcommand{\FCtx}[0]{\begin{code}
+
+
 kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
+\end{code}}
+\newcommand{\Fkind}[0]{\begin{code}
 kind-of eₛ = τₛ
 kind-of τₛ = κₛ
-
-
+\end{code}}
+\begin{code}[hide]
 variable 
   T T' T'' T₁ T₂ : Term S (kind-of s)
-
+\end{code}
+\newcommand{\FCtx}[0]{\begin{code}
 data Ctx : Sorts → Set where
   ∅   : Ctx []
   _▶_ : Ctx S → Term S (kind-of s) → Ctx (S ▷ s)
@@ -253,17 +249,18 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
 \end{code}}
 \begin{code}[hide]
 -- Renaming Typing
+
+infix 3 _∶_⇒ᵣ_
 \end{code}
 \newcommand{\FRenTyping}[0]{\begin{code}
-infix 3 _∶_⇒ᵣ_
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢keepᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Term S₁ (kind-of s)} → 
+  ⊢extᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₁ (kind-of s)} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
-    (extᵣ ρ) ∶ (Γ₁ ▶ t') ⇒ᵣ (Γ₂ ▶ ren ρ t')
-  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Term S₂ (kind-of s)} →
+    (extᵣ ρ) ∶ (Γ₁ ▶ T') ⇒ᵣ (Γ₂ ▶ ren ρ T')
+  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₂ (kind-of s)} →
     ρ ∶ Γ₁  ⇒ᵣ Γ₂ →
-    (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ t')
+    (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ T')
 \end{code}}
 \begin{code}[hide]
 ⊢wkᵣ : ∀ {T : Term S (kind-of s)} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ T)
@@ -309,24 +306,25 @@ idₛτ≡τ (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁τ≡σ₂�
 ⊢singleₛ ⊢t {τₛ} x = {!   !}
 
 -- Semantics ----------------------------------------------------------------------------
-
+\end{code}
+\newcommand{\FVal}[0]{\begin{code}
 data Val : Expr S → Set where
   v-λ : Val (λ`x→ e)
   v-Λ : Val (Λ`α→ e)
   v-tt : ∀ {S} → Val (tt {S = S})
-  
+\end{code}}
+\begin{code}[hide]
 infixr 3 _↪_
+\end{code}
+\newcommand{\FSemantics}[0]{\begin{code}
 data _↪_ : Expr S → Expr S → Set where
   β-λ :
     Val e₂ →
-    ---------------------------------
     (λ`x→ e₁) · e₂ ↪ (e₁ [ e₂ ])
   β-Λ :
-    ----------------------
     (Λ`α→ e) • τ ↪ e [ τ ]
   β-let : 
      Val e₂ →
-     ------------------------------------
     let`x= e₂ `in e₁ ↪ (e₁ [ e₂ ])
   ξ-·₁ :
     e₁ ↪ e →
@@ -335,7 +333,6 @@ data _↪_ : Expr S → Expr S → Set where
   ξ-·₂ :
     e₂ ↪ e →
     Val e₁ →
-    ----------------------
     e₁ · e₂ ↪ e₁ · e
   ξ-• :
     e ↪ e' →
@@ -343,13 +340,14 @@ data _↪_ : Expr S → Expr S → Set where
     e • τ ↪ e' • τ
   ξ-let :
     e₂ ↪ e →
-    ------------------------------------
     let`x= e₂ `in e₁ ↪ let`x= e `in e₁ 
-
+\end{code}}
+\begin{code}[hide]
 -- Soundness ---------------------------------------------------------------------------- 
 
 -- Progress
-
+\end{code}
+\newcommand{\FProgress}[0]{\begin{code}
 progress : 
   ∅ ⊢ e ∶ τ →
   (∃[ e' ] (e ↪ e')) ⊎ Val e
@@ -366,7 +364,8 @@ progress (⊢• {τ = τ} ⊢e) with progress ⊢e
 progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢e₂ 
 ... | inj₁ (e₂' , e₂↪e₂') = inj₁ ((let`x= e₂' `in e₁) , ξ-let e₂↪e₂')
 ... | inj₂ v = inj₁ (e₁ [ e₂ ] , β-let v)
-
+\end{code}}
+\begin{code}[hide]
 -- Subject Reduction
 
 ⊢ρ-preserves-Γ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} (x : Var S₁ s) →
@@ -380,8 +379,8 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   Γ₂ ⊢ (ren ρ t) ∶ (ren ρ T)
 ⊢ρ-preserves ⊢ρ (⊢`x {x = x} refl) = ⊢`x (sym (⊢ρ-preserves-Γ x ⊢ρ))
 ⊢ρ-preserves ⊢ρ ⊢⊤ = ⊢⊤
-⊢ρ-preserves ⊢ρ (⊢λ ⊢e) = {!   !} -- ⊢λ (subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves (⊢keepᵣ ⊢ρ) ⊢e)))
-⊢ρ-preserves ⊢ρ (⊢Λ ⊢e) = ⊢Λ (⊢ρ-preserves (⊢keepᵣ ⊢ρ) ⊢e)
+⊢ρ-preserves ⊢ρ (⊢λ ⊢e) = {!   !} -- ⊢λ (subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves (⊢extᵣ ⊢ρ) ⊢e)))
+⊢ρ-preserves ⊢ρ (⊢Λ ⊢e) = ⊢Λ (⊢ρ-preserves (⊢extᵣ ⊢ρ) ⊢e)
 ⊢ρ-preserves ⊢ρ (⊢· ⊢e₁ ⊢e₂) = ⊢· (⊢ρ-preserves ⊢ρ ⊢e₁) (⊢ρ-preserves ⊢ρ ⊢e₂)
 ⊢ρ-preserves ⊢ρ (⊢• ⊢e) = {!   !} -- subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves ⊢ρ ⊢e))
 ⊢ρ-preserves ⊢ρ (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢ρ-preserves ⊢ρ ⊢e₂) {!   !} 
@@ -424,13 +423,16 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   extₛ σ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub σ T)
 ⊢σ↑ {σ = σ} {T = τ} ⊢σ {eₛ} (here refl) = ⊢`x (sym (σ↑·wkt≡wk·σt σ τ))
-⊢σ↑ ⊢σ {τₛ} (here refl) = {!   !}
+⊢σ↑ ⊢σ {τₛ} (here refl) = {!    !}
 ⊢σ↑ ⊢σ (there x) = {!   !}
-
+\end{code}
+\newcommand{\Fpreserves}[0]{\begin{code}
 ⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (kind-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   Γ₁ ⊢ t ∶ T →
   Γ₂ ⊢ (sub σ t) ∶ (sub σ T)
+\end{code}}
+\begin{code}[hide]
 ⊢σ-preserves ⊢σ (⊢`x {x = x} refl) = ⊢σ x
 ⊢σ-preserves ⊢σ ⊢⊤ = ⊢⊤
 ⊢σ-preserves {σ = σ} ⊢σ (⊢λ {τ' = τ'} ⊢e) = ⊢λ 
@@ -441,23 +443,29 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   subst (_ ⊢ sub σ (e • τ) ∶_) (sym (σ·t[t']≡σ↑·t[σ·t'] σ τ' τ)) (⊢• (⊢σ-preserves ⊢σ ⊢e))
 ⊢σ-preserves {σ = σ} ⊢σ (⊢let {τ' = τ'} ⊢e₂ ⊢e₁) = ⊢let (⊢σ-preserves ⊢σ ⊢e₂) 
   (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e₁))
+  
 ⊢σ-preserves ⊢σ ⊢τ = ⊢τ
-
+\end{code}
+\newcommand{\Feepreserves}[0]{\begin{code}
 e[e]-preserves :  ∀ {Γ : Ctx S} {e₁ : Expr (S ▷ eₛ)} {e₂ : Expr S} {τ τ' : Type S} →
   Γ ▶ τ ⊢ e₁ ∶ wk τ' →
   Γ ⊢ e₂ ∶ τ → 
-  --------------------
-  Γ ⊢ e₁ [ e₂ ] ∶ τ'  
+  Γ ⊢ e₁ [ e₂ ] ∶ τ' 
+\end{code}}
+\begin{code}[hide]
 e[e]-preserves {τ = τ} ⊢e₁ ⊢e₂ = subst (_ ⊢ _ ∶_) τ[e]≡τ 
   (⊢σ-preserves (⊢extₛ (⊢idₛ ⊢e₂) (subst (_ ⊢ _ ∶_) (sym (idₛτ≡τ τ)) ⊢e₂)) ⊢e₁) 
-
+\end{code}
+\newcommand{\Fetpreserves}[0]{\begin{code}
 e[τ]-preserves :  ∀ {Γ : Ctx S} {e : Expr (S ▷ τₛ)} {τ : Type S} {τ' : Type (S ▷ τₛ)} →
   Γ ▶ ⋆ ⊢ e ∶ τ' →
   Γ ⊢ τ ∶ ⋆ →
-  --------------------
-  Γ ⊢ e [ τ ] ∶ τ' [ τ ]  
+  Γ ⊢ e [ τ ] ∶ τ' [ τ ] 
+\end{code}}
+\begin{code}[hide]
 e[τ]-preserves ⊢e ⊢τ = ⊢σ-preserves (⊢singleₛ ⊢τ) ⊢e
-
+\end{code}
+\newcommand{\FSubjectReduction}[0]{\begin{code}
 subject-reduction : ∀ {Γ : Ctx S} →
   Γ ⊢ e ∶ τ →
   e ↪ e' →
@@ -468,5 +476,5 @@ subject-reduction (⊢· ⊢e₁ ⊢e₂) (ξ-·₂ e₂↪e x) = ⊢· ⊢e₁ 
 subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[τ]-preserves ⊢e ⊢τ
 subject-reduction (⊢• ⊢e) (ξ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (β-let v₂) = e[e]-preserves ⊢e₁ ⊢e₂
-subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁    
-\end{code}
+subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁  
+\end{code}}

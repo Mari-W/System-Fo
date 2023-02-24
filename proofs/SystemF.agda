@@ -81,17 +81,11 @@ Type : Sorts → Set
 Type S = Term S τₛ
 
 -- [latex] hide
-Kind : Sorts → Set
--- [latex] inline(Kind)
-Kind S = Term S κₛ
-
--- [latex] hide
 
 variable
   t t' t'' t₁ t₂ : Term S s
   e e' e'' e₁ e₂ : Expr S
   τ τ' τ'' τ₁ τ₂ : Type S
-  κ κ' κ'' κ₁ κ₂ : Type S
 
 -- Renaming -----------------------------------------------------------------------------
 
@@ -200,15 +194,18 @@ kind-ctxable : Sort ⊤ᶜ → Ctxable
 kind-ctxable eₛ = ⊤ᶜ
 kind-ctxable τₛ = ⊥ᶜ
 
--- [latex] block(Ctx)
 
 kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
+-- [latex] block(kind)
 kind-of eₛ = τₛ
 kind-of τₛ = κₛ
 
+-- [latex] hide
 
 variable 
   T T' T'' T₁ T₂ : Term S (kind-of s)
+
+-- [latex] block(Ctx)
 
 data Ctx : Sorts → Set where
   ∅   : Ctx []
@@ -261,17 +258,16 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
 
 -- Renaming Typing
 
--- [latex] block(RenTyping)
-
 infix 3 _∶_⇒ᵣ_
+-- [latex] block(RenTyping)
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢keepᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Term S₁ (kind-of s)} → 
+  ⊢extᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₁ (kind-of s)} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
-    (extᵣ ρ) ∶ (Γ₁ ▶ t') ⇒ᵣ (Γ₂ ▶ ren ρ t')
-  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t' : Term S₂ (kind-of s)} →
+    (extᵣ ρ) ∶ (Γ₁ ▶ T') ⇒ᵣ (Γ₂ ▶ ren ρ T')
+  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₂ (kind-of s)} →
     ρ ∶ Γ₁  ⇒ᵣ Γ₂ →
-    (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ t')
+    (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ T')
 
 -- [latex] hide
 
@@ -322,23 +318,25 @@ idₛτ≡τ (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁τ≡σ₂�
 
 -- Semantics ----------------------------------------------------------------------------
 
+-- [latex] block(Val)
+
 data Val : Expr S → Set where
   v-λ : Val (λ`x→ e)
   v-Λ : Val (Λ`α→ e)
   v-tt : ∀ {S} → Val (tt {S = S})
-  
+
+-- [latex] hide
+
 infixr 3 _↪_
+-- [latex] block(Semantics)
 data _↪_ : Expr S → Expr S → Set where
   β-λ :
     Val e₂ →
-    ---------------------------------
     (λ`x→ e₁) · e₂ ↪ (e₁ [ e₂ ])
   β-Λ :
-    ----------------------
     (Λ`α→ e) • τ ↪ e [ τ ]
   β-let : 
      Val e₂ →
-     ------------------------------------
     let`x= e₂ `in e₁ ↪ (e₁ [ e₂ ])
   ξ-·₁ :
     e₁ ↪ e →
@@ -347,7 +345,6 @@ data _↪_ : Expr S → Expr S → Set where
   ξ-·₂ :
     e₂ ↪ e →
     Val e₁ →
-    ----------------------
     e₁ · e₂ ↪ e₁ · e
   ξ-• :
     e ↪ e' →
@@ -355,12 +352,15 @@ data _↪_ : Expr S → Expr S → Set where
     e • τ ↪ e' • τ
   ξ-let :
     e₂ ↪ e →
-    ------------------------------------
     let`x= e₂ `in e₁ ↪ let`x= e `in e₁ 
+
+-- [latex] hide
 
 -- Soundness ---------------------------------------------------------------------------- 
 
 -- Progress
+
+-- [latex] block(Progress)
 
 progress : 
   ∅ ⊢ e ∶ τ →
@@ -379,6 +379,8 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 ... | inj₁ (e₂' , e₂↪e₂') = inj₁ ((let`x= e₂' `in e₁) , ξ-let e₂↪e₂')
 ... | inj₂ v = inj₁ (e₁ [ e₂ ] , β-let v)
 
+-- [latex] hide
+
 -- Subject Reduction
 
 ⊢ρ-preserves-Γ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} (x : Var S₁ s) →
@@ -392,8 +394,8 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   Γ₂ ⊢ (ren ρ t) ∶ (ren ρ T)
 ⊢ρ-preserves ⊢ρ (⊢`x {x = x} refl) = ⊢`x (sym (⊢ρ-preserves-Γ x ⊢ρ))
 ⊢ρ-preserves ⊢ρ ⊢⊤ = ⊢⊤
-⊢ρ-preserves ⊢ρ (⊢λ ⊢e) = {!   !} -- ⊢λ (subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves (⊢keepᵣ ⊢ρ) ⊢e)))
-⊢ρ-preserves ⊢ρ (⊢Λ ⊢e) = ⊢Λ (⊢ρ-preserves (⊢keepᵣ ⊢ρ) ⊢e)
+⊢ρ-preserves ⊢ρ (⊢λ ⊢e) = {!   !} -- ⊢λ (subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves (⊢extᵣ ⊢ρ) ⊢e)))
+⊢ρ-preserves ⊢ρ (⊢Λ ⊢e) = ⊢Λ (⊢ρ-preserves (⊢extᵣ ⊢ρ) ⊢e)
 ⊢ρ-preserves ⊢ρ (⊢· ⊢e₁ ⊢e₂) = ⊢· (⊢ρ-preserves ⊢ρ ⊢e₁) (⊢ρ-preserves ⊢ρ ⊢e₂)
 ⊢ρ-preserves ⊢ρ (⊢• ⊢e) = {!   !} -- subst (_ ⊢ _ ∶_) {!   !} (⊢• (⊢ρ-preserves ⊢ρ ⊢e))
 ⊢ρ-preserves ⊢ρ (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢ρ-preserves ⊢ρ ⊢e₂) {!   !} 
@@ -436,13 +438,15 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   extₛ σ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub σ T)
 ⊢σ↑ {σ = σ} {T = τ} ⊢σ {eₛ} (here refl) = ⊢`x (sym (σ↑·wkt≡wk·σt σ τ))
-⊢σ↑ ⊢σ {τₛ} (here refl) = {!   !}
+⊢σ↑ ⊢σ {τₛ} (here refl) = {!    !}
 ⊢σ↑ ⊢σ (there x) = {!   !}
 
+-- [latex] block(preserves)
 ⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (kind-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   Γ₁ ⊢ t ∶ T →
   Γ₂ ⊢ (sub σ t) ∶ (sub σ T)
+-- [latex] hide
 ⊢σ-preserves ⊢σ (⊢`x {x = x} refl) = ⊢σ x
 ⊢σ-preserves ⊢σ ⊢⊤ = ⊢⊤
 ⊢σ-preserves {σ = σ} ⊢σ (⊢λ {τ' = τ'} ⊢e) = ⊢λ 
@@ -453,22 +457,29 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   subst (_ ⊢ sub σ (e • τ) ∶_) (sym (σ·t[t']≡σ↑·t[σ·t'] σ τ' τ)) (⊢• (⊢σ-preserves ⊢σ ⊢e))
 ⊢σ-preserves {σ = σ} ⊢σ (⊢let {τ' = τ'} ⊢e₂ ⊢e₁) = ⊢let (⊢σ-preserves ⊢σ ⊢e₂) 
   (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e₁))
+  
 ⊢σ-preserves ⊢σ ⊢τ = ⊢τ
+
+-- [latex] block(eepreserves)
 
 e[e]-preserves :  ∀ {Γ : Ctx S} {e₁ : Expr (S ▷ eₛ)} {e₂ : Expr S} {τ τ' : Type S} →
   Γ ▶ τ ⊢ e₁ ∶ wk τ' →
   Γ ⊢ e₂ ∶ τ → 
-  --------------------
-  Γ ⊢ e₁ [ e₂ ] ∶ τ'  
+  Γ ⊢ e₁ [ e₂ ] ∶ τ' 
+-- [latex] hide
 e[e]-preserves {τ = τ} ⊢e₁ ⊢e₂ = subst (_ ⊢ _ ∶_) τ[e]≡τ 
   (⊢σ-preserves (⊢extₛ (⊢idₛ ⊢e₂) (subst (_ ⊢ _ ∶_) (sym (idₛτ≡τ τ)) ⊢e₂)) ⊢e₁) 
+
+-- [latex] block(etpreserves)
 
 e[τ]-preserves :  ∀ {Γ : Ctx S} {e : Expr (S ▷ τₛ)} {τ : Type S} {τ' : Type (S ▷ τₛ)} →
   Γ ▶ ⋆ ⊢ e ∶ τ' →
   Γ ⊢ τ ∶ ⋆ →
-  --------------------
-  Γ ⊢ e [ τ ] ∶ τ' [ τ ]  
+  Γ ⊢ e [ τ ] ∶ τ' [ τ ] 
+-- [latex] hide
 e[τ]-preserves ⊢e ⊢τ = ⊢σ-preserves (⊢singleₛ ⊢τ) ⊢e
+
+-- [latex] block(SubjectReduction)
 
 subject-reduction : ∀ {Γ : Ctx S} →
   Γ ⊢ e ∶ τ →
@@ -480,5 +491,6 @@ subject-reduction (⊢· ⊢e₁ ⊢e₂) (ξ-·₂ e₂↪e x) = ⊢· ⊢e₁ 
 subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[τ]-preserves ⊢e ⊢τ
 subject-reduction (⊢• ⊢e) (ξ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (β-let v₂) = e[e]-preserves ⊢e₁ ⊢e₂
-subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁    
+subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁  
+
 -- [latex] end    

@@ -98,9 +98,9 @@ T⇝T {s = τₛ} Γ _ = ⋆
   ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂ →
   F.Ren (Γ⇝S Γ₁) (Γ⇝S Γ₂)
 ⊢ρ⇝ρ ⊢idᵣ = id
-⊢ρ⇝ρ (⊢keepᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ)
+⊢ρ⇝ρ (⊢extᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ)
 ⊢ρ⇝ρ (⊢dropᵣ ⊢ρ) = F.dropᵣ (⊢ρ⇝ρ ⊢ρ)
-⊢ρ⇝ρ (⊢keep-instᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ) 
+⊢ρ⇝ρ (⊢ext-instᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ) 
 ⊢ρ⇝ρ (⊢drop-instᵣ ⊢ρ) = F.dropᵣ (⊢ρ⇝ρ ⊢ρ)
 
 -- Substititution
@@ -124,10 +124,10 @@ T⇝T {s = τₛ} Γ _ = ⋆
   (x : Fᴼ.Var Fᴼ.S₁ Fᴼ.s) →
   (⊢ρ⇝ρ ⊢ρ) (x⇝x x) ≡ x⇝x (ρ x)  
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢idᵣ x = refl
-⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  (⊢keepᵣ ⊢ρ) (here refl) = refl
-⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  (⊢keepᵣ ⊢ρ) (there x) = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢ρ x)
+⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  (⊢extᵣ ⊢ρ) (here refl) = refl
+⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  (⊢extᵣ ⊢ρ) (there x) = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢ρ x)
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  (⊢dropᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢ρ x)
-⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  (⊢keep-instᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢ρ x)
+⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  (⊢ext-instᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢ρ x)
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  (⊢drop-instᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢ρ x)
 
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ :  {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
@@ -137,7 +137,7 @@ T⇝T {s = τₛ} Γ _ = ⋆
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (` x) = cong `_ (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢ρ x)
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ `⊤ = refl
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ₁) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ₂)
-⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (∀`α τ) = cong F.∀`α_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ (⊢keepᵣ ⊢ρ) τ)
+⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (∀`α τ) = cong F.∀`α_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ (⊢extᵣ ⊢ρ) τ)
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ ([ ` o ∶ τ ]⇒ τ') = cong₂ _⇒_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ') 
 
 -- Substititution
