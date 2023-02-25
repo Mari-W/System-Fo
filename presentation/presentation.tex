@@ -27,7 +27,7 @@
 \section{Introduction}
 
 \begin{frame}[fragile]
-  \frametitle{Type Classes in Haskell}
+  \frametitle{Typeclasses}
   \begin{block}{Overloading Equality in Haskell}
     \begin{center}
       ~
@@ -49,7 +49,7 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Desugaring Type Classes}
+  \frametitle{Desugaring Typeclasses}
   \begin{block}{Overloading Equality in System \Fo}
     \begin{center}
       ~
@@ -99,12 +99,15 @@
 \section{Agda Formalization}
 
 \begin{frame}[fragile]
-  \frametitle{Agda Formalization of System \Fo}
-  \begin{block}{Syntax Representation in Agda}
+  \frametitle{Elegant Syntax Representations in Agda}
+  \begin{block}{System \Fo\ Syntax}
     \begin{small}
-      
-        \FoTerm
-     
+      \FoTerm
+    \end{small}
+  \end{block}
+  \begin{block}{Substitution Defined on Terms}
+    \begin{small}
+      \Fsubs
     \end{small}
   \end{block}
 \end{frame}
@@ -120,18 +123,67 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{The Dectionary Passing Transform}
+  \frametitle{Extrinsic Typing Rules}
+  \begin{block}{System \Fo\ Typing}
+    \begin{small}
+      \FoTyping
+    \end{small}
+  \end{block}
 \end{frame}
 
 \section{Agda Formalization of the Dictionary Passing Transform}
 \begin{frame}[fragile]
   \frametitle{Fun Lemmas on Our Way to Type Preservation}
-  
+  \begin{block}{Type Transform Preserves Weakening}
+    \DPTTypePresRen
+  \end{block}
+  \begin{block}{Type Transform Preserves Substitution}
+    \DPTTypePresSub
+  \end{block}
+  \begin{block}{Instance Resolution Transforms to Correct Variable}
+    \DPTOVarPresLookup
+\end{block}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Type Preservation of the Dictionary Passing Transform}
-  
+  \begin{block}{Typed System \Fo\ tranforms to typed System F}
+    \begin{small}
+      \DPTTermPres
+    \end{small}
+  \end{block}
+\end{frame}
+
+\section{Future Work}
+
+\begin{frame}[fragile]
+  \frametitle{Future Work: Hindley Milner \& Semantic Preservation}
+  \begin{block}{Overloading in Hindley Milner}
+    \
+    \begin{itemize}
+      \item Constraint abstractions cannot require poly types
+      \item All instances must differ in the type of there first argument
+	    \begin{enumerate}
+        \item Deterministic instance resolution
+        \item Preserve Algorithm W
+      \end{enumerate}
+    \end{itemize}
+    \
+  \end{block}
+  \begin{block}{Proving Semantic Preservation}
+    \
+    \begin{itemize}
+      \item System \Fo\ would require typed semantics
+      \begin{enumerate}
+        \item Prove that 
+      \end{enumerate}
+      \item Hindley Milner based System could support untyped Semantics
+      \begin{enumerate}
+        \item Prove that 
+      \end{enumerate}
+    \end{itemize}
+    \
+  \end{block}
 \end{frame}
 
 

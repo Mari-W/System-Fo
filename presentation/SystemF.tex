@@ -1434,12 +1434,14 @@
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaComment{--\ Renaming\ Typing}\<%
-\end{code}
-\newcommand{\FRenTyping}[0]{\begin{code}%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaKeyword{infix}\AgdaSpace{}%
 \AgdaNumber{3}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}∶\AgdaUnderscore{}⇒ᵣ\AgdaUnderscore{}}}\<%
-\\
+\end{code}
+\newcommand{\FRenTyping}[0]{\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}∶\AgdaUnderscore{}⇒ᵣ\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1490,7 +1492,7 @@
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{S₂}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{t'}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{T'}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Term}\AgdaSpace{}%
 \AgdaGeneralizable{S₁}\AgdaSpace{}%
@@ -1512,13 +1514,13 @@
 \AgdaOperator{\AgdaDatatype{∶}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{Γ₁}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{▶}}\AgdaSpace{}%
-\AgdaBound{t'}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{T'}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{⇒ᵣ}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{Γ₂}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{▶}}\AgdaSpace{}%
 \AgdaFunction{ren}\AgdaSpace{}%
 \AgdaBound{ρ}\AgdaSpace{}%
-\AgdaBound{t'}\AgdaSymbol{)}\<%
+\AgdaBound{T'}\AgdaSymbol{)}\<%
 \\
 %
 \>[2]\AgdaInductiveConstructor{⊢dropᵣ}\AgdaSpace{}%
@@ -1537,7 +1539,7 @@
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{S₂}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{t'}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{T'}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Term}\AgdaSpace{}%
 \AgdaGeneralizable{S₂}\AgdaSpace{}%
@@ -1561,7 +1563,7 @@
 \AgdaOperator{\AgdaDatatype{⇒ᵣ}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{Γ₂}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{▶}}\AgdaSpace{}%
-\AgdaBound{t'}\AgdaSymbol{)}\<%
+\AgdaBound{T'}\AgdaSymbol{)}\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaFunction{⊢wkᵣ}\AgdaSpace{}%
@@ -1975,9 +1977,8 @@
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaComment{--\ Semantics\ ----------------------------------------------------------------------------}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+\newcommand{\FVal}[0]{\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Val}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -2012,13 +2013,13 @@
 \AgdaSymbol{\{}\AgdaArgument{S}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaBound{S}\AgdaSymbol{\})}\<%
-\\
-\>[0]\<%
-\\
+\end{code}}
+\begin{code}[hide]%
 \>[0]\AgdaKeyword{infixr}\AgdaSpace{}%
 \AgdaNumber{3}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}↪\AgdaUnderscore{}}}\<%
-\\
+\end{code}
+\newcommand{\FSemantics}[0]{\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}↪\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -2041,9 +2042,6 @@
 \AgdaSymbol{→}\<%
 \\
 %
-\>[4]\AgdaComment{---------------------------------}\<%
-\\
-%
 \>[4]\AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{λ`x→}}\AgdaSpace{}%
 \AgdaGeneralizable{e₁}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{·}}\AgdaSpace{}%
@@ -2059,9 +2057,6 @@
 \AgdaSymbol{:}\<%
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaComment{----------------------}\<%
-\\
-%
 \>[4]\AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{Λ`α→}}\AgdaSpace{}%
 \AgdaGeneralizable{e}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{•}}\AgdaSpace{}%
@@ -2077,14 +2072,11 @@
 \AgdaSymbol{:}\<%
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
-\>[5]\AgdaDatatype{Val}\AgdaSpace{}%
+\>[4]\AgdaDatatype{Val}\AgdaSpace{}%
 \AgdaGeneralizable{e₂}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
 %
-\>[5]\AgdaComment{------------------------------------}\<%
-\\
-\>[2][@{}l@{\AgdaIndent{0}}]%
 \>[4]\AgdaOperator{\AgdaInductiveConstructor{let`x=}}\AgdaSpace{}%
 \AgdaGeneralizable{e₂}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{`in}}\AgdaSpace{}%
@@ -2133,9 +2125,6 @@
 \AgdaSymbol{→}\<%
 \\
 %
-\>[4]\AgdaComment{----------------------}\<%
-\\
-%
 \>[4]\AgdaGeneralizable{e₁}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{·}}\AgdaSpace{}%
 \AgdaGeneralizable{e₂}\AgdaSpace{}%
@@ -2177,9 +2166,6 @@
 \AgdaSymbol{→}\<%
 \\
 %
-\>[4]\AgdaComment{------------------------------------}\<%
-\\
-%
 \>[4]\AgdaOperator{\AgdaInductiveConstructor{let`x=}}\AgdaSpace{}%
 \AgdaGeneralizable{e₂}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{`in}}\AgdaSpace{}%
@@ -2189,17 +2175,15 @@
 \AgdaGeneralizable{e}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{`in}}\AgdaSpace{}%
 \AgdaGeneralizable{e₁}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}}
+\begin{code}[hide]%
 \>[0]\AgdaComment{--\ Soundness\ ----------------------------------------------------------------------------\ }\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaComment{--\ Progress}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+\newcommand{\FProgress}[0]{\begin{code}%
 \>[0]\AgdaFunction{progress}\AgdaSpace{}%
 \AgdaSymbol{:}\<%
 \\
@@ -2399,9 +2383,8 @@
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaInductiveConstructor{β-let}\AgdaSpace{}%
 \AgdaBound{v}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}}
+\begin{code}[hide]%
 \>[0]\AgdaComment{--\ Subject\ Reduction}\<%
 \\
 %
@@ -3041,9 +3024,8 @@
 \AgdaCatchallClause{\AgdaBound{x}}\AgdaCatchallClause{\AgdaSymbol{)}}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaHole{\{!\ \ \ !\}}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+\newcommand{\Fpreserves}[0]{\begin{code}%
 \>[0]\AgdaFunction{⊢σ-preserves}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
@@ -3099,7 +3081,8 @@
 \AgdaSymbol{(}\AgdaFunction{sub}\AgdaSpace{}%
 \AgdaBound{σ}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSymbol{)}\<%
-\\
+\end{code}}
+\begin{code}[hide]%
 \>[0]\AgdaFunction{⊢σ-preserves}\AgdaSpace{}%
 \AgdaBound{⊢σ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{⊢`x}\AgdaSpace{}%
@@ -3245,9 +3228,8 @@
 \AgdaInductiveConstructor{⊢τ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{⊢τ}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+\newcommand{\Feepreserves}[0]{\begin{code}%
 \>[0]\AgdaFunction{e[e]-preserves}\AgdaSpace{}%
 \AgdaSymbol{:}%
 \>[18]\AgdaSymbol{∀}\AgdaSpace{}%
@@ -3292,9 +3274,6 @@
 \AgdaSymbol{→}\<%
 \\
 %
-\>[2]\AgdaComment{--------------------}\<%
-\\
-%
 \>[2]\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{⊢}}\AgdaSpace{}%
 \AgdaBound{e₁}\AgdaSpace{}%
@@ -3303,7 +3282,8 @@
 \AgdaOperator{\AgdaFunction{]}}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{∶}}\AgdaSpace{}%
 \AgdaBound{τ'}\<%
-\\
+\end{code}}
+\begin{code}[hide]%
 \>[0]\AgdaFunction{e[e]-preserves}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{τ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
@@ -3333,9 +3313,8 @@
 \AgdaBound{τ}\AgdaSymbol{))}\AgdaSpace{}%
 \AgdaBound{⊢e₂}\AgdaSymbol{))}\AgdaSpace{}%
 \AgdaBound{⊢e₁}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+\newcommand{\Fetpreserves}[0]{\begin{code}%
 \>[0]\AgdaFunction{e[τ]-preserves}\AgdaSpace{}%
 \AgdaSymbol{:}%
 \>[18]\AgdaSymbol{∀}\AgdaSpace{}%
@@ -3380,9 +3359,6 @@
 \AgdaSymbol{→}\<%
 \\
 %
-\>[2]\AgdaComment{--------------------}\<%
-\\
-%
 \>[2]\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{⊢}}\AgdaSpace{}%
 \AgdaBound{e}\AgdaSpace{}%
@@ -3394,7 +3370,8 @@
 \AgdaOperator{\AgdaFunction{[}}\AgdaSpace{}%
 \AgdaBound{τ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{]}}\<%
-\\
+\end{code}}
+\begin{code}[hide]%
 \>[0]\AgdaFunction{e[τ]-preserves}\AgdaSpace{}%
 \AgdaBound{⊢e}\AgdaSpace{}%
 \AgdaInductiveConstructor{⊢τ}\AgdaSpace{}%
@@ -3403,9 +3380,8 @@
 \AgdaSymbol{(}\AgdaFunction{⊢singleₛ}\AgdaSpace{}%
 \AgdaInductiveConstructor{⊢τ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{⊢e}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+\newcommand{\FSubjectReduction}[0]{\begin{code}%
 \>[0]\AgdaFunction{subject-reduction}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
@@ -3519,4 +3495,4 @@
 \AgdaBound{⊢e₂}\AgdaSpace{}%
 \AgdaBound{e₂↪e'}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{⊢e₁}\<%
-\end{code}
+\end{code}}

@@ -58,14 +58,15 @@ infix  6 `_ decl`o`in_
 
 -- [latex] block(Term)
 data Term : Sorts → Sort r → Set where
+  `_              : s ∈ S → Term S s
   decl`o`in_      : Term (S ▷ oₛ) eₛ → Term S eₛ
   inst`_`=_`in_   : Term S oₛ → Term S eₛ → Term S eₛ → Term S eₛ
   _∶_             : Term S oₛ → Term S τₛ → Term S cₛ
   ƛ_⇒_            : Term S cₛ → Term S eₛ → Term S eₛ 
   [_]⇒_           : Term S cₛ → Term S τₛ → Term S τₛ
   -- ...
-  -- [latex] hide
-  `_              : s ∈ S → Term S s
+  -- [latex] hide  
+  -- TODO HIDE `_
   tt              : Term S eₛ
   λ`x→_           : Term (S ▷ eₛ) eₛ → Term S eₛ
   Λ`α→_           : Term (S ▷ τₛ) eₛ → Term S eₛ
@@ -251,28 +252,25 @@ variable
 infix 3 _⊢_∶_
 -- [latex] block(Typing)
 data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
-  ⊢`o :  
-    [ ` o ∶ τ ]∈ Γ →
-    -----------------
-    Γ ⊢ ` o ∶ τ
-  ⊢decl : 
-    Γ ▶ ⋆ ⊢ e ∶ wk τ →
-    -------------------
-    Γ ⊢ decl`o`in e ∶ τ
   ⊢inst :
     Γ ⊢ e₂ ∶ τ →
     Γ ▸ (` o ∶ τ) ⊢ e₁ ∶ τ' →
-    -------------------------------
-    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ τ'    
+    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ τ'
+  ⊢`o :  
+    [ ` o ∶ τ ]∈ Γ →
+    Γ ⊢ ` o ∶ τ
   ⊢ƛ : 
     Γ ▸ c ⊢ e ∶ τ →  
-    ---------------------
     Γ ⊢ ƛ c ⇒ e ∶ [ c ]⇒ τ
   ⊢⊘ : 
     Γ ⊢ e ∶ [ ` o ∶ τ ]⇒ τ' →
     [ ` o ∶ τ ]∈ Γ →
-    --------------------------
     Γ ⊢ e ∶ τ'
+  -- [latex] hide
+  -- TODO REMOVE THIS ^^^^^^  
+  ⊢decl : 
+    Γ ▶ ⋆ ⊢ e ∶ wk τ →
+    Γ ⊢ decl`o`in e ∶ τ
   -- ...
   -- [latex] hide
   ⊢`x :  
