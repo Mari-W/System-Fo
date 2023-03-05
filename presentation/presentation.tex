@@ -1,24 +1,21 @@
-\documentclass{beamer}
+\documentclass[aspectratio=169]{beamer}
 \usetheme{Boadilla}
 \useoutertheme{infolines}
-\setbeamertemplate{navigation symbols}{} 
+\setbeamertemplate{navigation symbols}{}
+
 \input{../thesis/packages}
-
 \input{../thesis/commands}
-
 \input{../thesis/unicode}
 
 \title[Formal Dictionary Passing Transform]{Formal Proof of Type Preservation of the\\Dictionary Passing Transform for System F}
 \institute[Uni Freiburg]{Chair of Programming Languages, University of Freiburg}
 \author{Marius Weidner}
 
-
 \begin{document}
 
 \input{SystemF}
 \input{SystemFo}
 \input{DictionaryPassingTransform}
-
 
 \begin{frame}
   \titlepage
@@ -105,20 +102,41 @@
       \FoTerm
     \end{small}
   \end{block}
-  \begin{block}{Substitution Defined on Terms}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Substitution \& Renaming}
+  \begin{block}{Renaming}
     \begin{small}
-      \Fsubs
+      \begin{AgdaSuppressSpace}
+        \FRen
+        \phantom{}
+        \Fwk
+      \end{AgdaSuppressSpace}
+    \end{small}
+  \end{block}
+  \begin{block}{Substitution}
+    \begin{small}
+      \begin{AgdaSuppressSpace}
+        \FSub
+        \phantom{}
+        \Fsubs
+      \end{AgdaSuppressSpace}
     \end{small}
   \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Agda Formalization of System \Fo}
+  \frametitle{Overloading Formalized}
   \begin{block}{Context}
-    \FoCtx
+    \begin{small}
+      \FoCtx
+    \end{small}
   \end{block}
   \begin{block}{Constraint Solving}
-    \FoCstrSolve
+    \begin{small}
+      \FoCstrSolve
+    \end{small}
   \end{block}
 \end{frame}
 
@@ -134,22 +152,24 @@
 \section{Agda Formalization of the Dictionary Passing Transform}
 \begin{frame}[fragile]
   \frametitle{Fun Lemmas on Our Way to Type Preservation}
-  \begin{block}{Type Transform Preserves Weakening}
+  \begin{block}{Type Transform Preserves Renaming}
     \DPTTypePresRen
   \end{block}
   \begin{block}{Type Transform Preserves Substitution}
     \DPTTypePresSub
   \end{block}
-  \begin{block}{Instance Resolution Transforms to Correct Variable}
+  \begin{block}{Instance Resolution Transforms to Unqiue Variable}
     \DPTOVarPresLookup
-\end{block}
+  \end{block}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Type Preservation of the Dictionary Passing Transform}
   \begin{block}{Typed System \Fo\ tranforms to typed System F}
     \begin{small}
-      \DPTTermPres
+      \begin{AgdaSuppressSpace}
+        \DPTTermPres
+      \end{AgdaSuppressSpace}
     \end{small}
   \end{block}
 \end{frame}
@@ -157,15 +177,17 @@
 \section{Future Work}
 
 \begin{frame}[fragile]
-  \frametitle{Future Work: Hindley Milner \& Semantic Preservation}
+  \frametitle{Further Work: Hindley Milner \& Semantic Preservation}
   \begin{block}{Overloading in Hindley Milner}
     \
     \begin{itemize}
       \item Constraint abstractions cannot require poly types
-      \item All instances must differ in the type of there first argument
+      \begin{enumerate}
+        \item Introduce sorts \Constr{mₛ} and \Constr{pₛ} in favour of single sort \Constr{τₛ}
+      \end{enumerate}
+      \item All instances must differ in the type of their first argument for each overloaded variable
 	    \begin{enumerate}
-        \item Deterministic instance resolution
-        \item Preserve Algorithm W
+        \item Preserves Algorithm W
       \end{enumerate}
     \end{itemize}
     \
@@ -173,18 +195,11 @@
   \begin{block}{Proving Semantic Preservation}
     \
     \begin{itemize}
-      \item System \Fo\ would require typed semantics
-      \begin{enumerate}
-        \item Prove that 
-      \end{enumerate}
-      \item Hindley Milner based System could support untyped Semantics
-      \begin{enumerate}
-        \item Prove that 
-      \end{enumerate}
+      \item Overloaded languages require typed semantics
+      \item Prove that, if \Sym{⊢e} \Data{↪} \Sym{⊢e'} then \\ \Constr{∃} \Constr{[} \Sym{e''} \Constr{]} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e} \Data{↪*} \Sym{e''}) \Constr{×} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e'} \Data{↪*} \Sym{e''}) 
     \end{itemize}
     \
   \end{block}
 \end{frame}
-
 
 \end{document}

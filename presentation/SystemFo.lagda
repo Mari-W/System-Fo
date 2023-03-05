@@ -23,12 +23,12 @@ variable
 data Sort : Ctxable → Set where
   oₛ  : Sort ⊤ᶜ
   cₛ  : Sort ⊥ᶜ
-  κₛ  : Sort ⊥ᶜ
   -- ...
 \end{code}}
 \begin{code}[hide]
   eₛ  : Sort ⊤ᶜ
   τₛ  : Sort ⊤ᶜ
+  κₛ  : Sort ⊥ᶜ
 \end{code}
 \begin{code}[hide]
 Sorts : Set
@@ -63,7 +63,6 @@ data Term : Sorts → Sort r → Set where
   _∶_             : Term S oₛ → Term S τₛ → Term S cₛ
   ƛ_⇒_            : Term S cₛ → Term S eₛ → Term S eₛ 
   [_]⇒_           : Term S cₛ → Term S τₛ → Term S τₛ
-  -- ...
 \end{code}}
 \begin{code}[hide]
   -- TODO HIDE `_
@@ -77,7 +76,6 @@ data Term : Sorts → Sort r → Set where
   _⇒_             : Term S τₛ → Term S τₛ → Term S τₛ
   ∀`α_            : Term (S ▷ τₛ) τₛ → Term S τₛ
   ⋆               : Term S κₛ
-
 
 Expr : Sorts → Set
 Expr S = Term S eₛ
@@ -221,8 +219,7 @@ variable
 \newcommand{\FoCstrSolve}[0]{\begin{code}
 data [_]∈_ : Cstr S → Ctx S → Set where
   here : [ (` o ∶ τ) ]∈ (Γ ▸ (` o ∶ τ)) 
-  under-bind : {I : Term S (item-of s')} → 
-    [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ I) 
+  under-bind : {I : Term S (item-of s')} → [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ I) 
   under-inst : [ c ]∈ Γ → [ c ]∈ (Γ ▸ c')
 \end{code}}
 \begin{code}[hide]

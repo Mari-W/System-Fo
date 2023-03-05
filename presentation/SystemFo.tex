@@ -133,12 +133,6 @@
 \AgdaInductiveConstructor{⊥ᶜ}\<%
 \\
 %
-\>[2]\AgdaInductiveConstructor{κₛ}%
-\>[6]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Sort}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊥ᶜ}\<%
-\\
-%
 \>[2]\AgdaComment{--\ ...}\<%
 \end{code}}
 \begin{code}[hide]%
@@ -153,6 +147,12 @@
 \>[6]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Sort}\AgdaSpace{}%
 \AgdaInductiveConstructor{⊤ᶜ}\<%
+\\
+%
+\>[2]\AgdaInductiveConstructor{κₛ}%
+\>[6]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Sort}\AgdaSpace{}%
+\AgdaInductiveConstructor{⊥ᶜ}\<%
 \end{code}
 \begin{code}[hide]%
 \>[0]\AgdaFunction{Sorts}\AgdaSpace{}%
@@ -404,9 +404,6 @@
 \AgdaDatatype{Term}\AgdaSpace{}%
 \AgdaGeneralizable{S}\AgdaSpace{}%
 \AgdaInductiveConstructor{τₛ}\<%
-\\
-%
-\>[2]\AgdaComment{--\ ...}\<%
 \end{code}}
 \begin{code}[hide]%
 %
@@ -534,8 +531,6 @@
 \AgdaGeneralizable{S}\AgdaSpace{}%
 \AgdaInductiveConstructor{κₛ}\<%
 \\
-%
-\\[\AgdaEmptyExtraSkip]%
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{Expr}\AgdaSpace{}%
@@ -1585,10 +1580,8 @@
 \AgdaGeneralizable{S}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{item-of}\AgdaSpace{}%
 \AgdaGeneralizable{s'}\AgdaSymbol{)\}}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
-\\
-\>[2][@{}l@{\AgdaIndent{0}}]%
-\>[4]\AgdaOperator{\AgdaDatatype{[}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{[}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{`}}\AgdaSpace{}%
 \AgdaGeneralizable{o}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∶}}\AgdaSpace{}%

@@ -340,10 +340,10 @@
 \>[0]\AgdaFunction{T⇝T}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{Γ}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Fᴼ.Ctx}\AgdaSpace{}%
-\AgdaGeneralizable{Fᴼ.S}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaGeneralizable{Fᴼ.S}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
@@ -365,7 +365,6 @@
 \AgdaSymbol{\{}\AgdaArgument{s}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{eₛ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{τ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{τ⇝τ}\AgdaSpace{}%
@@ -375,7 +374,6 @@
 \AgdaSymbol{\{}\AgdaArgument{s}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{oₛ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{τ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{τ⇝τ}\AgdaSpace{}%
@@ -385,7 +383,6 @@
 \AgdaSymbol{\{}\AgdaArgument{s}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{τₛ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{⋆}\<%
@@ -1721,10 +1718,8 @@
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Fᴼ.Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
-\\
-\>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaSymbol{(}\AgdaBound{o∶τ∈Γ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{o∶τ∈Γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{[}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{`}}\AgdaSpace{}%
@@ -1735,7 +1730,7 @@
 \AgdaBound{Γ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-%
+\>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaFunction{F.lookup}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{Γ⇝Γ}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -1911,8 +1906,7 @@
 \newcommand{\DPTTermPres}[0]{\begin{code}%
 \>[0]\AgdaFunction{⊢t⇝⊢t}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{∀}%
-\>[1324I]\AgdaSymbol{\{}\AgdaBound{Γ}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Fᴼ.Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -1920,10 +1914,8 @@
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Fᴼ.Term}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S}\AgdaSpace{}%
-\AgdaGeneralizable{Fᴼ.s}\AgdaSymbol{\}}\<%
-\\
-\>[.][@{}l@{}]\<[1324I]%
-\>[10]\AgdaSymbol{\{}\AgdaBound{T}\AgdaSpace{}%
+\AgdaGeneralizable{Fᴼ.s}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{T}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Fᴼ.Term}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S}\AgdaSpace{}%
@@ -1949,7 +1941,6 @@
 \AgdaBound{⊢t}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{∶}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{T⇝T}\AgdaSpace{}%
-\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaBound{T}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{⊢t⇝⊢t}\AgdaSpace{}%
@@ -2046,8 +2037,6 @@
 \AgdaSymbol{(}\AgdaFunction{⊢t⇝⊢t}\AgdaSpace{}%
 \AgdaBound{⊢e}\AgdaSymbol{)}\<%
 \\
-%
-\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{⊢t⇝⊢t}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{⊢·}\AgdaSpace{}%
 \AgdaBound{⊢e₁}\AgdaSpace{}%
@@ -2127,10 +2116,14 @@
 \AgdaBound{⊢e₂}\AgdaSpace{}%
 \AgdaBound{⊢e₁}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{⊢let}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{⊢t⇝⊢t}\AgdaSpace{}%
-\AgdaBound{⊢e₂}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{subst}\AgdaSpace{}%
+\AgdaInductiveConstructor{⊢let}\<%
+\\
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaSymbol{(}\AgdaFunction{⊢t⇝⊢t}\AgdaSpace{}%
+\AgdaBound{⊢e₂}\AgdaSymbol{)}\<%
+\\
+%
+\>[2]\AgdaSymbol{(}\AgdaFunction{subst}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{F.⊢}}\AgdaSpace{}%
 \AgdaFunction{⊢t⇝t}\AgdaSpace{}%
