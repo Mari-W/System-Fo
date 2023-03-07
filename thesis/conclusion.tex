@@ -1,3 +1,5 @@
 \subsection{Hindley Milner with Overloading}
+In this scenario our source language for the Dictionary Passing Transform would be \HMo\ and our target language HM. HM is a restricted form of System F introducing two new sorts \Constr{mₛ} for mono types and \Constr{pₛ} for poly types in favour of types \Constr{τₛ}. Poly types can include forall quantifiers, while mono types consist only of primitive types and type variables. Constraint abstraction would only allow to introduce overloaded variables with mono types. Further, we would need to restrict instances on overloaded variables in \HMo\ to differ in the type of their first argument. With these restrictions type inference, using an extended version of Algorithm W, is preserved. [CITE]
 \subsection{Semantic Preservation of System \Fo}
+
 \subsection{Conclusion}

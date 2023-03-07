@@ -324,7 +324,7 @@ data _↪_ : Expr S → Expr S → Set where
   β-Λ :
     (Λ`α→ e) • τ ↪ e [ τ ]
   β-let : 
-     Val e₂ →
+    Val e₂ →
     let`x= e₂ `in e₁ ↪ (e₁ [ e₂ ])
   ξ-·₁ :
     e₁ ↪ e →

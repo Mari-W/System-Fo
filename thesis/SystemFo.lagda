@@ -23,12 +23,12 @@ variable
 data Sort : Ctxable → Set where
   oₛ  : Sort ⊤ᶜ
   cₛ  : Sort ⊥ᶜ
-  κₛ  : Sort ⊥ᶜ
   -- ...
 \end{code}}
 \begin{code}[hide]
   eₛ  : Sort ⊤ᶜ
   τₛ  : Sort ⊤ᶜ
+  κₛ  : Sort ⊥ᶜ
 \end{code}
 \begin{code}[hide]
 Sorts : Set
@@ -57,15 +57,15 @@ infix  6 `_ decl`o`in_
 \end{code}
 \newcommand{\FoTerm}[0]{\begin{code}
 data Term : Sorts → Sort r → Set where
+  `_              : s ∈ S → Term S s
   decl`o`in_      : Term (S ▷ oₛ) eₛ → Term S eₛ
   inst`_`=_`in_   : Term S oₛ → Term S eₛ → Term S eₛ → Term S eₛ
   _∶_             : Term S oₛ → Term S τₛ → Term S cₛ
   ƛ_⇒_            : Term S cₛ → Term S eₛ → Term S eₛ 
   [_]⇒_           : Term S cₛ → Term S τₛ → Term S τₛ
-  -- ...
 \end{code}}
 \begin{code}[hide]
-  `_              : s ∈ S → Term S s
+  -- TODO HIDE `_
   tt              : Term S eₛ
   λ`x→_           : Term (S ▷ eₛ) eₛ → Term S eₛ
   Λ`α→_           : Term (S ▷ τₛ) eₛ → Term S eₛ
@@ -76,7 +76,6 @@ data Term : Sorts → Sort r → Set where
   _⇒_             : Term S τₛ → Term S τₛ → Term S τₛ
   ∀`α_            : Term (S ▷ τₛ) τₛ → Term S τₛ
   ⋆               : Term S κₛ
-
 
 Expr : Sorts → Set
 Expr S = Term S eₛ
@@ -220,8 +219,7 @@ variable
 \newcommand{\FoCstrSolve}[0]{\begin{code}
 data [_]∈_ : Cstr S → Ctx S → Set where
   here : [ (` o ∶ τ) ]∈ (Γ ▸ (` o ∶ τ)) 
-  under-bind : {I : Term S (item-of s')} → 
-    [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ I) 
+  under-bind : {I : Term S (item-of s')} → [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ I) 
   under-inst : [ c ]∈ Γ → [ c ]∈ (Γ ▸ c')
 \end{code}}
 \begin{code}[hide]
@@ -248,30 +246,28 @@ infix 3 _⊢_∶_
 \end{code}
 \newcommand{\FoTyping}[0]{\begin{code}
 data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
-  ⊢`o :  
-    [ ` o ∶ τ ]∈ Γ →
-    -----------------
-    Γ ⊢ ` o ∶ τ
-  ⊢decl : 
-    Γ ▶ ⋆ ⊢ e ∶ wk τ →
-    -------------------
-    Γ ⊢ decl`o`in e ∶ τ
   ⊢inst :
     Γ ⊢ e₂ ∶ τ →
     Γ ▸ (` o ∶ τ) ⊢ e₁ ∶ τ' →
-    -------------------------------
-    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ τ'    
+    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ τ'
+  ⊢`o :  
+    [ ` o ∶ τ ]∈ Γ →
+    Γ ⊢ ` o ∶ τ
   ⊢ƛ : 
     Γ ▸ c ⊢ e ∶ τ →  
-    ---------------------
     Γ ⊢ ƛ c ⇒ e ∶ [ c ]⇒ τ
   ⊢⊘ : 
     Γ ⊢ e ∶ [ ` o ∶ τ ]⇒ τ' →
     [ ` o ∶ τ ]∈ Γ →
-    --------------------------
     Γ ⊢ e ∶ τ'
-  -- ...
 \end{code}}
+\begin{code}[hide]
+  -- TODO REMOVE THIS ^^^^^^  
+  ⊢decl : 
+    Γ ▶ ⋆ ⊢ e ∶ wk τ →
+    Γ ⊢ decl`o`in e ∶ τ
+  -- ...
+\end{code}
 \begin{code}[hide]
   ⊢`x :  
     lookup Γ x ≡ τ →

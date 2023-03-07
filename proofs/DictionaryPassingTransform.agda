@@ -72,12 +72,12 @@ o∶τ∈Γ⇝x (under-inst o∶τ∈Γ) = there (o∶τ∈Γ⇝x o∶τ∈Γ)
 
 -- [latex] block(Kind)
 
-T⇝T : ∀ (Γ : Fᴼ.Ctx Fᴼ.S) →
+T⇝T : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} →
   Fᴼ.Term Fᴼ.S (Fᴼ.kind-of Fᴼ.s) →
   F.Term (Γ⇝S Γ) (F.kind-of (s⇝s Fᴼ.s))
-T⇝T {s = eₛ} Γ τ = τ⇝τ τ
-T⇝T {s = oₛ} Γ τ = τ⇝τ τ
-T⇝T {s = τₛ} Γ _ = ⋆ 
+T⇝T {s = eₛ} τ = τ⇝τ τ
+T⇝T {s = oₛ} τ = τ⇝τ τ
+T⇝T {s = τₛ} _ = ⋆ 
 
 -- [latex] hide
 
@@ -275,8 +275,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   ∎)
 
 -- [latex] block(OVarPresLookup)
-o∶τ∈Γ⇝Γx≡τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} →
-  (o∶τ∈Γ : [ ` Fᴼ.o ∶ Fᴼ.τ ]∈ Γ) → 
+o∶τ∈Γ⇝Γx≡τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} → (o∶τ∈Γ : [ ` Fᴼ.o ∶ Fᴼ.τ ]∈ Γ) → 
   F.lookup (Γ⇝Γ Γ) (o∶τ∈Γ⇝x o∶τ∈Γ) ≡ (τ⇝τ Fᴼ.τ)
 -- [latex] hide
 -- TODO REMOVE ^^^^
@@ -307,10 +306,9 @@ o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-inst {c' =
 
 -- [latex] block(TermPres)
 
-⊢t⇝⊢t : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {t : Fᴼ.Term Fᴼ.S Fᴼ.s} 
-          {T : Fᴼ.Term Fᴼ.S (Fᴼ.kind-of Fᴼ.s)} →
+⊢t⇝⊢t : {Γ : Fᴼ.Ctx Fᴼ.S} {t : Fᴼ.Term Fᴼ.S Fᴼ.s} {T : Fᴼ.Term Fᴼ.S (Fᴼ.kind-of Fᴼ.s)} →
   (⊢t : Γ Fᴼ.⊢ t ∶ T) →
-  (Γ⇝Γ Γ) F.⊢ (⊢t⇝t ⊢t) ∶ (T⇝T Γ T)
+  (Γ⇝Γ Γ) F.⊢ (⊢t⇝t ⊢t) ∶ (T⇝T T)
 ⊢t⇝⊢t (⊢`o o∶τ∈Γ) = ⊢`x (o∶τ∈Γ⇝Γx≡τ o∶τ∈Γ)
 ⊢t⇝⊢t (⊢ƛ {c = (` o ∶ τ)} ⊢e) = ⊢λ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) 
   τ⇝wk-inst·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e))
@@ -322,10 +320,11 @@ o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-inst {c' =
 ⊢t⇝⊢t ⊢⊤ = ⊢⊤
 ⊢t⇝⊢t (⊢λ {τ' = τ'} ⊢e) = ⊢λ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e))
 ⊢t⇝⊢t (⊢Λ ⊢e) = ⊢Λ (⊢t⇝⊢t ⊢e)
-
 ⊢t⇝⊢t (⊢· ⊢e₁ ⊢e₂) = ⊢· (⊢t⇝⊢t ⊢e₁) (⊢t⇝⊢t ⊢e₂)
 ⊢t⇝⊢t (⊢• {τ' = τ'} {τ = τ} ⊢e) = subst (_ F.⊢  ⊢t⇝t ⊢e • τ⇝τ τ  ∶_) (τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] τ τ') (⊢• (⊢t⇝⊢t ⊢e))
 ⊢t⇝⊢t (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢t⇝⊢t ⊢e₂) (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e₁))
 ⊢t⇝⊢t (⊢decl ⊢e) = ⊢let ⊢⊤ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e))
-⊢t⇝⊢t (⊢inst {o = o} ⊢e₂ ⊢e₁) = ⊢let (⊢t⇝⊢t ⊢e₂) (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk-inst·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e₁))
+⊢t⇝⊢t (⊢inst {o = o} ⊢e₂ ⊢e₁) = ⊢let 
+  (⊢t⇝⊢t ⊢e₂) 
+  (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk-inst·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e₁))
 -- [latex] end      

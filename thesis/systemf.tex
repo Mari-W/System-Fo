@@ -55,18 +55,18 @@ Finally, rule \Constr{⊢τ} indicates that all types \Sym{τ} are well formed a
 \FSubTyping
 
 \subsubsection{Semantics}\hfill\\\\
-Our semantics will be formalized call-by-value, that is there is no reduction under binders. Values are indexed by there irreducible expression.
+The semantics are formalized call-by-value, that is, there is no reduction under binders. Values are indexed by there irreducible expression.
 \FVal
 System F has three values. The two closure values \Constr{v-λ} and \Constr{v-Λ} for abstractions waiting for their argument and unit value \Constr{v-tt}.
 We formalize semantics as small step semantics, where each constructor represents a single reduction step \Sym{e} \Constr{↪} \Sym{e'}.
-We distinguish between \Sym{β} and \Sym{ξ} rules. Meaningful computation in the form of substitution is handled by \Sym{β} rules while \Sym{ξ} rules reduce sub expressions.
+We distinguish between \Sym{β} and \Sym{ξ} rules. Meaningful computation in the form of substitution is done by \Sym{β} rules while \Sym{ξ} rules reduce sub expressions.
 \FSemantics
-Rules \Constr{β-λ} and \Constr{β-Λ} give meaning to application and type application in the form of substituting the applied expression. Further, \Constr{β-let} is equivalent to application rule \Constr{β-λ}. Rules \Constr{ξ-·$_i$} and \Constr{ξ-•} evaluate sub expressions of application until \Sym{e₁} and \Sym{e₂}, or \Sym{e} respectively, are values. Finally, \Constr{ξ-let} reduces the bound expression \Sym{e₂} until \Sym{e₂} is a value and \Constr{β-let} can be applied.    
+Rules \Constr{β-λ} and \Constr{β-Λ} give meaning to application and type application in the form of substituting the applied term into the abstraction. Further, \Constr{β-let} is equivalent to application rule \Constr{β-λ}. Rules \Constr{ξ-·$_i$} and \Constr{ξ-•} evaluate sub expressions of application until \Sym{e₁} and \Sym{e₂}, or \Sym{e} respectively, are values. Finally, \Constr{ξ-let} reduces the bound expression \Sym{e₂} until \Sym{e₂} is a value and \Constr{β-let} can be applied.    
 \subsection{Soundness}
 
 \subsubsection{Progress}\hfill\\\\
-We prove progress, that is, a typed expression \Sym{⊢e} can either be further reduced to some \Sym{e'} or \Sym{e} is a value, by induction over the typing rules. 
+We prove progress, that is, a typed expression \Sym{Γ} \Data{⊢} \Sym{e} \Data{:} \Sym{τ} can either be further reduced to some \Sym{e'} or \Sym{e} is a value, by induction over the typing rules. 
 \FProgress
-
+Cases \Constr{⊢⊤}, \Constr{⊢λ} and \Constr{⊢Λ} result in values. Application cases \Constr{⊢·}, \Constr{⊢•} and \Constr{⊢let} follow directly from the induction hypothesis. 
 \subsubsection{Subject Reduction}\hfill\\\\
 \FSubjectReduction

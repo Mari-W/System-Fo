@@ -24,12 +24,11 @@ variable
 data Sort : Ctxable → Set where
   oₛ  : Sort ⊤ᶜ
   cₛ  : Sort ⊥ᶜ
-  κₛ  : Sort ⊥ᶜ
   -- ...
   -- [latex] hide
   eₛ  : Sort ⊤ᶜ
   τₛ  : Sort ⊤ᶜ
-
+  κₛ  : Sort ⊥ᶜ
 -- [latex] hide
 
 Sorts : Set
@@ -64,7 +63,6 @@ data Term : Sorts → Sort r → Set where
   _∶_             : Term S oₛ → Term S τₛ → Term S cₛ
   ƛ_⇒_            : Term S cₛ → Term S eₛ → Term S eₛ 
   [_]⇒_           : Term S cₛ → Term S τₛ → Term S τₛ
-  -- ...
   -- [latex] hide  
   -- TODO HIDE `_
   tt              : Term S eₛ
@@ -77,7 +75,6 @@ data Term : Sorts → Sort r → Set where
   _⇒_             : Term S τₛ → Term S τₛ → Term S τₛ
   ∀`α_            : Term (S ▷ τₛ) τₛ → Term S τₛ
   ⋆               : Term S κₛ
-
 
 Expr : Sorts → Set
 Expr S = Term S eₛ
@@ -224,8 +221,7 @@ variable
 
 data [_]∈_ : Cstr S → Ctx S → Set where
   here : [ (` o ∶ τ) ]∈ (Γ ▸ (` o ∶ τ)) 
-  under-bind : {I : Term S (item-of s')} → 
-    [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ I) 
+  under-bind : {I : Term S (item-of s')} → [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ I) 
   under-inst : [ c ]∈ Γ → [ c ]∈ (Γ ▸ c')
 
 -- [latex] hide
