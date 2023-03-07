@@ -8,11 +8,9 @@
 *.agdai
 *.ptb
 *.toc
-*.sh
 *.pyg
 */_minted*
 */agda
-*/*.py
 *.snm
 *.nav
 *.vrb
