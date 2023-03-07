@@ -1,6 +1,6 @@
 \subsection{Overloading in General}
 Overloading function names is a practical technique to overcome verbosity in real world programming languages. In every language there exist commonly used function names, especially in the form of infix operators, for example equality and arithmetics, that are defined for a variety of type combinations. Overloading the meaning of common function names and operators for multiple types eliminates the necessity for a unique name for each operator, on each type. 
-For example, Python uses so called magic methods, that allow to overload commonly used operators used on user defined classes and Java utilizes method overloading. Both Python and Java implement rather restricted forms of overloading. Rust supports overloading in a less restricted fashion, in the form of traits. Loosely speaking, traits group multiple overloaded abstract function names along their definitions into one construct. A trait can be implemented on specific types. The implementation must give all functions defined by the trait a concrete meaning based on the type it is implemented for. Further, Rust allows type variables to be restricted by trait bounds, that is, a type variable is only to be substituted by a concrete type, if there exist an implementation for some trait on that type. Haskell has a similar language feature called typeclasses, to solve the overloading problem.
+For example, Python uses so called magic methods, that allow to overload commonly used operators used on user defined classes and Java utilizes method overloading. Both Python and Java implement rather restricted forms of overloading. Haskell supports overloading in a less restricted fashion. Haskell uses typeclasses, to solve the overloading problem.
 
 \subsection{Overloading in Haskell using Typeclasses}
 Essentially, typeclasses allow to declare overloaded function names with generic type signatures.
@@ -24,8 +24,8 @@ In Haskell we would solve the problem as follows:
 
     .. eq 42 0 .. eq [42, 0] [42, 0] ..
 \end{minted}
-First, type class \inl{Eq} with a single generic function \mono{eq} is declared and instantiated for \inl{Nat}. 
-Next, \ \inl{Eq} is instantiated for \inl{[α]}, given that an instance \inl{Eq} exists for type \mono{α}. 
+First, type class \inl{Eq} with a single polymorphic function \mono{eq} is declared. Next, we instantiate \inl{Eq} for \inl{Nat}. 
+After that, \ \inl{Eq} is instantiated for \inl{[α]}, given that an instance \inl{Eq} exists for type \mono{α}. 
 Finally, we can call \mono{eq} on elements of both \inl{Nat} and \inl{[Nat]}, where in the latter case, the type constraint \inl{Eq α ⇒ ..} in the second instance resolves to the first instance.
 
 \subsection{Introducing System \Fo}

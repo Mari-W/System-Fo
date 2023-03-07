@@ -136,13 +136,12 @@ variable
 Sub : Sorts → Sorts → Set
 Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
 \end{code}}
-\begin{code}[hide]
-idₛ : Sub S S
-\end{code}
 \newcommand{\Fidsub}[0]{\begin{code}[inline]
-idₛ = `_
+idₛ : Sub S S
 \end{code}}
 \begin{code}[hide]
+idₛ = `_
+
 extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
 extₛ σ (here refl) = ` here refl
 extₛ σ (there x) = ren wkᵣ (σ x)
@@ -427,7 +426,8 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 ⊢σ↑ ⊢σ (there x) = {!   !}
 \end{code}
 \newcommand{\Fpreserves}[0]{\begin{code}
-⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (kind-of s)} →
+⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} 
+                 {t : Term S₁ s} {T : Term S₁ (kind-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   Γ₁ ⊢ t ∶ T →
   Γ₂ ⊢ (sub σ t) ∶ (sub σ T)

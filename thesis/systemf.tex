@@ -6,13 +6,13 @@ Sorts are indexed by boolean data type \Data{Ctxable} indicating if terms of the
 Going forward, we use \Sym{s} as variable name for sorts and \Sym{S} for lists of sorts.
 
 \subsubsection{Syntax}\hfill\\\\
-System F's syntax is represented in a single data type \Data{Term} indexed by a list of sorts \Sym{S} and sort \Sym{s}. 
-The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list represent the sort of the variable bound at that position. 
+The syntax of System F is represented as a single data type \Data{Term} indexed by a list of sorts \Sym{S} and sort \Sym{s}. 
+The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list represent the sort of the variable bound at that position. The index \Sym{S} is inspired by Debruijn indices where we reference variables using numbers that count the amount many binders we need to go back to where the variable was bound. The list \Sym{S} extends this idea by allowing to reference variables of different sorts.
 The second index \Sym{s} represents the sort of the term itself.
 \FTerm
 Variables \Constr{`}\ \Sym{x} are represented as references \Sym{s} \Prim{∈} \Sym{S} to an element in \Sym{S}.
 Memberships of type \Sym{s} \Prim{∈} \Sym{S} are defined similar to natural numbers and can either be \Constr{here refl} where \Constr{refl} is prove we found our element or \Constr{there} \Sym{x} where \Sym{x} is another membership. 
-In consequence we can only reference already bound variables, in a similar fashion to debruijn indices. 
+In consequence we can only reference already bound variables using memberships in \Sym{S}.
 The unit element \Constr{tt} and unit type \Constr{`⊤} represent base types. Lambda abstractions \Constr{λ`x→} \Sym{e'} result in function types \Sym{τ₁} \Constr{⇒} \Sym{τ₂} and type abstractions \Constr{Λ`α→} \Sym{e'} result in forall types \Constr{∀`α} \Sym{τ'}. 
 To eliminate abstractions we use application \Sym{e₁} \Constr{·} \Sym{e₂} for lambda abstractions and type application \Sym{e} \Constr{•} \Sym{τ} for type abstractions. 
 Let bindings \Constr{let`x=} \Sym{e₂} \Constr{`in} \Sym{e₁} combine abstraction and application. All types \Sym{τ} have kind \Constr{⋆}.
@@ -26,7 +26,7 @@ Applying a renaming \Data{Ren} \Sym{S₁} \Sym{S₂} to a term \Data{Term} \Sym{
 When we encounter a binder, the renaming is extended using \Frenext. 
 The weakening of a term can be defined as shifting all variables by one.
 \Fwk 
-Since variables are represented as references to a list, we shift them by wrapping a given reference in the \Constr{there} constructor.
+Since variables are represented as references to a list, shifting variables is simply wrapping them in the \Constr{there} constructor.
 
 \subsubsection{Substitution}\hfill\\\\
 Substitutions \Sym{σ} of type \Data{Sub} \Sym{S₁} \Sym{S₂} are similar to renamings but rather than mapping variables to variables, substitutions map variables to terms.
@@ -34,7 +34,7 @@ Substitutions \Sym{σ} of type \Data{Sub} \Sym{S₁} \Sym{S₂} are similar to r
 Applying a substitution to a term \Fsub\ is analogous to the applying a renaming. 
 Single substitution \Sym{t} \Data{[} \Sym{t'} \Data{]} substitutes the last bound variable in \Sym{t} with \Sym{t'}.
 \Fsubs
-% TODO 
+A single substitution \Fsinglesub\ takes a substitution \Sym{σ} and term \Sym{t'} to introduce \Sym{t'} to \Sym{σ}. In the case of \Data{\_[\_]} we let \Sym{σ} be the identity substitution \Fidsub.
 
 \subsubsection{Context}\hfill\\\\
 The typing context \Data{Ctx} \Sym{S} is indexed by sorts \Sym{S} similar to terms. 
@@ -51,9 +51,13 @@ Rule \Constr{⊢`x} says that variables \Constr{`} \Sym{x} have type \Sym{τ} if
 Finally, rule \Constr{⊢τ} indicates that all types \Sym{τ} are well formed and have kind \Constr{⋆}. Type variables are correctly typed per definition and type constructors \Constr{∀`α} and \Constr{⇒} accept arbitrary types as their arguments.
 
 \subsubsection{Typing Renaming \& Substitution}\hfill\\\\
+Because of extrinsic typing we need to type both renamings and substitutions. We formalized typed renamings in the form of order preserving embeddings. In contrast du typed substituted we do not allow arbitrary typed renamings.
+TODO Hannes
 \FRenTyping
+The identity renaming \Constr{⊢idᵣ} typed per definition. The extension of a renaming \Constr{⊢extᵣ} allows to extend both \Sym{Γ₁} and \Sym{Γ₂} by \Sym{T'} and renamed \Sym{T'} respectively. Constructor \Constr{⊢extᵣ} corresponds to the typed version of function \Data{extᵣ}. Further, constructor \Constr{⊢dropᵣ} allows us to introduce \Sym{T'} only in \Sym{Γ₂} and drop \Sym{T'} in \Sym{Γ₁}. TODO
+Typed Substitutions are defined as total function, equivalently to untyped substitutions.
 \FSubTyping
-
+Typed substitutions map variables \Sym{x} to the corresponding typed terms of the substituted variable \Sym{Γ} \Data{⊢} \Sym{σ} \Sym{x} \Data{:} $($\Data{sub} \Sym{σ} $($\Data{lookup} \Sym{Γ₁} \Sym{x}$))$. 
 \subsubsection{Semantics}\hfill\\\\
 The semantics are formalized call-by-value, that is, there is no reduction under binders. Values are indexed by there irreducible expression.
 \FVal
@@ -69,4 +73,8 @@ We prove progress, that is, a typed expression \Sym{Γ} \Data{⊢} \Sym{e} \Data
 \FProgress
 Cases \Constr{⊢⊤}, \Constr{⊢λ} and \Constr{⊢Λ} result in values. Application cases \Constr{⊢·}, \Constr{⊢•} and \Constr{⊢let} follow directly from the induction hypothesis. 
 \subsubsection{Subject Reduction}\hfill\\\\
+Finally, we prove subject reduction, that is, reductions preserve typing. A expression \Sym{e} with type \Sym{τ} still has type \Sym{τ} after being reduced to \Sym{e'}. We prove subject reduction by induction over the reduction rules. 
 \FSubjectReduction
+Cases \Constr{ξ-·₁}, \Constr{ξ-·₂}, \Constr{ξ-•} and \Constr{ξ-let} follow directly from the induction hypothesis. For beta reduction cases \Constr{β-λ}, \Constr{β–Λ} and \Constr{β-let} we need to prove that substitution preserves typing both for substitutions \Sym{e} \Data{[}  \Sym{e} \Data{]} and \Sym{e} \Data{[}  \Sym{τ} \Data{]}. Both lemmas follow from a more general lemma \Data{⊢σ-preserves}.
+\Fpreserves
+We can prove \Data{⊢σ-preserves} by induction over typing rules.
