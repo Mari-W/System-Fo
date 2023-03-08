@@ -1,6 +1,22 @@
 \subsection{Hindley Milner with Overloading}
-In this scenario our source language for the Dictionary Passing Transform would be \HMo\ and our target language HM. HM is a restricted form of System F introducing two new sorts \Constr{mₛ} for mono types and \Constr{pₛ} for poly types in favour of types \Constr{τₛ}. Poly types can include forall quantifiers, while mono types consist only of primitive types and type variables. Constraint abstraction would only allow to introduce overloaded variables with mono types. Further, we need to restrict instances overloaded variable \Sym{o} in \HMo\ to differ in the type of their first argument, for each overloaded variable. With these restrictions type inference, using an extended version of Algorithm W, is preserved. [CITE]
+In this scenario our source language for the Dictionary Passing Transform would be an extended Hindley Milner \HMo\ and our target language HM. 
+HM is a restricted form of System F. HM has two sorts \Constr{mₛ} for mono types and \Constr{pₛ} for poly types in favour of arbitrary types \Constr{τₛ}. Poly types can include forall quantifiers, while mono types consist only of primitive types and type variables. 
+Usually all language constructs are restricted to mono types, except let bound variables. 
+Hence polymorphism in HM is also called let polymorphism [CITE].  
+In consequence, constraint abstractions would only allow to introduce constraints for overloaded variables with mono types. 
+Further, we need to restrict all instances for some overloaded variable \Sym{o} to differ in the type of their first argument.
+With these restrictions type inference, using an extended version of Algorithm W, is preserved [CITE]. Formalizing the changes and restrictions mentions above should be a fairly straight forward adjustment to the formalization given in this thesis.
 
 \subsection{Semantic Preservation of System \Fo}
-
+For now System \Fo\ does not have semantics formalized.
+Semantics for System \Fo\ would need to be typed semantics, because applications \Constr{`} \Sym{o} \Constr{·} \Sym{e₁} $..$ \Constr{·} \Sym{e$_n$} need type information to reduce properly.
+We need to resolve the correct instance for \Sym{o} based on the type arguments \Sym{e₁} $..$ \Sym{e$_n$}. 
+Let \Sym{⊢e} \Data{↪} \Sym{⊢e'} be such a typed small step semantic for System \Fo. We would need to prove something similar to: If \Sym{⊢e} \Data{↪} \Sym{⊢e'} then \Constr{∃} \Constr{[} \Sym{e''} \Constr{]} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e} \Data{↪*} \Sym{e''}) \Constr{×} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e'} \Data{↪*} \Sym{e''}), where \Data{⊢e↪e'⇝e↪e'} translates typed System \Fo\ reductions to a untyped System F reductions.
+Instead of translating reduction steps directly, we prove that both translated \Sym{⊢e} and \Sym{⊢e'} reduce to \Sym{e''} in System F using finite many reduction steps.
+We need this more general formulation, because there might be more reduction steps in the translated System F program than in the System \Fo\ program. 
+For example, an implicitly resolved constraint in System \Fo\ needs to be explicitly passed using a additional application step in System F. 
+We believe semantic preservation can be shown via induction over the semantic rules.
 \subsection{Conclusion}
+We have formalized both System F and System \Fo\ in Agda. 
+System \Fo\ acts as core calculus, capturing the essence of higher level type features, for example typeclasses in Haskell and traits in Rust. 
+Using Agda we formalized the Dictionary Passing Transform between System F and System \Fo\ and proved it to be type preserving.
