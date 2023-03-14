@@ -57,15 +57,15 @@ infix  6 `_ decl`o`in_
 \end{code}
 \newcommand{\FoTerm}[0]{\begin{code}
 data Term : Sorts → Sort r → Set where
-  `_              : s ∈ S → Term S s
   decl`o`in_      : Term (S ▷ oₛ) eₛ → Term S eₛ
   inst`_`=_`in_   : Term S oₛ → Term S eₛ → Term S eₛ → Term S eₛ
   _∶_             : Term S oₛ → Term S τₛ → Term S cₛ
   ƛ_⇒_            : Term S cₛ → Term S eₛ → Term S eₛ 
   [_]⇒_           : Term S cₛ → Term S τₛ → Term S τₛ
+  -- ...
 \end{code}}
 \begin{code}[hide]
-  -- TODO HIDE `_
+  `_              : s ∈ S → Term S s
   tt              : Term S eₛ
   λ`x→_           : Term (S ▷ eₛ) eₛ → Term S eₛ
   Λ`α→_           : Term (S ▷ τₛ) eₛ → Term S eₛ
@@ -201,11 +201,14 @@ variable
 \end{code}
 \newcommand{\FoCtx}[0]{\begin{code}
 data Ctx : Sorts → Set where
-  ∅   : Ctx []
-  _▶_ : Ctx S → Term S (item-of s) → Ctx (S ▷ s)
   _▸_ : Ctx S → Cstr S → Ctx S
+  -- ...
 \end{code}}
 \begin{code}[hide]
+  ∅   : Ctx []
+  _▶_ : Ctx S → Term S (item-of s) → Ctx (S ▷ s)
+
+
 lookup : Ctx S → Var S s → Term S (item-of s) 
 lookup (Γ ▶ S) (here refl) = wk S
 lookup (Γ ▶ S) (there x) = wk (lookup Γ x)
@@ -220,7 +223,7 @@ variable
 data [_]∈_ : Cstr S → Ctx S → Set where
   here : [ (` o ∶ τ) ]∈ (Γ ▸ (` o ∶ τ)) 
   under-bind : {I : Term S (item-of s')} → [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ I) 
-  under-inst : [ c ]∈ Γ → [ c ]∈ (Γ ▸ c')
+  under-cstr : [ c ]∈ Γ → [ c ]∈ (Γ ▸ c')
 \end{code}}
 \begin{code}[hide]
 -- Typing -------------------------------------------------------------------------------
@@ -260,14 +263,11 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
     Γ ⊢ e ∶ [ ` o ∶ τ ]⇒ τ' →
     [ ` o ∶ τ ]∈ Γ →
     Γ ⊢ e ∶ τ'
-\end{code}}
-\begin{code}[hide]
-  -- TODO REMOVE THIS ^^^^^^  
   ⊢decl : 
     Γ ▶ ⋆ ⊢ e ∶ wk τ →
     Γ ⊢ decl`o`in e ∶ τ
   -- ...
-\end{code}
+\end{code}}
 \begin{code}[hide]
   ⊢`x :  
     lookup Γ x ≡ τ →
@@ -306,14 +306,12 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
 infix 3 _∶_⇒ᵣ_
 \end{code}
 \newcommand{\FoRenTyping}[0]{\begin{code}
-data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
+data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢ext-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
-    --------------------------------------
     ρ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ᵣ (Γ₂ ▸ (ren ρ o ∶ ren ρ τ))
   ⊢drop-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
-    -------------
     ρ ∶ Γ₁ ⇒ᵣ (Γ₂ ▸ (o ∶ τ))
   -- ...
 \end{code}}
@@ -369,27 +367,22 @@ idᵣτ≡τ ([ ` o ∶ τ ]⇒ τ') = cong₂ [_]⇒_ (cong₂ _∶_ refl (id�
 infix 3 _∶_⇒ₛ_
 \end{code}
 \newcommand{\FoSubTyping}[0]{\begin{code}
-data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
+data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idₛ : ∀ {Γ} → _∶_⇒ₛ_ {S₁ = S} {S₂ = S} idₛ Γ Γ
   ⊢keepₛ  : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
-    ----------------------------------
     extₛ σ ∶ Γ₁ ▶ I ⇒ₛ Γ₂ ▶ sub σ I
   ⊢dropₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₂ (item-of s)} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
-    -------------------------
     dropₛ σ ∶ Γ₁ ⇒ₛ (Γ₂ ▶ I) 
   ⊢typeₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ : Type S₂} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
-    --------------
     single-typeₛ σ τ ∶ Γ₁ ▶ ⋆ ⇒ₛ Γ₂ 
   ⊢keep-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
-    --------------------------------------
     σ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ₛ (Γ₂ ▸ (sub σ o ∶ sub σ τ))
   ⊢drop-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
-    -------------
     σ ∶ Γ₁ ⇒ₛ (Γ₂ ▸ (o ∶ τ)) 
 \end{code}}
 \begin{code}[hide]

@@ -318,17 +318,6 @@
 \AgdaKeyword{where}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
-\>[2]\AgdaOperator{\AgdaInductiveConstructor{`\AgdaUnderscore{}}}%
-\>[18]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaGeneralizable{s}\AgdaSpace{}%
-\AgdaOperator{\AgdaFunction{∈}}\AgdaSpace{}%
-\AgdaGeneralizable{S}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Term}\AgdaSpace{}%
-\AgdaGeneralizable{S}\AgdaSpace{}%
-\AgdaGeneralizable{s}\<%
-\\
-%
 \>[2]\AgdaOperator{\AgdaInductiveConstructor{decl`o`in\AgdaUnderscore{}}}%
 \>[18]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Term}\AgdaSpace{}%
@@ -404,10 +393,21 @@
 \AgdaDatatype{Term}\AgdaSpace{}%
 \AgdaGeneralizable{S}\AgdaSpace{}%
 \AgdaInductiveConstructor{τₛ}\<%
+\\
+%
+\>[2]\AgdaComment{--\ ...}\<%
 \end{code}}
 \begin{code}[hide]%
 %
-\>[2]\AgdaComment{--\ TODO\ HIDE\ `\AgdaUnderscore{}}\<%
+\>[2]\AgdaOperator{\AgdaInductiveConstructor{`\AgdaUnderscore{}}}%
+\>[18]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaGeneralizable{s}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{∈}}\AgdaSpace{}%
+\AgdaGeneralizable{S}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Term}\AgdaSpace{}%
+\AgdaGeneralizable{S}\AgdaSpace{}%
+\AgdaGeneralizable{s}\<%
 \\
 %
 \>[2]\AgdaInductiveConstructor{tt}%
@@ -1444,6 +1444,22 @@
 \AgdaKeyword{where}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}▸\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Ctx}\AgdaSpace{}%
+\AgdaGeneralizable{S}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaFunction{Cstr}\AgdaSpace{}%
+\AgdaGeneralizable{S}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Ctx}\AgdaSpace{}%
+\AgdaGeneralizable{S}\<%
+\\
+%
+\>[2]\AgdaComment{--\ ...}\<%
+\end{code}}
+\begin{code}[hide]%
+%
 \>[2]\AgdaInductiveConstructor{∅}%
 \>[6]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Ctx}\AgdaSpace{}%
@@ -1466,18 +1482,9 @@
 \AgdaGeneralizable{s}\AgdaSymbol{)}\<%
 \\
 %
-\>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}▸\AgdaUnderscore{}}}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaDatatype{Ctx}\AgdaSpace{}%
-\AgdaGeneralizable{S}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaFunction{Cstr}\AgdaSpace{}%
-\AgdaGeneralizable{S}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{Ctx}\AgdaSpace{}%
-\AgdaGeneralizable{S}\<%
-\end{code}}
-\begin{code}[hide]%
+\\[\AgdaEmptyExtraSkip]%
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{lookup}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Ctx}\AgdaSpace{}%
@@ -1602,7 +1609,7 @@
 \AgdaBound{I}\AgdaSymbol{)}\<%
 \\
 %
-\>[2]\AgdaInductiveConstructor{under-inst}\AgdaSpace{}%
+\>[2]\AgdaInductiveConstructor{under-cstr}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{[}}\AgdaSpace{}%
 \AgdaGeneralizable{c}\AgdaSpace{}%
@@ -1835,10 +1842,6 @@
 \AgdaGeneralizable{e}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{∶}}\AgdaSpace{}%
 \AgdaGeneralizable{τ'}\<%
-\end{code}}
-\begin{code}[hide]%
-%
-\>[2]\AgdaComment{--\ TODO\ REMOVE\ THIS\ \textasciicircum{}\textasciicircum{}\textasciicircum{}\textasciicircum{}\textasciicircum{}\textasciicircum{}\ \ }\<%
 \\
 %
 \>[2]\AgdaInductiveConstructor{⊢decl}\AgdaSpace{}%
@@ -1865,7 +1868,7 @@
 \\
 %
 \>[2]\AgdaComment{--\ ...}\<%
-\end{code}
+\end{code}}
 \begin{code}[hide]%
 %
 \>[2]\AgdaInductiveConstructor{⊢`x}\AgdaSpace{}%
@@ -2083,7 +2086,7 @@
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{S₂}\AgdaSpace{}%
-\AgdaSymbol{->}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaPrimitive{Set}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
 \\
@@ -2110,9 +2113,6 @@
 \AgdaOperator{\AgdaDatatype{⇒ᵣ}}\AgdaSpace{}%
 \AgdaBound{Γ₂}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
-\\
-%
-\>[4]\AgdaComment{--------------------------------------}\<%
 \\
 %
 \>[4]\AgdaGeneralizable{ρ}\AgdaSpace{}%
@@ -2156,9 +2156,6 @@
 \AgdaOperator{\AgdaDatatype{⇒ᵣ}}\AgdaSpace{}%
 \AgdaBound{Γ₂}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
-\\
-%
-\>[4]\AgdaComment{-------------}\<%
 \\
 %
 \>[4]\AgdaGeneralizable{ρ}\AgdaSpace{}%
@@ -2632,7 +2629,7 @@
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{S₂}\AgdaSpace{}%
-\AgdaSymbol{->}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
 \AgdaPrimitive{Set}\AgdaSpace{}%
 \AgdaKeyword{where}\<%
 \\
@@ -2682,9 +2679,6 @@
 \AgdaSymbol{→}\<%
 \\
 %
-\>[4]\AgdaComment{----------------------------------}\<%
-\\
-%
 \>[4]\AgdaFunction{extₛ}\AgdaSpace{}%
 \AgdaGeneralizable{σ}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{∶}}\AgdaSpace{}%
@@ -2727,9 +2721,6 @@
 \AgdaSymbol{→}\<%
 \\
 %
-\>[4]\AgdaComment{-------------------------}\<%
-\\
-%
 \>[4]\AgdaFunction{dropₛ}\AgdaSpace{}%
 \AgdaGeneralizable{σ}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{∶}}\AgdaSpace{}%
@@ -2766,9 +2757,6 @@
 \AgdaSymbol{→}\<%
 \\
 %
-\>[4]\AgdaComment{--------------}\<%
-\\
-%
 \>[4]\AgdaFunction{single-typeₛ}\AgdaSpace{}%
 \AgdaGeneralizable{σ}\AgdaSpace{}%
 \AgdaBound{τ}\AgdaSpace{}%
@@ -2802,9 +2790,6 @@
 \AgdaOperator{\AgdaDatatype{⇒ₛ}}\AgdaSpace{}%
 \AgdaBound{Γ₂}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
-\\
-%
-\>[4]\AgdaComment{--------------------------------------}\<%
 \\
 %
 \>[4]\AgdaGeneralizable{σ}\AgdaSpace{}%
@@ -2848,9 +2833,6 @@
 \AgdaOperator{\AgdaDatatype{⇒ₛ}}\AgdaSpace{}%
 \AgdaBound{Γ₂}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
-\\
-%
-\>[4]\AgdaComment{-------------}\<%
 \\
 %
 \>[4]\AgdaGeneralizable{σ}\AgdaSpace{}%

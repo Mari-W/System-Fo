@@ -1,16 +1,56 @@
 \subsection{Translation}
 \subsubsection{Sorts}\hfill\\\\
+The translation of System \Fo\ sorts to System F sorts only considers sorts that are contextable. The two missing non-contextable sorts \Constr{cₛ} and \Constr{κₛ} do not need to be translated for our purpose. Intuitively there does not even exist a translation for \Constr{cₛ}.
 \DPTSort
-\subsubsection{Terms}\hfill\\\\
-\DPTType
-\DPTKind
-\DPTTerms
-\subsubsection{Renaming}\hfill\\\\
-\DPTRen
-\subsubsection{Substitution}\hfill\\\\
-\DPTSub
+Sort \Constr{eₛ} and \Constr{τₛ} translate to their corresponding counter parts in System F. Overloaded variables in System \Fo\ are translate to normal variables in System F. Thus sort \Constr{oₛ} translates to \Constr{eₛ}. 
+
+\noindent Translating lists \Sym{S} directly is not possible, because there might appear additional sorts inside the list after the translation. 
+New sorts must be added for variable bindings introduced by the translation. 
+For example, a constraint abstraction translates to a normal abstraction. 
+Hence \Sym{S} must have a new entry \Constr{eₛ} at the corresponding position to further function as valid index for the translated constraint abstraction body. 
+To solve this problem we use the System \Fo\ context \Sym{Γ} to build the translated \Sym{S}. 
+The context stores the relevant information about introduced constraints and thus, where new bindings will occur. 
+
+\DPTSorts
+The empty context \Constr{∅} corresponds to the empty list \Constr{[]}.
+For each constraint in \Sym{Γ} an additional sort \Constr{eₛ} is appended to \Sym{S}, representing the new binder introduced by the translation. If we find that a normal item is stored in the context, \Sym{s} is directly translated to \Data{s⇝s} \Sym{s}.
+
+\subsection{Variables}\hfill\\\\
+Similar to lists \Sym{S}, the translation for variables \Sym{x} needs context information.  
+\DPTVar
+If an item is stored in the context we can translate the variable by straight forward induction. 
+Whenever a constraint is encountered, \Sym{x} is wrapped in an additional \Constr{there}. This is because, the expression that introduced the constraint, will translated to an expression with an additional new binding.
+
+\noindent Furthermore, resolved constraints translate to the correct unique expression variable. 
+\DPTOVar
+The idea is the same as before, we wrap the variable in an additional \Constr{there}, for each constraint in the context.
+
 \subsubsection{Context}\hfill\\\\
+The translation of contexts is mostly a one to one translation. We only look at the translation of constraints stored in the context.
 \DPTCtx
+Following the idea from above, constraints \Sym{o} \Constr{:} \Sym{τ} stored inside \Sym{Γ} translate to normal items in the translated \Sym{Γ}. The item introduced is the translated type \Data{τ⇝τ} \Sym{τ} required by the constraint. Again, whenever we pick up a constraint in System \Fo\, there will be a new expression binding in System F. Thus, a type is expected inside the context at that position.
+
+\subsubsection{Renaming \& Substitution}\hfill\\\\
+\DPTRen
+
+\DPTSub
+
+\subsubsection{Terms}\hfill\\\\
+Types and kinds can be translated without typing information. Kind \Constr{⋆} translates to its System F counter part \Constr{⋆}. 
+Furthermore, all System \Fo\ types translate to their direct counter parts in System F, except the constraint type \Constr{[} \Sym{o} \Constr{:} \Sym{τ} \Constr{]⇒} \Sym{τ'}.
+\DPTType
+Constraint types  \Constr{[} \Sym{o} \Constr{:} \Sym{τ} \Constr{]⇒} \Sym{τ'} translate to function types \Sym{τ} \Constr{⇒} \Sym{τ'}. 
+The translation from constraint types to function types corresponds directly to the translation of constraint abstractions to normal abstractions. The implicitly resolved constraint will now be taken as higher order function argument.
+
+\noindent Arbitrary terms can only be translated using typing information. The typing carries information about the instances that were resolved, for all usages of overloaded variables. The unique variable name for the resolved instance can then be substituted for the overloaded variable. We only look at the translation of System \Fo\ expressions that do not have a direct counter part in System F.
+\DPTTerms
+Typed overloaded variables \Constr{⊢`o} carry information about the instance that was resolved for \Sym{o}.
+We translate the resolved instance to the unique variable in System F, that points to the former instance, now let binding. 
+Constraint abstractions translate to normal abstractions. 
+Implicitly resolved constraints translate to explicit application passing of the unique variable pointing to the former instance, now let binding. The \Constr{decl} expressions could be translated to nothing, as seen in the example at the beginning. Instead \Constr{decl} expressions are translated to useless let bindings, binding a unit value.
+Because \Constr{decl} expressions bind a new overloaded variable in System \Fo, removing them would result in a variable binding less in System F and hence, more complex proofs.
+As already discussed, \Constr{inst} expressions translate to \Constr{let} bindings.
+
 \subsection{Type Preservation}
 \subsubsection{Terms}\hfill\\\\
 \DPTTermPres
