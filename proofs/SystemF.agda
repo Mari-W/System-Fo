@@ -1,6 +1,7 @@
 -- [latex] prefix(F)
 -- [latex] hide
 {-# OPTIONS --allow-unsolved-metas #-}
+open import Level using (Level; _⊔_) renaming (suc to lsuc; zero to lzero)
 open import Data.Unit using (⊤; tt)
 open import Data.Nat using (ℕ; zero; suc)
 open import Data.List using (List; []; _∷_; _++_; drop)
@@ -26,10 +27,10 @@ data Sort : Ctxable → Set where
   eₛ  : Sort ⊤ᶜ
   τₛ  : Sort ⊤ᶜ
   κₛ  : Sort ⊥ᶜ
-
+-- [latex] hide
 Sorts : Set
+-- [latex] inline(Sorts)
 Sorts = List (Sort ⊤ᶜ)
-
 -- [latex] hide
 
 infix 25 _▷_ _▷▷_
@@ -40,7 +41,7 @@ xs ▷▷ ys = ys ++ xs
 variable
   r r' r'' r₁ r₂ : Ctxable
   s s' s'' s₁ s₂ : Sort r
-  S S' S'' S₁ S₂ : Sorts
+  S S' S'' S₁ S₂ S₃ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
   α α' α'' α₁ α₂ : τₛ ∈ S
 
@@ -311,8 +312,8 @@ idₛτ≡τ (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁τ≡σ₂�
 ... | ⋆ = ⊢τ
 
 ⊢singleₛ : ∀ {T' : Term S (kind-of s)} (⊢t : Γ ⊢ t ∶ T) → singleₛ idₛ t ∶ (Γ ▶ T') ⇒ₛ Γ
-⊢singleₛ ⊢t {eₛ} x = {!   !} 
-⊢singleₛ ⊢t {τₛ} x = {!   !}
+⊢singleₛ ⊢t (here px) = {!   !}
+⊢singleₛ ⊢t (there x) = {!   !} 
 
 -- Semantics ----------------------------------------------------------------------------
 
@@ -330,7 +331,7 @@ infixr 3 _↪_
 data _↪_ : Expr S → Expr S → Set where
   β-λ :
     Val e₂ →
-    (λ`x→ e₁) · e₂ ↪ (e₁ [ e₂ ])
+    (λ`x→ e₁) · e₂ ↪ e₁ [ e₂ ]
   β-Λ :
     (Λ`α→ e) • τ ↪ e [ τ ]
   β-let : 
@@ -338,7 +339,6 @@ data _↪_ : Expr S → Expr S → Set where
     let`x= e₂ `in e₁ ↪ (e₁ [ e₂ ])
   ξ-·₁ :
     e₁ ↪ e →
-    ----------------
     e₁ · e₂ ↪ e · e₂
   ξ-·₂ :
     e₂ ↪ e →
@@ -346,7 +346,6 @@ data _↪_ : Expr S → Expr S → Set where
     e₁ · e₂ ↪ e₁ · e
   ξ-• :
     e ↪ e' →
-    ----------------
     e • τ ↪ e' • τ
   ξ-let :
     e₂ ↪ e →
@@ -402,7 +401,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 ⊢wk-preserves : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (kind-of s)} {T' : Term S (kind-of s')} →
   Γ ⊢ t ∶ T →
   Γ ▶ T' ⊢ wk t ∶ wk T 
-⊢wk-preserves ⊢e = ⊢ρ-preserves (⊢dropᵣ ⊢idᵣ) ⊢e
+⊢wk-preserves = ⊢ρ-preserves (⊢dropᵣ ⊢idᵣ)
 
 σ↑idₛ≡σ : ∀ (t : Term S₁ s) (t' : Term S₂ s') (σ : Sub S₁ S₂) →
   sub (singleₛ σ t') (wk t) ≡ sub σ t
@@ -414,19 +413,77 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   singleₛ σ t ∶ Γ₁ ▶ τ ⇒ₛ Γ₂ 
 ⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e (here refl) = subst (_ ⊢ t ∶_) (sym (σ↑idₛ≡σ τ t σ)) ⊢e
 ⊢extₛ {σ = σ} {Γ₁ = Γ₁} {t = t} {τ = τ} ⊢σ ⊢e {eₛ} (there x) = subst (_ ⊢ σ x ∶_) (sym (σ↑idₛ≡σ (lookup Γ₁ x) t σ)) (⊢σ x)
-⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e {τₛ} (there x) = {!   !}
+⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e {τₛ} (there x) = {!  !}
 
 τ[e]≡τ : ∀ {τ : Type S} {e : Expr S} → wk τ [ e ] ≡ τ  
 τ[e]≡τ {τ = τ} {e = e} = 
   begin 
     wk τ [ e ]
-  ≡⟨ {!  !} ⟩
+  ≡⟨ σ↑idₛ≡σ τ e idₛ ⟩
+    sub idₛ τ
+  ≡⟨ idₛτ≡τ τ ⟩
     τ
   ∎
 
+variable
+  ℓ ℓ₁ ℓ₂ ℓ₃ : Level
+  A B C      : Set ℓ
+
+
+postulate 
+  ↑σρ≡↑σ·↑ρ : ∀ {s'} (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
+    extₛ {s = s'} (σ ∘ ρ) ≡ (extₛ {s = s'} σ) ∘ (extᵣ {s = s'} ρ)
+
+mutual 
+  ρ↑t·σ≡ρ·σ↑t : ∀ (t : Term (S₁ ▷ s') s) (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
+    sub (extₛ σ) (ren (extᵣ ρ) t) ≡ sub (extₛ (σ ∘ ρ)) t
+  ρ↑t·σ≡ρ·σ↑t {s' = s'} {s = s} t ρ σ = begin  
+      sub (extₛ σ) (ren (extᵣ ρ) t)
+    ≡⟨ ρt·σ≡ρ·σt t (extᵣ ρ) (extₛ σ) ⟩
+      sub (extₛ σ ∘ extᵣ ρ) t
+    ≡⟨ cong (λ σ → sub {!  σ !} t) (sym (↑σρ≡↑σ·↑ρ {s' = s'} ρ σ)) ⟩
+      sub (extₛ (σ ∘ ρ)) t
+    ∎
+
+  ρt·σ≡ρ·σt : ∀ (t : Term S₁ s) (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
+    sub σ (ren ρ t) ≡ sub (σ ∘ ρ) t
+  ρt·σ≡ρ·σt (` x) ρ σ = refl
+  ρt·σ≡ρ·σt tt ρ σ = refl
+  ρt·σ≡ρ·σt (λ`x→ e) ρ σ = cong λ`x→_ (ρ↑t·σ≡ρ·σ↑t e ρ σ)
+  ρt·σ≡ρ·σt (Λ`α→ e) ρ σ = cong Λ`α→_ (ρ↑t·σ≡ρ·σ↑t e ρ σ)
+  ρt·σ≡ρ·σt (e₁ · e₂) ρ σ = cong₂ _·_ (ρt·σ≡ρ·σt e₁ ρ σ) (ρt·σ≡ρ·σt e₂ ρ σ)
+  ρt·σ≡ρ·σt (e • τ) ρ σ = cong₂ _•_ (ρt·σ≡ρ·σt e ρ σ) (ρt·σ≡ρ·σt τ ρ σ)
+  ρt·σ≡ρ·σt (let`x= e₂ `in e₁) ρ σ = cong₂ let`x=_`in_ (ρt·σ≡ρ·σt e₂ ρ σ) (ρ↑t·σ≡ρ·σ↑t e₁ ρ σ)
+  ρt·σ≡ρ·σt `⊤ ρ σ = refl
+  ρt·σ≡ρ·σt (τ₁ ⇒ τ₂) ρ σ = cong₂ _⇒_ (ρt·σ≡ρ·σt τ₁ ρ σ) (ρt·σ≡ρ·σt τ₂ ρ σ)
+  ρt·σ≡ρ·σt (∀`α τ) ρ σ = cong ∀`α_ (ρ↑t·σ≡ρ·σ↑t τ ρ σ)
+  ρt·σ≡ρ·σt ⋆ ρ σ = refl 
+
+
+↑ρσ≡↑ρ·↑σ : ∀ {s} (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
+  extₛ {s = s} (λ x → ren ρ (σ x)) ≡ (λ x → ren (extᵣ {s = s} ρ) ((extₛ {s = s} σ) x))
+↑ρσ≡↑ρ·↑σ σ ρ = {!   !} 
+
+mutual 
+  σ↑t·ρ≡σ·ρ↑t : ∀ (t : Term (S₁ ▷ s') s) (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
+    ren (extᵣ ρ) (sub (extₛ σ) t) ≡ sub (λ x → ren (extᵣ ρ) ((extₛ σ) x)) t
+  σ↑t·ρ≡σ·ρ↑t t σ ρ = {!   !} 
+
+
+  σt·ρ≡σ·ρt : ∀ (t : Term S₁ s) (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
+    ren ρ (sub σ t) ≡ sub (λ x → ren ρ (σ x)) t
+  σt·ρ≡σ·ρt = {!   !}
+
 σ↑·wkt≡wk·σt : ∀ {s'} (σ : Sub S₁ S₂) (t : Term S₁ s) →
   sub (extₛ {s = s'} σ) (wk {s' = s'} t) ≡ wk (sub σ t)
-σ↑·wkt≡wk·σt σ t = {!   !}
+σ↑·wkt≡wk·σt {s'} σ t = 
+  begin 
+    sub (extₛ σ) (wk t) 
+  ≡⟨ ρt·σ≡ρ·σt t there (extₛ σ) ⟩
+    sub (λ x → ren there (σ x)) t
+  ≡⟨ sym (σt·ρ≡σ·ρt t σ there) ⟩
+    ren there (sub σ t)
+  ∎
 
 σ·t[t']≡σ↑·t[σ·t'] : ∀ {s'} (σ : Sub S₁ S₂) (t : Term (S₁ ▷ s') s) (t' : Term S₁ s') →
   sub σ (t [ t' ]) ≡ (sub (extₛ σ) t) [ sub σ t' ]  
@@ -456,7 +513,6 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   subst (_ ⊢ sub σ (e • τ) ∶_) (sym (σ·t[t']≡σ↑·t[σ·t'] σ τ' τ)) (⊢• (⊢σ-preserves ⊢σ ⊢e))
 ⊢σ-preserves {σ = σ} ⊢σ (⊢let {τ' = τ'} ⊢e₂ ⊢e₁) = ⊢let (⊢σ-preserves ⊢σ ⊢e₂) 
   (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e₁))
-  
 ⊢σ-preserves ⊢σ ⊢τ = ⊢τ
 
 -- [latex] block(eepreserves)

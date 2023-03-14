@@ -220,7 +220,7 @@ variable
 data [_]∈_ : Cstr S → Ctx S → Set where
   here : [ (` o ∶ τ) ]∈ (Γ ▸ (` o ∶ τ)) 
   under-bind : {I : Term S (item-of s')} → [ (` o ∶ τ) ]∈ Γ → [ (` there o ∶ wk τ) ]∈ (Γ ▶ I) 
-  under-inst : [ c ]∈ Γ → [ c ]∈ (Γ ▸ c')
+  under-cstr : [ c ]∈ Γ → [ c ]∈ (Γ ▸ c')
 \end{code}}
 \begin{code}[hide]
 -- Typing -------------------------------------------------------------------------------
