@@ -307,11 +307,11 @@ infix 3 _∶_⇒ᵣ_
 \end{code}
 \newcommand{\FoRenTyping}[0]{\begin{code}
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
-  ⊢ext-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
+  ⊢ext-cstrᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     --------------------------------------
     ρ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ᵣ (Γ₂ ▸ (ren ρ o ∶ ren ρ τ))
-  ⊢drop-instᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
+  ⊢drop-cstrᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     -------------
     ρ ∶ Γ₁ ⇒ᵣ (Γ₂ ▸ (o ∶ τ))
@@ -332,7 +332,7 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
 
 ⊢wk-instᵣ : ∀ {o} → idᵣ ∶ Γ ⇒ᵣ (Γ ▸ (o ∶ τ))
-⊢wk-instᵣ = ⊢drop-instᵣ ⊢idᵣ
+⊢wk-instᵣ = ⊢drop-cstrᵣ ⊢idᵣ
 
 extᵣidᵣ≡idᵣ : ∀ (x : Var (S ▷ s') s) → extᵣ idᵣ x ≡ idᵣ x
 extᵣidᵣ≡idᵣ (here refl) = refl
@@ -371,7 +371,7 @@ infix 3 _∶_⇒ₛ_
 \newcommand{\FoSubTyping}[0]{\begin{code}
 data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
   ⊢idₛ : ∀ {Γ} → _∶_⇒ₛ_ {S₁ = S} {S₂ = S} idₛ Γ Γ
-  ⊢keepₛ  : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 
+  ⊢extₛ  : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₁ (item-of s)} → 
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     ----------------------------------
     extₛ σ ∶ Γ₁ ▶ I ⇒ₛ Γ₂ ▶ sub σ I
@@ -383,11 +383,11 @@ data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     --------------
     single-typeₛ σ τ ∶ Γ₁ ▶ ⋆ ⇒ₛ Γ₂ 
-  ⊢keep-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
+  ⊢ext-cstrₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     --------------------------------------
     σ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ₛ (Γ₂ ▸ (sub σ o ∶ sub σ τ))
-  ⊢drop-instₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
+  ⊢drop-cstrₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     -------------
     σ ∶ Γ₁ ⇒ₛ (Γ₂ ▸ (o ∶ τ)) 
