@@ -194,11 +194,11 @@ I⇝T {s = τₛ} ⋆ = ⋆
 -- [latex] hide
 τ⇝wk·τ≡wk·τ⇝τ {τ' = τ'} = sym (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ τ')
 
-τ⇝wk-inst·τ≡wk-inst·τ⇝τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {τ : Fᴼ.Type Fᴼ.S} {τ' : Fᴼ.Type Fᴼ.S} {o} →
+τ⇝wk·τ≡wk-inst·τ⇝τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {τ : Fᴼ.Type Fᴼ.S} {τ' : Fᴼ.Type Fᴼ.S} {o} →
 -- [latex] inline(TypePresWkInst)
   τ⇝τ {Γ = Γ ▸ (` o ∶ τ')} τ ≡ F.wk (τ⇝τ τ)
 -- [latex] hide
-τ⇝wk-inst·τ≡wk-inst·τ⇝τ  {τ = τ} = 
+τ⇝wk·τ≡wk-inst·τ⇝τ  {τ = τ} = 
   begin 
     τ⇝τ τ
   ≡⟨ cong τ⇝τ (sym (idᵣτ≡τ τ)) ⟩ 
@@ -250,7 +250,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (` x) = ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ `⊤ = refl
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ₁) (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ  ⊢σ τ₂)
-⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (∀`α τ) = cong F.∀`α_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ (⊢extₛ ⊢σ) τ)
+⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (∀`α τ) = cong F.∀`α_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ (Fᴼ.⊢extₛ ⊢σ) τ)
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ ([ ` o ∶ τ ]⇒ τ') = cong₂ _⇒_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ) (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ')
 
 τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] : {Γ : Fᴼ.Ctx Fᴼ.S₁} (τ : Fᴼ.Type Fᴼ.S₁) (τ' : Fᴼ.Type (Fᴼ.S₁ ▷ τₛ)) →  
@@ -312,22 +312,28 @@ o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-cstr {c' =
 
 -- [latex] block(TermPres)
 
-⊢t⇝⊢t : {Γ : Fᴼ.Ctx Fᴼ.S} {t : Fᴼ.Term Fᴼ.S Fᴼ.s} {T : Fᴼ.Term Fᴼ.S (Fᴼ.kind-of Fᴼ.s)} →
+⊢t⇝⊢t : {Γ : Fᴼ.Ctx Fᴼ.S} {t : Fᴼ.Term Fᴼ.S Fᴼ.s} 
+        {T : Fᴼ.Term Fᴼ.S (Fᴼ.kind-of Fᴼ.s)} →
   (⊢t : Γ Fᴼ.⊢ t ∶ T) →
   (Γ⇝Γ Γ) F.⊢ (⊢t⇝t ⊢t) ∶ (T⇝T T)
+⊢t⇝⊢t (⊢`x {x = x} Γx≡τ) = ⊢`x  (Γx≡τ⇝Γx≡τ x Γx≡τ)
 ⊢t⇝⊢t (⊢`o o∶τ∈Γ) = ⊢`x (o∶τ∈Γ⇝Γx≡τ o∶τ∈Γ)
-⊢t⇝⊢t (⊢ƛ {c = (` o ∶ τ)} ⊢e) = ⊢λ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) 
-  τ⇝wk-inst·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e))
+⊢t⇝⊢t (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢t⇝⊢t ⊢e₂) 
+  (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e₁))
+⊢t⇝⊢t (⊢ƛ {c = (` o ∶ τ)} ⊢e) = ⊢λ 
+  (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) τ⇝wk·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e))
 ⊢t⇝⊢t (⊢⊘ ⊢e o∶τ∈Γ) = ⊢· (⊢t⇝⊢t ⊢e) (⊢`x (o∶τ∈Γ⇝Γx≡τ o∶τ∈Γ))
-⊢t⇝⊢t {Γ = Γ} (⊢`x {x = x} Γxᴼ≡τ) = ⊢`x  (Γx≡τ⇝Γx≡τ x Γxᴼ≡τ)
+⊢t⇝⊢t (⊢• {τ' = τ'} {τ = τ} ⊢e) = subst (_ F.⊢  ⊢t⇝t ⊢e • τ⇝τ τ  ∶_) 
+  (τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] τ τ') (⊢• (⊢t⇝⊢t ⊢e))
+-- ...
+-- [latex] hide
 ⊢t⇝⊢t ⊢⊤ = ⊢⊤
-⊢t⇝⊢t (⊢λ {τ' = τ'} ⊢e) = ⊢λ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e))
+⊢t⇝⊢t (⊢λ {τ' = τ'} ⊢e) = ⊢λ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) 
+  τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e))
 ⊢t⇝⊢t (⊢Λ ⊢e) = ⊢Λ (⊢t⇝⊢t ⊢e)
 ⊢t⇝⊢t (⊢· ⊢e₁ ⊢e₂) = ⊢· (⊢t⇝⊢t ⊢e₁) (⊢t⇝⊢t ⊢e₂)
-⊢t⇝⊢t (⊢• {τ' = τ'} {τ = τ} ⊢e) = subst (_ F.⊢  ⊢t⇝t ⊢e • τ⇝τ τ  ∶_) (τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] τ τ') (⊢• (⊢t⇝⊢t ⊢e))
-⊢t⇝⊢t (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢t⇝⊢t ⊢e₂) (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e₁))
-⊢t⇝⊢t (⊢decl ⊢e) = ⊢let ⊢⊤ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e))
-⊢t⇝⊢t (⊢inst {o = o} ⊢e₂ ⊢e₁) = ⊢let 
-  (⊢t⇝⊢t ⊢e₂) 
-  (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk-inst·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e₁))
+⊢t⇝⊢t (⊢decl ⊢e) = ⊢let ⊢⊤ (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) 
+  τ⇝wk·τ≡wk·τ⇝τ (⊢t⇝⊢t ⊢e))
+⊢t⇝⊢t (⊢inst {o = o} ⊢e₂ ⊢e₁) = ⊢let (⊢t⇝⊢t ⊢e₂) 
+ (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) τ⇝wk·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e₁))
 -- [latex] end      

@@ -18,7 +18,11 @@ Formal Proof of Type Preservation of the Dictionary Passing Transform for System
 
 \begin{document}
 
+\let\oldaddcontentsline\addcontentsline
+\def\addcontentsline#1#2#3{}
 \maketitle
+\def\addcontentsline#1#2#3{\oldaddcontentsline{#1}{#2}{#3}}
+
 
 \noindent\makebox[\linewidth]{\bf{Bachelor Thesis}}
 \\
@@ -34,18 +38,21 @@ Formal Proof of Type Preservation of the Dictionary Passing Transform for System
   \input{abstract}
 \end{abstract}
 
+\setcounter{tocdepth}{2}
+\tableofcontents
+
 \section{Introduction}
 \input{introduction}
 \section{Preliminary}
 \input{preliminary}
-\section{System F}
+\section{System F in Agda}
 \input{systemf}
-\section{System \Fo}
+\section{System \Fo\ in Agda}
 \input{systemfo}
-\section{Dictionary Passing Transform}
+\section{Dictionary Passing Transform in Agda}
 \input{dictionarypassingtransform}
 \section{Further Work and Conclusion}
-\include{conclusion}
+\input{conclusion}
 
 \begin{thebibliography}{8}
 \input{bibliography.tex}

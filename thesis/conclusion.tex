@@ -3,11 +3,13 @@ In this scenario our source language for the Dictionary Passing Transform would 
 HM is a restricted form of System F. HM would require two new sorts \Constr{mₛ} and \Constr{pₛ} for mono and poly types in favour of arbitrary types \Constr{τₛ}. Poly types can include quantification over type variables, while mono types consist only of primitive types and type variables. 
 Usually all language constructs are restricted to mono types, except let bound variables. 
 Hence polymorphism in HM is also called let polymorphism.  
-In consequence, constraint abstractions would only be allowed to introduce constraints for overloaded variables with mono types. Instance expression bodies would be allowed to have poly types, because they translate to let bindings after all.
+In consequence, constraint abstractions would only be allowed to introduce constraints for overloaded variables with mono types. 
+Instance expression bodies would be allowed to have poly types, because they translate to let bindings after all.
 But instances would need to be restricted as well. For each overloaded variable \Sym{o}, all instances would need to differ in the type of their first argument.
-With these two restrictions, type inference, using an extended version of Algorithm W, should be preserved [CITE]. Formalizing the changes and restrictions mentioned above should be a fairly straight forward adjustment to the formalization of System F and System \Fo.
+With these two restrictions, type inference, using an extended version of Algorithm W, should be preserved. The inference algorithm would treat instance expressions similar to let bindings and could infer the type of an overloaded identifier via the type of the first argument applied.
+Formalizing the changes and restrictions mentioned above should be a fairly straight forward adjustment to the formalization of System F and System \Fo.
 
-\subsection{Semantic Preservation of System \Fo}
+\subsection{Semantic Preservation of the Dictionary Passing Transform}
 For now System \Fo\ does not have semantics formalized.
 Semantics for System \Fo\ would need to be typed semantics, because applications \Constr{`} \Sym{o} \Constr{·} \Sym{e₁} $..$ \Constr{·} \Sym{e$_n$} need type information to reduce properly.
 The correct instance for \Sym{o} needs to be resolved based on the types of arguments \Sym{e₁} $..$ \Sym{e$_n$}. 
@@ -16,10 +18,11 @@ In consequence, the resolved instance for single application step \Constr{`} \Sy
 Let \Sym{⊢e} \Data{↪} \Sym{⊢e'} be such a typed small step semantic for System \Fo. We would need to prove something similar to: If \Sym{⊢e} \Data{↪} \Sym{⊢e'} then \Constr{∃} \Constr{[} \Sym{e''} \Constr{]} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e} \Data{↪*} \Sym{e''}) \Constr{×} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e'} \Data{↪*} \Sym{e''}), where \Data{⊢e↪e'⇝e↪e'} translates typed System \Fo\ reductions to a untyped System F reductions.
 Instead of translating reduction steps directly, we prove that both translated \Sym{⊢e} and \Sym{⊢e'} reduce to some System F expression \Sym{e''} using finite many reduction steps.
 This more general formulation is needed because there might be more reduction steps in the translated System F expression than in the System \Fo\ expression. 
-For example, an implicitly resolved constraint in System \Fo\ needs to be explicitly passed using a additional application step in System F. For now it is unclear, if semantic preservation can be shown using induction over the semantic rules or if logical relations are needed.
+For example, an implicitly resolved constraint in System \Fo\ needs to be explicitly passed using a additional application step in System F. 
+For now it is unclear, if semantic preservation can be shown using induction over the semantic rules or if logical relations are needed.
 
 \subsection{Conclusion}
 We have formalized both System F and System \Fo\ in Agda. 
 System \Fo\ acts as core calculus, capturing the essence of overloading.
 Using Agda we formalized the Dictionary Passing Transform between System F and System \Fo. 
-Finally, we proved the System F formalization to be sound and the Dictionary Passing Transform to be type preserving.
+Finally, we proved the System F formalization to be sound and the Dictionary Passing Transform to be type preserving. A reasonable next step would be to prove the Dictionary Passing Transform to be semantic preserving.
