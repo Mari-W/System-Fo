@@ -12,7 +12,7 @@ Furthermore, Haskell allows to constrain bound type variables \mono{α} via type
 
 \subsubsection{Example: Overloading Equality in Haskell}\hfill\\\\
 In this example we want to overload the function \inl{|\Blk eq| : α → α → Bool} with different meanings for different substitutions $\{α \mapsto τ\}$.
-We want to be able to call \mono{eq} on both $\{$\mono{α} $\mapsto$ \inl{Nat}$\}$ and $\{$\mono{α} $\mapsto$ \inl{[β]}$\}$ where \mono{β} is a type and there exists an concrete instance \inl{|\Blk eq| : β → β → Bool}. The intuition here is that we want to be able to compare natural numbers \inl{Nat} and lists \mono{[β]} where the elements of type \mono{β} are known to be comparable.
+We want to be able to call \mono{eq} on both $\{$\mono{α} $\mapsto$ \inl{Nat}$\}$ and $\{$\mono{α} $\mapsto$ \inl{[β]}$\}$, where \mono{β} is a concrete type and there exists an instance \inl{|\Blk eq| : β → β → Bool}. The intuition here is that we want to be able to compare natural numbers \inl{Nat} and lists \mono{[β]}, if the elements of type \mono{β} are known to be comparable.
 \begin{minted}[escapeinside=||]{haskell}
     class Eq α where
       eq :: α → α → Bool 

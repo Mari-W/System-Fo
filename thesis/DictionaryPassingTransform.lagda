@@ -120,8 +120,8 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢ρ⇝ρ : ∀ {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} → 
   ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂ →
   F.Ren (Γ⇝S Γ₁) (Γ⇝S Γ₂)
-⊢ρ⇝ρ (⊢ext-instᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ) 
-⊢ρ⇝ρ (⊢drop-instᵣ ⊢ρ) = F.dropᵣ (⊢ρ⇝ρ ⊢ρ)
+⊢ρ⇝ρ (⊢ext-cstrᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ) 
+⊢ρ⇝ρ (⊢drop-cstrᵣ ⊢ρ) = F.dropᵣ (⊢ρ⇝ρ ⊢ρ)
 -- ...
 \end{code}}
 \begin{code}[hide]
@@ -137,14 +137,14 @@ I⇝T {s = τₛ} ⋆ = ⋆
   σ Fᴼ.∶ Γ₁ ⇒ₛ Γ₂ →
   F.Sub (Γ⇝S Γ₁) (Γ⇝S Γ₂)
 ⊢σ⇝σ (⊢typeₛ {τ = τ} ⊢σ) = F.singleₛ (⊢σ⇝σ ⊢σ) (τ⇝τ τ)
-⊢σ⇝σ (⊢keep-instₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
-⊢σ⇝σ (⊢drop-instₛ ⊢σ) = F.dropₛ (⊢σ⇝σ ⊢σ)
 -- ...
 \end{code}}
 \begin{code}[hide]
 ⊢σ⇝σ ⊢idₛ = F.`_
-⊢σ⇝σ (⊢keepₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
+⊢σ⇝σ (⊢extₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
 ⊢σ⇝σ (⊢dropₛ ⊢σ) = F.dropₛ (⊢σ⇝σ ⊢σ)
+⊢σ⇝σ (⊢ext-cstrₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
+⊢σ⇝σ (⊢drop-cstrₛ ⊢σ) = F.dropₛ (⊢σ⇝σ ⊢σ)
 \end{code}
 \begin{code}[hide]
 -- Type Preservation --------------------------------------------------------------------
@@ -163,8 +163,8 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢extᵣ ⊢ρ) (here refl) = refl
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢extᵣ ⊢ρ) (there x) = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢dropᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
-⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢ext-instᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
-⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢drop-instᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
+⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢ext-cstrᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
+⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢drop-cstrᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
 
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ :  {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
   (⊢ρ : ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂) → 
@@ -211,14 +211,14 @@ I⇝T {s = τₛ} ⋆ = ⋆
   (x : Fᴼ.Var Fᴼ.S₁ τₛ) →
   F.sub (⊢σ⇝σ ⊢σ) (` x⇝x x) ≡ τ⇝τ (Fᴼ.sub σ (` x))
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢idₛ x = refl
-⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢keepₛ ⊢σ) (here refl) = refl
-⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢keepₛ {σ = σ} ⊢σ) (there x) = trans 
+⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢extₛ ⊢σ) (here refl) = refl
+⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢extₛ {σ = σ} ⊢σ) (there x) = trans 
   (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢dropₛ {σ = σ} ⊢σ) x  = trans 
   (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (here refl) = refl
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (there x) = ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x 
-⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢keep-instₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
+⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢ext-cstrₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
    begin 
     F.wk (τ⇝τ (σ x))
   ≡⟨ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wk-instᵣ (σ x)) ⟩ 
@@ -226,7 +226,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   ≡⟨ cong τ⇝τ (idᵣτ≡τ (σ x)) ⟩ 
     τ⇝τ (σ x)
   ∎)
-⊢σ⇝σ·x⇝x≡τ⇝σ·x(⊢drop-instₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
+⊢σ⇝σ·x⇝x≡τ⇝σ·x(⊢drop-cstrₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
    begin 
     F.wk (τ⇝τ (σ x))
   ≡⟨ ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wk-instᵣ (σ x) ⟩ 
@@ -247,7 +247,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (` x) = ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ `⊤ = refl
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ₁) (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ  ⊢σ τ₂)
-⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (∀`α τ) = cong F.∀`α_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ (⊢keepₛ ⊢σ) τ)
+⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ (∀`α τ) = cong F.∀`α_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ (⊢extₛ ⊢σ) τ)
 ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ ([ ` o ∶ τ ]⇒ τ') = cong₂ _⇒_ (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ) (⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢σ τ')
 
 τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] : {Γ : Fᴼ.Ctx Fᴼ.S₁} (τ : Fᴼ.Type Fᴼ.S₁) (τ' : Fᴼ.Type (Fᴼ.S₁ ▷ τₛ)) →  

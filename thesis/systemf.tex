@@ -9,13 +9,14 @@ Hence, System F support abstractions over expressions and types, but not over ki
 Going forward we use shorthand \FSorts, variable \Sym{s} for sorts and variable \Sym{S} for lists of contextable sorts.
 
 \subsubsection{Syntax}\hfill\\\\
-The syntax of System F is represented as single data type \Data{Term}, indexed by sorts \Sym{S} and sort \Sym{s}. 
+The syntax of System F is represented in a single data type \Data{Term}, indexed by sorts \Sym{S} and sort \Sym{s}. 
 The index \Sym{s} represents the sort of the term itself.
-The index \Sym{S} is inspired by Debruijn indices [CITE], where we reference variables using numbers that count the amount of binders we need to go back to find the binder corresponding to our variable. 
-In Agda, we often index terms by the amount of bound variables to ensure only bound variables can be referenced using their Debruijn index. 
-But indexing our term with a natural number is not sufficient, since System F has both expression and type variables. 
-Thus, we need to extend the idea to be able to distinguish variables of different sorts.
-Hence, the length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list represent the sort of the variable bound at that debruijn index. 
+The second index \Sym{S} is inspired by Debruijn indices. Debruijn indices reference variables using a number that counts the amount of binders that are in scope between the binding of the variable and the position it is used.
+In Agda terms are often indexed by the amount of bound variables. The variable constructor then only accepts Debruijn indices that are smaller or equal than the current amount of bound variables. 
+Thus, unbound variables can not be referenced by definition.
+But indexing our term with a number is not sufficient, since System F has both expression and type variables. 
+To solve this problem, we need to extend the idea of Debruijn indices and distinguish variables of different sorts. We let \Sym{S} be a list of sorts instead of a number.
+The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list represent the sort of the variable bound at that debruijn index. 
 \FTerm
 Variables \Constr{`}\ \Sym{x} are represented as references \Sym{s} \Prim{∈} \Sym{S} to an element in \Sym{S}.
 Memberships of type \Sym{s} \Prim{∈} \Sym{S} are defined similar to natural numbers. 
@@ -40,7 +41,7 @@ Since variables are represented as references to a list, shifting variables is s
 Substitutions \Sym{σ} of type \Data{Sub} \Sym{S₁} \Sym{S₂} are similar to renamings but rather than mapping variables to variables, substitutions map variables to terms.
 \FSub
 Applying a substitution to a term, using the \Data{sub} function, is analogous to applying a renaming using \Data{ren}. 
-Function \Sym{t} \Data{[} \Sym{t'} \Data{]} substitutes the last bound variable in \Sym{t} with \Sym{t'}.
+Substitution operator \Sym{t} \Data{[} \Sym{t'} \Data{]} substitutes the last bound variable in \Sym{t} with \Sym{t'}.
 \Fsubs
 A single substitution \Fsinglesub\ introduces \Sym{t'} to an existing substitution \Sym{σ'}. In the case of \Data{\_[\_]} we let \Sym{σ'} be the identity substitution \Fidsub.
 
@@ -63,16 +64,16 @@ Rule \Constr{⊢let} combines the abstraction and application rule.
 Finally, rule \Constr{⊢τ} indicates that all types \Sym{τ} are well formed and have kind \Constr{⋆}. Type variables are correctly typed per definition and type constructors \Constr{∀`α} and \Constr{⇒} accept arbitrary types as their arguments.
 
 \subsubsection{Typing Renaming \& Substitution}\hfill\\\\
-Because of extrinsic typing, both renamings and substitutions need to have typed counter parts. 
-We formalize typed renamings as order preserving embeddings. 
+Because of extrinsic typing, both renamings and substitutions need to have typed counterparts.
+We formalize typed renamings \Sym{⊢ρ} as order preserving embeddings. 
 Thus, if variable \Sym{x₁} of type \Sym{s₁} \Data{∈} \Sym{S₁} references an element with an index smaller than some other variable \Sym{x₂} in \Sym{S₁}, then renamed \Sym{x₁} must still reference an element with a smaller index than renamed \Sym{x₂} in \Sym{S₂}.
-Arbitrary renaming would allow swapping types in the context and thus potentially violate the telescoping. Telescoping allows types in the context to depend on variables bound before them.
+Arbitrary renaming would allow swapping types in the context and thus potentially violate the telescoping. Telescoping allows types in the context to depend on type variables bound before them.
 \FRenTyping
 The identity renaming \Constr{⊢idᵣ} is typed per definition. The extension of a renaming \Constr{⊢extᵣ} allows to extend both \Sym{Γ₁} and \Sym{Γ₂} by \Sym{T'} and renamed \Sym{T'} respectively. Constructor \Constr{⊢extᵣ} corresponds to the typed version of function \Data{extᵣ}, that is used when a binder is encountered. Further, constructor \Constr{⊢dropᵣ} allows us to introduce \Sym{T'} only in \Sym{Γ₂}. Hence, \Constr{⊢dropᵣ ⊢idᵣ} corresponds to the typed weakening of a term.
 
-\noindent Typed Substitutions are defined as total function, similar to untyped substitutions.
+\noindent Typed Substitutions are defined as a total function, similar to untyped substitutions.
 \FSubTyping
-Typed substitutions \Sym{⊢σ} map variables \Sym{x} to the corresponding typing of \Sym{σ x}. The type of \Sym{σ x} is looked up in \Sym{Γ} and also applied to substitution \Sym{σ}.
+Typed substitutions \Sym{⊢σ} map variables \Sym{x} \Constr{∈} \Sym{S₁} to the corresponding typing of \Sym{σ x} in \Sym{Γ₂}. The typing result of \Sym{σ x} is the original type of \Sym{x} in \Sym{Γ₁} applied to \Sym{σ}.
 \subsubsection{Semantics}\hfill\\\\
 The semantics are formalized call-by-value. That is, there is no reduction under binders. Values are indexed by their corresponding irreducible expression.
 \FVal

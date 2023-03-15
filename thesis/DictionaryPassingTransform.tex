@@ -686,7 +686,7 @@
 \AgdaBound{Γ₂}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{⊢ρ⇝ρ}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢ext-instᵣ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢ext-cstrᵣ}\AgdaSpace{}%
 \AgdaBound{⊢ρ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{F.extᵣ}\AgdaSpace{}%
@@ -694,7 +694,7 @@
 \AgdaBound{⊢ρ}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{⊢ρ⇝ρ}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-instᵣ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-cstrᵣ}\AgdaSpace{}%
 \AgdaBound{⊢ρ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{F.dropᵣ}\AgdaSpace{}%
@@ -776,7 +776,7 @@
 \AgdaBound{τ}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{⊢σ⇝σ}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢keep-instₛ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢ext-cstrₛ}\AgdaSpace{}%
 \AgdaBound{⊢σ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{F.extₛ}\AgdaSpace{}%
@@ -784,7 +784,7 @@
 \AgdaBound{⊢σ}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{⊢σ⇝σ}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-instₛ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-cstrₛ}\AgdaSpace{}%
 \AgdaBound{⊢σ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{F.dropₛ}\AgdaSpace{}%
@@ -800,7 +800,7 @@
 \AgdaOperator{\AgdaInductiveConstructor{F.`\AgdaUnderscore{}}}\<%
 \\
 \>[0]\AgdaFunction{⊢σ⇝σ}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢keepₛ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢extₛ}\AgdaSpace{}%
 \AgdaBound{⊢σ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{F.extₛ}\AgdaSpace{}%
@@ -909,7 +909,7 @@
 \AgdaBound{x}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{⊢ρ⇝ρ·x⇝x≡x⇝ρ·x}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢ext-instᵣ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢ext-cstrᵣ}\AgdaSpace{}%
 \AgdaBound{⊢ρ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
@@ -920,7 +920,7 @@
 \AgdaBound{x}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{⊢ρ⇝ρ·x⇝x≡x⇝ρ·x}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-instᵣ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-cstrᵣ}\AgdaSpace{}%
 \AgdaBound{⊢ρ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
@@ -1232,7 +1232,7 @@
 \AgdaInductiveConstructor{refl}\<%
 \\
 \>[0]\AgdaFunction{⊢σ⇝σ·x⇝x≡τ⇝σ·x}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢keepₛ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢extₛ}\AgdaSpace{}%
 \AgdaBound{⊢σ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{here}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\AgdaSymbol{)}\AgdaSpace{}%
@@ -1240,7 +1240,7 @@
 \AgdaInductiveConstructor{refl}\<%
 \\
 \>[0]\AgdaFunction{⊢σ⇝σ·x⇝x≡τ⇝σ·x}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢keepₛ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢extₛ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{σ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaBound{σ}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -1301,7 +1301,7 @@
 \AgdaBound{x}\<%
 \\
 \>[0]\AgdaFunction{⊢σ⇝σ·x⇝x≡τ⇝σ·x}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢keep-instₛ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢ext-cstrₛ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{σ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaBound{σ}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -1357,7 +1357,7 @@
 %
 \>[2]\AgdaOperator{\AgdaFunction{∎}}\AgdaSymbol{)}\<%
 \\
-\>[0]\AgdaFunction{⊢σ⇝σ·x⇝x≡τ⇝σ·x}\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-instₛ}\AgdaSpace{}%
+\>[0]\AgdaFunction{⊢σ⇝σ·x⇝x≡τ⇝σ·x}\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-cstrₛ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{σ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaBound{σ}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -1504,7 +1504,7 @@
 \AgdaFunction{cong}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{F.∀`α\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{⊢keepₛ}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢extₛ}\AgdaSpace{}%
 \AgdaBound{⊢σ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{τ}\AgdaSymbol{)}\<%
 \\

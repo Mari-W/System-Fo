@@ -1,10 +1,10 @@
 \subsection{Hindley Milner with Overloading}
-In this scenario our source language for the Dictionary Passing Transform would be an extended Hindley Milner based system (\HMo) and our target language would be Hindley Milner (HM). 
-HM is a restricted form of System F. HM would have two sorts \Constr{mₛ} for mono types and \Constr{pₛ} for poly types in favour of arbitrary types \Constr{τₛ}. Poly types can include quantification over type variables, while mono types consist only of primitive types and type variables. 
+In this scenario our source language for the Dictionary Passing Transform would be an extended Hindley-Milner based system (\HMo) and our target language would be Hindley-Milner (HM). 
+HM is a restricted form of System F. HM would require two new sorts \Constr{mₛ} and \Constr{pₛ} for mono and poly types in favour of arbitrary types \Constr{τₛ}. Poly types can include quantification over type variables, while mono types consist only of primitive types and type variables. 
 Usually all language constructs are restricted to mono types, except let bound variables. 
-Hence polymorphism in HM is also called let polymorphism [CITE].  
-In consequence, constraint abstractions would only allow to introduce constraints for overloaded variables with mono types. 
-Furthermore, we need to restrict all instances for a overloaded variable \Sym{o} to differ in the type of their first argument.
+Hence polymorphism in HM is also called let polymorphism.  
+In consequence, constraint abstractions would only be allowed to introduce constraints for overloaded variables with mono types. Instance expression bodies would be allowed to have poly types, because they translate to let bindings after all.
+But instances would need to be restricted as well. For each overloaded variable \Sym{o}, all instances would need to differ in the type of their first argument.
 With these two restrictions, type inference, using an extended version of Algorithm W, should be preserved [CITE]. Formalizing the changes and restrictions mentioned above should be a fairly straight forward adjustment to the formalization of System F and System \Fo.
 
 \subsection{Semantic Preservation of System \Fo}
@@ -21,5 +21,5 @@ For example, an implicitly resolved constraint in System \Fo\ needs to be explic
 \subsection{Conclusion}
 We have formalized both System F and System \Fo\ in Agda. 
 System \Fo\ acts as core calculus, capturing the essence of overloading.
-Using Agda we formalized the Dictionary Passing Transform between System F and System \Fo\. 
-We proved System F to be sound and the Dictionary Passing Transform to be type preserving.
+Using Agda we formalized the Dictionary Passing Transform between System F and System \Fo. 
+Finally, we proved the System F formalization to be sound and the Dictionary Passing Transform to be type preserving.
