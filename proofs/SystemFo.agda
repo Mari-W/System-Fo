@@ -250,10 +250,6 @@ variable
 infix 3 _⊢_∶_
 -- [latex] block(Typing)
 data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
-  ⊢inst :
-    Γ ⊢ e₂ ∶ τ →
-    Γ ▸ (` o ∶ τ) ⊢ e₁ ∶ τ' →
-    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ τ'
   ⊢`o :  
     [ ` o ∶ τ ]∈ Γ →
     Γ ⊢ ` o ∶ τ
@@ -267,6 +263,10 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
   ⊢decl : 
     Γ ▶ ⋆ ⊢ e ∶ wk τ →
     Γ ⊢ decl`o`in e ∶ τ
+  ⊢inst :
+    Γ ⊢ e₂ ∶ τ →
+    Γ ▸ (` o ∶ τ) ⊢ e₁ ∶ τ' →
+    Γ ⊢ inst` ` o `= e₂ `in e₁ ∶ τ'
   -- ...
   -- [latex] hide
   ⊢`x :  

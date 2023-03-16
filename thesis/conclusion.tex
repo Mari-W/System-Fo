@@ -9,7 +9,7 @@ But instances would need to be restricted as well. For each overloaded variable 
 With these two restrictions, type inference, using an extended version of Algorithm W, should be preserved. The inference algorithm would treat instance expressions similar to let bindings and could infer the type of an overloaded identifier via the type of the first argument applied.
 Formalizing the changes and restrictions mentioned above should be a fairly straight forward adjustment to the formalization of System F and System \Fo.
 
-\subsection{Semantic Preservation of the Dictionary Passing Transform}
+\subsection{Proving Semantic Preservation }
 For now System \Fo\ does not have semantics formalized.
 Semantics for System \Fo\ would need to be typed semantics, because applications \Constr{`} \Sym{o} \Constr{·} \Sym{e₁} $..$ \Constr{·} \Sym{e$_n$} need type information to reduce properly.
 The correct instance for \Sym{o} needs to be resolved based on the types of arguments \Sym{e₁} $..$ \Sym{e$_n$}. 
@@ -25,4 +25,5 @@ For now it is unclear, if semantic preservation can be shown using induction ove
 We have formalized both System F and System \Fo\ in Agda. 
 System \Fo\ acts as core calculus, capturing the essence of overloading.
 Using Agda we formalized the Dictionary Passing Transform between System F and System \Fo. 
-Finally, we proved the System F formalization to be sound and the Dictionary Passing Transform to be type preserving. A reasonable next step would be to prove the Dictionary Passing Transform to be semantic preserving.
+We proved the System F formalization to be sound and the Dictionary Passing Transform to be type preserving. The full formalization of System F, System \Fo\ and the Dictionary Passing Transform can be found as Agda code files on GitHub [CITE].
+A reasonable next step would be to prove the Dictionary Passing Transform to be semantic preserving. 

@@ -1,17 +1,19 @@
 \subsection{Dependently Typed Programming in Agda}
 Agda is a dependently typed programming language and proof assistant. [CITE]
-Agdas type system is based on Martin Löf's intuitionistic type theory [CITE] and allows to construct proofs based on the Curry Howard correspondence [CITE]. 
+Agdas type system is based on intuitionistic type theory [CITE] and allows to construct proofs based on the Curry Howard correspondence [CITE]. 
 The Curry Howard correspondence is an isomorphic relationship between programs written in dependently typed languages and mathematical proofs written in first order logic. 
 Because of the Curry Howard correspondence, programs in Agda correspond to proofs and formulae correspond to types. 
 Thus, type checked Agda programs imply the correctness of the corresponding proofs, given we do not use unsafe Agda features and assuming Agda is implemented correctly. 
 
 \subsection{Design Decisions for the Agda Formalization}
 To formalize System F and System \Fo\ in Agda we use a single data type \Data{Term} indexed by sorts \Sym{s} to represent the syntax. 
-Sorts distinguish between different kinds of terms. 
-For example, sort \Constr{eₛ} categorizes expressions \Sym{e}, \Constr{τₛ} categorizes \Sym{τ} and \Constr{κₛ} is used to categorizes the only existing kind \Constr{⋆}. 
+Sorts distinguish between different categories of terms. 
+For example, sort \Constr{eₛ} represents expressions \Sym{e}, \Constr{τₛ} represents \Sym{τ} and \Constr{κₛ} represents the only existing kind \Constr{⋆}. 
 Using a single data type to formalize the syntax yields more elegant proofs involving contexts, substitutions and renamings. 
-In consequence we must use extrinsic typing, because intrinsically typed terms \Data{Term} \Constr{eₛ} \Constr{⊢} \Data{Term} \Constr{τₛ} would need to be indexed by themselves and Agda does not allow that. 
+In consequence we must use extrinsic typing, because intrinsically typed terms \Data{Term} \Constr{eₛ} \Constr{⊢} \Data{Term} \Constr{τₛ} would need to be indexed by themselves and Agda does not support self indexed data types. 
 In the actual implementation \Data{Term} has another index \Sym{S}, that we will ignore for now.
 
-\subsection{Verbal Formulation of the  Type Preservation Proof}
-Our goal will be to prove that the Dictionary Passing Transform is type preserving. Let \Sym{⊢t} be any well formed System \Fo\ term \Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}, where \Sym{t} is a \Data{Term$_{F_O}$} \Sym{s}, \Sym{T} is a \Data{Term$_{F_O}$} \Sym{s'} and s' is the sort of the typing result for terms of sort \Sym{s}. There exist two cases for typings: \Sym{Γ} \Constr{⊢} \Sym{e} \Constr{:} \Sym{τ} and \Sym{Γ} \Constr{⊢} \Sym{τ} \Constr{:} \Constr{⋆}. Let \Data{⇝} : $($\Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}$)$ \Sym{→} \Data{Term$_F$} \Sym{s} be the Dictionary Passing Transform that translates well typed System \Fo\ terms to untyped System F terms. Further let \Data{⇝$_\Gamma$} : \Data{Ctx$_{F_O}$} \Sym{→} \Data{Ctx$_F$} be the transform of contexts and \Data{⇝$_T$} : \Data{Term$_{F_O}$} \Sym{s'} \Sym{→} \Data{Term$_F$} \Sym{s'} be the transform of untyped types and kinds. We show that for all well typed System \Fo\  terms \Sym{⊢t} the Dictionary Passing Transform results in a well typed System F term (\Data{⇝$_\Gamma$} \Sym{Γ)} \Constr{⊢$_{F}$} (\Data{⇝} \Sym{⊢t}) \Constr{:} (\Data{⇝$_T$} \Sym{T}).
+\subsection{Overview of the Type Preservation Proof}
+Our goal will be to prove that the Dictionary Passing Transform is type preserving. Let \Sym{⊢t} be any well formed System \Fo\ term \Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}, where \Sym{t} is a \Data{Term$_{F_O}$} \Sym{s}, \Sym{T} is a \Data{Term$_{F_O}$} \Sym{s'} and s' is the sort of the typing result for terms of sort \Sym{s}. There exist two cases for typings: \Sym{Γ} \Constr{⊢} \Sym{e} \Constr{:} \Sym{τ} and \Sym{Γ} \Constr{⊢} \Sym{τ} \Constr{:} \Constr{⋆}. Let \Data{⇝} : $($\Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}$)$ \Sym{→} \Data{Term$_F$} \Sym{s} be the Dictionary Passing Transform that translates well typed System \Fo\ terms to untyped System F terms. Further let \Data{⇝$_\Gamma$} : \Data{Ctx$_{F_O}$} \Sym{→} \Data{Ctx$_F$} be the transform of contexts and \Data{⇝$_T$} : \Data{Term$_{F_O}$} \Sym{s'} \Sym{→} \Data{Term$_F$} \Sym{s'} be the transform of untyped types and kinds. We show that for all well typed System \Fo\  terms \Sym{⊢t} the Dictionary Passing Transform results in a well typed System F term (\Data{⇝$_\Gamma$} \Sym{Γ)} \Constr{⊢$_{F}$} (\Data{⇝} \Sym{⊢t}) \Constr{:} (\Data{⇝$_T$} \Sym{T}). 
+
+\noindent We begin by formalizing System F and prove its soundness [\ref{sec:sysf}]. Then System \Fo\ is formalized, although without semantics and soundness proof [\ref{sec:sysfo}]. In the end, we formalize the translation of the Dictionary Passing Transform and prove it to be type preserving [\ref{sec:dpt}].

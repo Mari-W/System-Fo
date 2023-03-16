@@ -145,11 +145,13 @@ idₛ : Sub S S
 \end{code}}
 \begin{code}[hide]
 idₛ = `_
-
+\end{code}
+\newcommand{\Fext}[0]{\begin{code}
 extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
 extₛ σ (here refl) = ` here refl
-extₛ σ (there x) = ren wkᵣ (σ x)
-
+extₛ σ (there x) = wk (σ x)
+\end{code}}
+\begin{code}[hide]
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
 dropₛ σ x = wk (σ x)
 \end{code}
@@ -190,7 +192,6 @@ kind-ctxable : Sort ⊤ᶜ → Ctxable
 kind-ctxable eₛ = ⊤ᶜ
 kind-ctxable τₛ = ⊥ᶜ
 
-
 kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
 \end{code}}
 \newcommand{\Fkind}[0]{\begin{code}
@@ -206,13 +207,11 @@ data Ctx : Sorts → Set where
   ∅   : Ctx []
   _▶_ : Ctx S → Term S (kind-of s) → Ctx (S ▷ s)
 \end{code}}
-\newcommand{\Flookup}[0]{\begin{code}[inline]
+\newcommand{\Flookup}[0]{\begin{code}
 lookup : Ctx S → Var S s → Term S (kind-of s) 
-\end{code}}
-\begin{code}[hide]
 lookup (Γ ▶ T) (here refl) = wk T
 lookup (Γ ▶ T) (there x) = wk (lookup Γ x)
-\end{code}
+\end{code}}
 \begin{code}[hide]
 variable 
   Γ Γ' Γ'' Γ₁ Γ₂ : Ctx S
@@ -258,10 +257,12 @@ infix 3 _∶_⇒ᵣ_
 \newcommand{\FRenTyping}[0]{\begin{code}
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢extᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₁ (kind-of s)} → 
+  ⊢extᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} 
+            {T' : Term S₁ (kind-of s)} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     (extᵣ ρ) ∶ (Γ₁ ▶ T') ⇒ᵣ (Γ₂ ▶ ren ρ T')
-  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₂ (kind-of s)} →
+  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} 
+             {T' : Term S₂ (kind-of s)} →
     ρ ∶ Γ₁  ⇒ᵣ Γ₂ →
     (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ T')
 \end{code}}
@@ -271,7 +272,8 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
 \end{code}
 \newcommand{\FSubTyping}[0]{\begin{code}
 _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set
-_∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub σ (lookup Γ₁ x))
+_∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → 
+                           Γ₂ ⊢ σ x ∶ (sub σ (lookup Γ₁ x))
 \end{code}}
 \begin{code}[hide]
 extₛidₛ≡idₛ : ∀ (x : Var (S ▷ s') s) → extₛ idₛ x ≡ idₛ x
@@ -535,5 +537,6 @@ subject-reduction (⊢· ⊢e₁ ⊢e₂) (ξ-·₂ e₂↪e x) = ⊢· ⊢e₁ 
 subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[τ]-preserves ⊢e ⊢τ
 subject-reduction (⊢• ⊢e) (ξ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (β-let v₂) = e[e]-preserves ⊢e₁ ⊢e₂
-subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁  
+subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let 
+  (subject-reduction ⊢e₂ e₂↪e') ⊢e₁  
 \end{code}}

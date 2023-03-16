@@ -149,9 +149,12 @@ idₛ : Sub S S
 -- [latex] hide
 idₛ = `_
 
+
+-- [latex] block(ext)
 extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
 extₛ σ (here refl) = ` here refl
-extₛ σ (there x) = ren wkᵣ (σ x)
+extₛ σ (there x) = wk (σ x)
+-- [latex] hide
 
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
 dropₛ σ x = wk (σ x)
@@ -193,7 +196,6 @@ kind-ctxable : Sort ⊤ᶜ → Ctxable
 kind-ctxable eₛ = ⊤ᶜ
 kind-ctxable τₛ = ⊥ᶜ
 
-
 kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
 -- [latex] block(kind)
 kind-of eₛ = τₛ
@@ -210,12 +212,10 @@ data Ctx : Sorts → Set where
   ∅   : Ctx []
   _▶_ : Ctx S → Term S (kind-of s) → Ctx (S ▷ s)
 
--- [latex] inline(lookup)
+-- [latex] block(lookup)
 lookup : Ctx S → Var S s → Term S (kind-of s) 
--- [latex] hide
 lookup (Γ ▶ T) (here refl) = wk T
 lookup (Γ ▶ T) (there x) = wk (lookup Γ x)
-
 -- [latex] hide
 
 variable 
@@ -261,10 +261,12 @@ infix 3 _∶_⇒ᵣ_
 -- [latex] block(RenTyping)
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢extᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₁ (kind-of s)} → 
+  ⊢extᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} 
+            {T' : Term S₁ (kind-of s)} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     (extᵣ ρ) ∶ (Γ₁ ▶ T') ⇒ᵣ (Γ₂ ▶ ren ρ T')
-  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₂ (kind-of s)} →
+  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} 
+             {T' : Term S₂ (kind-of s)} →
     ρ ∶ Γ₁  ⇒ᵣ Γ₂ →
     (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ T')
 
@@ -277,7 +279,8 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
 -- [latex] block(SubTyping)
 
 _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set
-_∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → Γ₂ ⊢ σ x ∶ (sub σ (lookup Γ₁ x))
+_∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → 
+                           Γ₂ ⊢ σ x ∶ (sub σ (lookup Γ₁ x))
 
 -- [latex] hide
 
@@ -546,6 +549,7 @@ subject-reduction (⊢· ⊢e₁ ⊢e₂) (ξ-·₂ e₂↪e x) = ⊢· ⊢e₁ 
 subject-reduction (⊢• (⊢Λ ⊢e)) β-Λ = e[τ]-preserves ⊢e ⊢τ
 subject-reduction (⊢• ⊢e) (ξ-• e↪e') = ⊢• (subject-reduction ⊢e e↪e')
 subject-reduction (⊢let ⊢e₂ ⊢e₁) (β-let v₂) = e[e]-preserves ⊢e₁ ⊢e₂
-subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let (subject-reduction ⊢e₂ e₂↪e') ⊢e₁  
+subject-reduction (⊢let ⊢e₂ ⊢e₁) (ξ-let e₂↪e') = ⊢let 
+  (subject-reduction ⊢e₂ e₂↪e') ⊢e₁  
 
 -- [latex] end    

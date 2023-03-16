@@ -155,7 +155,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   (⊢ρ : ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂) → 
   (x : Fᴼ.Var Fᴼ.S₁ Fᴼ.s) →
 \end{code}
-\newcommand{\DPTVarPresRen}[0]{\begin{code}
+\newcommand{\DPTVarPresRen}[0]{\begin{code}[inline]
   (⊢ρ⇝ρ ⊢ρ) (x⇝x x) ≡ x⇝x (ρ x)  
 \end{code}}
 \begin{code}[hide]
@@ -165,20 +165,22 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢dropᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢ext-cstrᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢drop-cstrᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
-
-⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ :  {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
+\end{code}
+\newcommand{\DPTTypePresRen}[0]{\begin{code}
+⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ :  {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} 
+                  {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
   (⊢ρ : ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂) → 
   (τ : Fᴼ.Type Fᴼ.S₁) →
-\end{code}
-\newcommand{\DPTTypePresRen}[0]{\begin{code}[inline]
   F.ren (⊢ρ⇝ρ ⊢ρ) (τ⇝τ τ) ≡ τ⇝τ (Fᴼ.ren ρ τ) 
+⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (` x) = cong `_ (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢ρ x)
+⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ ([ ` o ∶ τ ]⇒ τ') = cong₂ _⇒_ 
+  (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ') 
+-- ...
 \end{code}}
 \begin{code}[hide]
-⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (` x) = cong `_ (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x  ⊢ρ x)
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ `⊤ = refl
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ₁) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ₂)
 ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ (∀`α τ) = cong F.∀`α_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ (⊢extᵣ ⊢ρ) τ)
-⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ ([ ` o ∶ τ ]⇒ τ') = cong₂ _⇒_ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢ρ τ') 
 
 τ⇝wk·τ≡wk·τ⇝τ : {Γ : Fᴼ.Ctx Fᴼ.S} {τ' : Fᴼ.Type Fᴼ.S} {I : Fᴼ.Term Fᴼ.S (item-of Fᴼ.s)} → 
 \end{code}
@@ -187,7 +189,6 @@ I⇝T {s = τₛ} ⋆ = ⋆
 \end{code}}
 \begin{code}[hide]
 τ⇝wk·τ≡wk·τ⇝τ {τ' = τ'} = sym (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ τ')
-
 τ⇝wk·τ≡wk-inst·τ⇝τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {τ : Fᴼ.Type Fᴼ.S} {τ' : Fᴼ.Type Fᴼ.S} {o} →
 \end{code}
 \newcommand{\DPTTypePresWkInst}[0]{\begin{code}[inline]
@@ -210,14 +211,11 @@ I⇝T {s = τₛ} ⋆ = ⋆
   (⊢σ : σ Fᴼ.∶ Γ₁ ⇒ₛ Γ₂) → 
   (x : Fᴼ.Var Fᴼ.S₁ τₛ) →
   F.sub (⊢σ⇝σ ⊢σ) (` x⇝x x) ≡ τ⇝τ (Fᴼ.sub σ (` x))
-⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢idₛ x = refl
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢extₛ ⊢σ) (here refl) = refl
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢extₛ {σ = σ} ⊢σ) (there x) = trans 
   (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
-⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢dropₛ {σ = σ} ⊢σ) x  = trans 
-  (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
-⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (here refl) = refl
-⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (there x) = ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x 
+\end{code}}
+\begin{code}[hide]
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢ext-cstrₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
    begin 
     F.wk (τ⇝τ (σ x))
@@ -226,6 +224,11 @@ I⇝T {s = τₛ} ⋆ = ⋆
   ≡⟨ cong τ⇝τ (idᵣτ≡τ (σ x)) ⟩ 
     τ⇝τ (σ x)
   ∎)
+⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢idₛ x = refl
+⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢dropₛ {σ = σ} ⊢σ) x  = trans 
+  (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
+⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (here refl) = refl
+⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (there x) = ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x 
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x(⊢drop-cstrₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
    begin 
     F.wk (τ⇝τ (σ x))
@@ -235,11 +238,11 @@ I⇝T {s = τₛ} ⋆ = ⋆
     τ⇝τ (σ x)
   ∎)
 
-
-⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ : ∀ {σ : Fᴼ.Sub Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} → 
+⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ : ∀ {σ : Fᴼ.Sub Fᴼ.S₁ Fᴼ.S₂} 
+                   {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} → 
   (⊢σ : σ Fᴼ.∶ Γ₁ ⇒ₛ Γ₂) → 
   (τ : Fᴼ.Type Fᴼ.S₁) →
-\end{code}}
+\end{code}
 \newcommand{\DPTTypePresSub}[0]{\begin{code}[inline]
   F.sub (⊢σ⇝σ ⊢σ) (τ⇝τ τ) ≡ τ⇝τ (Fᴼ.sub σ τ) 
 \end{code}}
@@ -253,7 +256,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] : {Γ : Fᴼ.Ctx Fᴼ.S₁} (τ : Fᴼ.Type Fᴼ.S₁) (τ' : Fᴼ.Type (Fᴼ.S₁ ▷ τₛ)) →  
   (τ⇝τ {Γ = Γ ▶ ⋆} τ' F.[ τ⇝τ τ ]) ≡ τ⇝τ (τ' Fᴼ.[ τ ])
 \end{code}
-\newcommand{\DPTTypePresSingleSub}[0]{\begin{code}
+\newcommand{\DPTTypePresSingleSub}[0]{\begin{code}[inline]
 τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] τ τ' = ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢single-typeₛ τ'
 \end{code}}
 \begin{code}[hide]
@@ -269,6 +272,9 @@ I⇝T {s = τₛ} ⋆ = ⋆
 Γx≡τ⇝Γx≡τ {Γ = Γ ▶ _} {τ'} (there x) refl = trans 
   (cong F.wk (Γx≡τ⇝Γx≡τ x refl)) 
   (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (Fᴼ.lookup Γ x))
+-- ...
+\end{code}}
+\begin{code}[hide]
 Γx≡τ⇝Γx≡τ {Γ = Γ ▸ c@(` o ∶ τ')} {τ} x refl =  (
   begin                     
     F.wk (F.lookup (Γ⇝Γ Γ) (x⇝x x))   
@@ -279,7 +285,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   ≡⟨ cong τ⇝τ (idᵣτ≡τ τ) ⟩ 
     τ⇝τ τ
   ∎)
-\end{code}}
+\end{code}
 \newcommand{\DPTOVarPresLookup}[0]{\begin{code}
 o∶τ∈Γ⇝Γx≡τ : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} → (o∶τ∈Γ : [ ` Fᴼ.o ∶ Fᴼ.τ ]∈ Γ) → 
   F.lookup (Γ⇝Γ Γ) (o∶τ∈Γ⇝x o∶τ∈Γ) ≡ (τ⇝τ Fᴼ.τ)
