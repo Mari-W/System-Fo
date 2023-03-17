@@ -116,14 +116,16 @@ dropᵣ ρ x = there (ρ x)
 
 ren : Ren S₁ S₂ → (Term S₁ s → Term S₂ s)
 ren ρ (` x) = ` (ρ x)
-ren ρ tt = tt
 ren ρ (λ`x→ e) = λ`x→ (ren (extᵣ ρ) e)
+ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
+-- ...
+-- [latex] hide 
+ren ρ tt = tt
 ren ρ (Λ`α→ e) = Λ`α→ (ren (extᵣ ρ) e)
 ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
 ren ρ (e • τ) = (ren ρ e) • (ren ρ τ)
 ren ρ (let`x= e₂ `in e₁) = let`x= (ren ρ e₂) `in ren (extᵣ ρ) e₁
 ren ρ `⊤ = `⊤
-ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
 ren ρ (∀`α τ) = ∀`α (ren (extᵣ ρ) τ)
 ren ρ ⋆ = ⋆
 
@@ -244,8 +246,8 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
     Γ ⊢ e₂ ∶ τ₁ →
     Γ ⊢ e₁ · e₂ ∶ τ₂
   ⊢• : 
-    Γ ⊢ e ∶ ∀`α τ' →
-    Γ ⊢ e • τ ∶ τ' [ τ ]
+    Γ ⊢ e ∶ ∀`α τ →
+    Γ ⊢ e • τ' ∶ τ [ τ' ]
   ⊢let : 
     Γ ⊢ e₂ ∶ τ →
     Γ ▶ τ ⊢ e₁ ∶ wk τ' →
@@ -372,9 +374,9 @@ progress (⊢· {e₁ = e₁} {e₂ = e₂} ⊢e₁  ⊢e₂) with progress ⊢e
 ... | inj₁ (e₁' , e₁↪e₁') | _ = inj₁ (e₁' · e₂ , ξ-·₁ e₁↪e₁')
 ... | inj₂ v | inj₁ (e₂' , e₂↪e₂') = inj₁ (e₁ · e₂' , ξ-·₂ e₂↪e₂' v)
 ... | inj₂ (v-λ {e = e₁}) | inj₂ v = inj₁ (e₁ [ e₂ ] , β-λ v)
-progress (⊢• {τ = τ} ⊢e) with progress ⊢e 
-... | inj₁ (e' , e↪e') = inj₁ (e' • τ , ξ-• e↪e')
-... | inj₂ (v-Λ {e = e}) = inj₁ (e [ τ ] , β-Λ)
+progress (⊢• {τ' = τ'} ⊢e) with progress ⊢e 
+... | inj₁ (e' , e↪e') = inj₁ (e' • τ' , ξ-• e↪e')
+... | inj₂ (v-Λ {e = e}) = inj₁ (e [ τ' ] , β-Λ)
 progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢e₂ 
 ... | inj₁ (e₂' , e₂↪e₂') = inj₁ ((let`x= e₂' `in e₁) , ξ-let e₂↪e₂')
 ... | inj₂ v = inj₁ (e₁ [ e₂ ] , β-let v)
@@ -475,7 +477,7 @@ mutual
 
   σt·ρ≡σ·ρt : ∀ (t : Term S₁ s) (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
     ren ρ (sub σ t) ≡ sub (λ x → ren ρ (σ x)) t
-  σt·ρ≡σ·ρt = {!   !}
+  σt·ρ≡σ·ρt = {!    !}
 
 σ↑·wkt≡wk·σt : ∀ {s'} (σ : Sub S₁ S₂) (t : Term S₁ s) →
   sub (extₛ {s = s'} σ) (wk {s' = s'} t) ≡ wk (sub σ t)
@@ -512,8 +514,8 @@ mutual
   (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e))
 ⊢σ-preserves ⊢σ (⊢Λ ⊢e) = ⊢Λ (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e)
 ⊢σ-preserves ⊢σ (⊢· ⊢e₁ ⊢e₂) = ⊢· (⊢σ-preserves ⊢σ ⊢e₁) (⊢σ-preserves ⊢σ ⊢e₂)
-⊢σ-preserves {σ = σ} ⊢σ (⊢• {e = e} {τ' = τ'} {τ = τ} ⊢e) =
-  subst (_ ⊢ sub σ (e • τ) ∶_) (sym (σ·t[t']≡σ↑·t[σ·t'] σ τ' τ)) (⊢• (⊢σ-preserves ⊢σ ⊢e))
+⊢σ-preserves {σ = σ} ⊢σ (⊢• {e = e} {τ = τ} {τ' = τ'} ⊢e) =
+  subst (_ ⊢ sub σ (e • τ') ∶_) (sym (σ·t[t']≡σ↑·t[σ·t'] σ τ τ')) (⊢• (⊢σ-preserves ⊢σ ⊢e))
 ⊢σ-preserves {σ = σ} ⊢σ (⊢let {τ' = τ'} ⊢e₂ ⊢e₁) = ⊢let (⊢σ-preserves ⊢σ ⊢e₂) 
   (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e₁))
 ⊢σ-preserves ⊢σ ⊢τ = ⊢τ

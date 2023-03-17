@@ -291,9 +291,8 @@ data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
     ------------------
     Γ ⊢ e₁ · e₂ ∶ τ₂
   ⊢• : 
-    Γ ⊢ e ∶ ∀`α τ' →
-    --------------------
-    Γ ⊢ e • τ ∶ τ' [ τ ]
+    Γ ⊢ e ∶ ∀`α τ →
+    Γ ⊢ e • τ' ∶ τ [ τ' ]
   ⊢let : 
     Γ ⊢ e₂ ∶ τ →
     Γ ▶ τ ⊢ e₁ ∶ wk τ' →
@@ -308,9 +307,6 @@ infix 3 _∶_⇒ᵣ_
 \end{code}
 \newcommand{\FoRenTyping}[0]{\begin{code}
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
-  ⊢ext-cstrᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
-    ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
-    ρ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ᵣ (Γ₂ ▸ (ren ρ o ∶ ren ρ τ))
   ⊢drop-cstrᵣ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     ρ ∶ Γ₁ ⇒ᵣ (Γ₂ ▸ (o ∶ τ))
@@ -382,9 +378,6 @@ data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢dropₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {I : Term S₂ (item-of s)} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     dropₛ σ ∶ Γ₁ ⇒ₛ (Γ₂ ▶ I) 
-  ⊢ext-cstrₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} → 
-    σ ∶ Γ₁ ⇒ₛ Γ₂ →
-    σ ∶ (Γ₁ ▸ (o ∶ τ)) ⇒ₛ (Γ₂ ▸ (sub σ o ∶ sub σ τ))
   ⊢drop-cstrₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ} {o} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     σ ∶ Γ₁ ⇒ₛ (Γ₂ ▸ (o ∶ τ)) 

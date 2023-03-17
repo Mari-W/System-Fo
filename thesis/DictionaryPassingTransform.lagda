@@ -111,7 +111,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢t⇝t (⊢λ ⊢e) = λ`x→ (⊢t⇝t ⊢e)
 ⊢t⇝t (⊢Λ ⊢e) = Λ`α→ (⊢t⇝t ⊢e)
 ⊢t⇝t (⊢· ⊢e₁ ⊢e₂) = ⊢t⇝t ⊢e₁ · ⊢t⇝t ⊢e₂
-⊢t⇝t (⊢• {τ = τ} ⊢e) = ⊢t⇝t ⊢e • (τ⇝τ τ)
+⊢t⇝t (⊢• {τ' = τ'} ⊢e) = ⊢t⇝t ⊢e • (τ⇝τ τ')
 ⊢t⇝t (⊢let ⊢e₂ ⊢e₁) = let`x= ⊢t⇝t ⊢e₂ `in ⊢t⇝t ⊢e₁
 
 -- Renaming 
@@ -120,7 +120,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢ρ⇝ρ : ∀ {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} → 
   ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂ →
   F.Ren (Γ⇝S Γ₁) (Γ⇝S Γ₂)
-⊢ρ⇝ρ (⊢ext-cstrᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ) 
+-- ⊢ρ⇝ρ (⊢ext-cstrᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ) 
 ⊢ρ⇝ρ (⊢drop-cstrᵣ ⊢ρ) = F.dropᵣ (⊢ρ⇝ρ ⊢ρ)
 -- ...
 \end{code}}
@@ -143,7 +143,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢σ⇝σ ⊢idₛ = F.`_
 ⊢σ⇝σ (⊢extₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
 ⊢σ⇝σ (⊢dropₛ ⊢σ) = F.dropₛ (⊢σ⇝σ ⊢σ)
-⊢σ⇝σ (⊢ext-cstrₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
+-- ⊢σ⇝σ (⊢ext-cstrₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
 ⊢σ⇝σ (⊢drop-cstrₛ ⊢σ) = F.dropₛ (⊢σ⇝σ ⊢σ)
 \end{code}
 \begin{code}[hide]
@@ -163,7 +163,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢extᵣ ⊢ρ) (here refl) = refl
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢extᵣ ⊢ρ) (there x) = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢dropᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
-⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢ext-cstrᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
+-- ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢ext-cstrᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
 ⊢ρ⇝ρ·x⇝x≡x⇝ρ·x (⊢drop-cstrᵣ ⊢ρ) x = cong there (⊢ρ⇝ρ·x⇝x≡x⇝ρ·x ⊢ρ x)
 \end{code}
 \newcommand{\DPTTypePresRen}[0]{\begin{code}
@@ -216,14 +216,6 @@ I⇝T {s = τₛ} ⋆ = ⋆
   (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
 \end{code}}
 \begin{code}[hide]
-⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢ext-cstrₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
-   begin 
-    F.wk (τ⇝τ (σ x))
-  ≡⟨ (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wk-instᵣ (σ x)) ⟩ 
-    τ⇝τ (Fᴼ.ren Fᴼ.idᵣ (σ x))
-  ≡⟨ cong τ⇝τ (idᵣτ≡τ (σ x)) ⟩ 
-    τ⇝τ (σ x)
-  ∎)
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢idₛ x = refl
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢dropₛ {σ = σ} ⊢σ) x  = trans 
   (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
@@ -326,8 +318,8 @@ o∶τ∈Γ⇝Γx≡τ {τ = τ} {Γ = Γ ▸ c@(` o ∶ τ')} (under-cstr {c' =
 ⊢t⇝⊢t (⊢ƛ {c = (` o ∶ τ)} ⊢e) = ⊢λ 
   (subst (_ F.⊢ ⊢t⇝t ⊢e ∶_) τ⇝wk·τ≡wk-inst·τ⇝τ (⊢t⇝⊢t ⊢e))
 ⊢t⇝⊢t (⊢⊘ ⊢e o∶τ∈Γ) = ⊢· (⊢t⇝⊢t ⊢e) (⊢`x (o∶τ∈Γ⇝Γx≡τ o∶τ∈Γ))
-⊢t⇝⊢t (⊢• {τ' = τ'} {τ = τ} ⊢e) = subst (_ F.⊢  ⊢t⇝t ⊢e • τ⇝τ τ  ∶_) 
-  (τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] τ τ') (⊢• (⊢t⇝⊢t ⊢e))
+⊢t⇝⊢t (⊢• {τ = τ} {τ' = τ'} ⊢e) = subst (_ F.⊢  ⊢t⇝t ⊢e • τ⇝τ τ'  ∶_) 
+  (τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] τ' τ) (⊢• (⊢t⇝⊢t ⊢e))
 -- ...
 \end{code}}
 \begin{code}[hide]

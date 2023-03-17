@@ -1,12 +1,12 @@
 \subsection{Dependently Typed Programming in Agda}
 Agda is a dependently typed programming language and proof assistant. [CITE]
-Agdas type system is based on intuitionistic type theory [CITE] and allows to construct proofs based on the Curry Howard correspondence [CITE]. 
-The Curry Howard correspondence is an isomorphic relationship between programs written in dependently typed languages and mathematical proofs written in first order logic. 
-Because of the Curry Howard correspondence, programs in Agda correspond to proofs and formulae correspond to types. 
+Agdas type system is based on intuitionistic type theory [CITE] and allows to construct proofs based on the Curry-Howard correspondence [CITE]. 
+The Curry-Howard correspondence is an isomorphic relationship between programs written in dependently typed languages and mathematical proofs written in first order logic. 
+Because of the Curry-Howard correspondence, well formed Agda programs correspond to proofs and formulae correspond to types. 
 Thus, type checked Agda programs imply the correctness of the corresponding proofs, given we do not use unsafe Agda features and assuming Agda is implemented correctly. 
 
 \subsection{Design Decisions for the Agda Formalization}
-To formalize System F and System \Fo\ in Agda we use a single data type \Data{Term} indexed by sorts \Sym{s} to represent the syntax. 
+To formalize syntaxes in Agda we use a single data type \Data{Term} indexed by sorts \Sym{s} to represent the syntax. 
 Sorts distinguish between different categories of terms. 
 For example, sort \Constr{eₛ} represents expressions \Sym{e}, \Constr{τₛ} represents \Sym{τ} and \Constr{κₛ} represents the only existing kind \Constr{⋆}. 
 Using a single data type to formalize the syntax yields more elegant proofs involving contexts, substitutions and renamings. 

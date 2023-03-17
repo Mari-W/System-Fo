@@ -21,6 +21,11 @@ This more general formulation is needed because there might be more reduction st
 For example, an implicitly resolved constraint in System \Fo\ needs to be explicitly passed using a additional application step in System F. 
 For now it is unclear, if semantic preservation can be shown using induction over the semantic rules or if logical relations are needed.
 
+\subsection{Related Work}
+System \Fo\ is heavily inspired by System O [CITE]. System O is a language extension to the Hindley-Milner System and preserves full type inference. 
+Aside from using Hindley-Milner instead of System F as base system, System O differs from System \Fo\ by tieing constraint introductions to forall types. 
+Constraints can not be introduced everywhere using a expression level construct, instead constraints are introduced via explicit type annotations of instances inside forall types. 
+
 \subsection{Conclusion}
 We have formalized both System F and System \Fo\ in Agda. 
 System \Fo\ acts as core calculus, capturing the essence of overloading.
