@@ -131,7 +131,6 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢ρ⇝ρ : ∀ {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} → 
   ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂ →
   F.Ren (Γ⇝S Γ₁) (Γ⇝S Γ₂)
--- ⊢ρ⇝ρ (⊢ext-cstrᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ) 
 ⊢ρ⇝ρ (⊢drop-cstrᵣ ⊢ρ) = F.dropᵣ (⊢ρ⇝ρ ⊢ρ)
 -- ...
 -- [latex] hide 
@@ -213,7 +212,8 @@ I⇝T {s = τₛ} ⋆ = ⋆
 
 -- [latex] block(VarPresSub)
 
-⊢σ⇝σ·x⇝x≡τ⇝σ·x  : {σ : Fᴼ.Sub Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
+⊢σ⇝σ·x⇝x≡τ⇝σ·x  : {σ : Fᴼ.Sub Fᴼ.S₁ Fᴼ.S₂} 
+                  {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
   (⊢σ : σ Fᴼ.∶ Γ₁ ⇒ₛ Γ₂) → 
   (x : Fᴼ.Var Fᴼ.S₁ τₛ) →
   F.sub (⊢σ⇝σ ⊢σ) (` x⇝x x) ≡ τ⇝τ (Fᴼ.sub σ (` x))
@@ -226,7 +226,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ Fᴼ.⊢wkᵣ (σ x))
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (here refl) = refl
 ⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢typeₛ ⊢σ) (there x) = ⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x 
-⊢σ⇝σ·x⇝x≡τ⇝σ·x(⊢drop-cstrₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
+⊢σ⇝σ·x⇝x≡τ⇝σ·x (⊢drop-cstrₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⊢σ⇝σ·x⇝x≡τ⇝σ·x ⊢σ x)) (
    begin 
     F.wk (τ⇝τ (σ x))
   ≡⟨ ⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ ⊢wk-instᵣ (σ x) ⟩ 

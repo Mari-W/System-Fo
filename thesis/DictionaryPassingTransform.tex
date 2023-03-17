@@ -685,8 +685,6 @@
 \AgdaSymbol{(}\AgdaFunction{Γ⇝S}\AgdaSpace{}%
 \AgdaBound{Γ₂}\AgdaSymbol{)}\<%
 \\
-\>[0]\AgdaComment{--\ ⊢ρ⇝ρ\ (⊢ext-cstrᵣ\ ⊢ρ)\ =\ F.extᵣ\ (⊢ρ⇝ρ\ ⊢ρ)\ }\<%
-\\
 \>[0]\AgdaFunction{⊢ρ⇝ρ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-cstrᵣ}\AgdaSpace{}%
 \AgdaBound{⊢ρ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -1158,13 +1156,15 @@
 \end{code}
 \newcommand{\DPTVarPresSub}[0]{\begin{code}%
 \>[0]\AgdaFunction{⊢σ⇝σ·x⇝x≡τ⇝σ·x}%
-\>[16]\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{σ}\AgdaSpace{}%
+\>[16]\AgdaSymbol{:}%
+\>[794I]\AgdaSymbol{\{}\AgdaBound{σ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Fᴼ.Sub}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S₁}\AgdaSpace{}%
-\AgdaGeneralizable{Fᴼ.S₂}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{Γ₁}\AgdaSpace{}%
+\AgdaGeneralizable{Fᴼ.S₂}\AgdaSymbol{\}}\<%
+\\
+\>[.][@{}l@{}]\<[794I]%
+\>[18]\AgdaSymbol{\{}\AgdaBound{Γ₁}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Fᴼ.Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S₁}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -1282,7 +1282,8 @@
 \AgdaBound{⊢σ}\AgdaSpace{}%
 \AgdaBound{x}\<%
 \\
-\>[0]\AgdaFunction{⊢σ⇝σ·x⇝x≡τ⇝σ·x}\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-cstrₛ}\AgdaSpace{}%
+\>[0]\AgdaFunction{⊢σ⇝σ·x⇝x≡τ⇝σ·x}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{⊢drop-cstrₛ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaArgument{σ}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaBound{σ}\AgdaSymbol{\}}\AgdaSpace{}%
