@@ -56,7 +56,7 @@ Substitutions \Sym{σ} of type \Data{Sub} \Sym{S₁} \Sym{S₂} are similar to r
 \FSub
 Applying a substitution using the \Data{sub} function is analogous to applying a renaming using \Data{ren}. If we encounter a binder in \Data{sub}, the substitution must be extended using function \Data{extₛ}.
 \Fext
-The extension of a substitution is defined as the weakening of terms that result in the substitution being applied to variables \Sym{x}.
+The extension of a substitution is defined as the weakening of all terms that result in the substitution being applied to variables \Sym{x}.
 
 \noindent The substitution operator \Sym{t} \Data{[} \Sym{t'} \Data{]} substitutes the last bound variable in \Sym{t} with \Sym{t'}.
 \Fsubs

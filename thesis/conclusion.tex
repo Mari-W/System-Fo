@@ -1,5 +1,5 @@
 \subsection{Hindley Milner with Overloading}
-In this scenario the source language for the Dictionary Passing Transform would be an extended Hindley-Milner based system (\HMo) and the target language would be Hindley-Milner (HM). 
+In this scenario the source language for the Dictionary Passing Transform would be an extended Hindley-Milner~\cite{hm} based system (\HMo) and the target language would be Hindley-Milner (HM). 
 HM is a restricted form of System F. Formalizing HM in Agda would require two new sorts \Constr{mₛ} and \Constr{pₛ} for mono and poly types in favour of the sort for arbitrary types \Constr{τₛ}. Poly types can include quantification over type variables while mono types consist only of primitive types and type variables. 
 Usually all language constructs are restricted to mono types, except let bound variables. 
 Hence polymorphism in HM is also called let polymorphism.  
@@ -7,7 +7,11 @@ In consequence, constraint abstractions would only be allowed to introduce const
 Instance expression bodies would be allowed to have poly types because they translate to let bindings after all.
 But instances would need to be restricted as well. For each overloaded variable \Sym{o}, all instances would need to differ in the type of their first argument.
 With these two restrictions full type inference should be preserved. The inference algorithm would treat instance expressions similar to let bindings and could infer the type of an overloaded identifier via the type of the first argument applied.
-Formalizing the changes and restrictions mentioned above should be a fairly straight forward adjustment to the formalization of System F and System \Fo.
+
+\noindent The ideas for the required restrictions originate from System O~\cite{syso}. System O is a language extension to the Hindley-Milner System and preserves full type inference. Furthermore, System O differs from System \Fo\ and \HMo\ by tieing constraint introductions to forall types. 
+A constraint is not introduced on the expression level, instead constraints are introduced via explicit type annotations of instances inside forall types. 
+In System O instances must also differ in the type of there first argument. 
+Furthermore, constraints must have the type variable that they are tied to as type of the first argument to preserve full type inference.
 
 \subsection{Proving Semantic Preservation }
 For now System \Fo\ does not have semantics formalized.
@@ -18,18 +22,12 @@ Let \Sym{⊢e} \Data{↪} \Sym{⊢e'} be such a typed small step semantic for Sy
 Instead of translating reduction steps directly, we prove that both translated \Sym{⊢e} and \Sym{⊢e'} reduce to a System F expression \Sym{e''} using finite many reduction steps.
 This more general formulation is needed because there might be more reduction steps in the translated System F expression than in the System \Fo\ expression. 
 For example, an implicitly resolved constraint in System \Fo\ needs to be explicitly passed using an additional application step in System F. 
-For now it remains unclear if semantic preservation can be proven using induction over the typed semantic rules or if logical relations are needed [CITE].
+For now it remains unclear if semantic preservation can be proven using induction over the typed semantic rules or if logical relations are needed~\cite{logrel}.
 
-\subsection{Related Work}
-System \Fo\ is heavily inspired by System O [CITE]. System O is a language extension to the Hindley-Milner System and preserves full type inference. 
-Aside from using Hindley-Milner instead of System F as base system, System O differs from System \Fo\ by tieing constraint introductions to forall types. 
-A constraint is not introduced using an expression, instead constraints are introduced as groups via explicit type annotations of instances inside forall types. 
-In System O instances must also differ in the type of there first argument. 
-Furthermore, constraints must have the type variable that they are tied to as type of the first argument to preserve full type inference.
 
 \subsection{Conclusion}
 We have formalized both System F and System \Fo\ in Agda. 
 System \Fo\ acts as core calculus, capturing the essence of overloading.
 Using Agda we formalized the Dictionary Passing Transform between System F and System \Fo. 
-We proved the System F formalization to be sound and the Dictionary Passing Transform from System \Fo\ to System F to be type preserving. The full formalization of System F, System \Fo\ and the Dictionary Passing Transform can be found as Agda code files [CITE].
-A reasonable next step would be to prove the Dictionary Passing Transform to be semantic preserving. 
+We proved the System F formalization to be sound and the Dictionary Passing Transform from System \Fo\ to System F to be type preserving. The full formalization of System F, System \Fo\ and the Dictionary Passing Transform can be found as Agda code files~\cite{code}.
+A reasonable next step would be to prove semantic preservation for the Dictionary Passing Transform. 

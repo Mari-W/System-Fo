@@ -139,7 +139,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 -- ...
 \end{code}}
 \begin{code}[hide]
-⊢σ⇝σ ⊢idₛ = F.`_
+⊢σ⇝σ ⊢idₛ = F.idₛ _
 ⊢σ⇝σ (⊢extₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
 ⊢σ⇝σ (⊢dropₛ ⊢σ) = F.dropₛ (⊢σ⇝σ ⊢σ)
 -- ⊢σ⇝σ (⊢ext-cstrₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
@@ -249,7 +249,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   (τ⇝τ {Γ = Γ ▶ ⋆} τ' F.[ τ⇝τ τ ]) ≡ τ⇝τ (τ' Fᴼ.[ τ ])
 \end{code}
 \newcommand{\DPTTypePresSingleSub}[0]{\begin{code}[inline]
-τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] τ τ' = ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ ⊢single-typeₛ τ'
+τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ] τ τ' = ⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ Fᴼ.⊢single-typeₛ τ'
 \end{code}}
 \begin{code}[hide]
 -- Type Preserving Translation ----------------------------------------------------------

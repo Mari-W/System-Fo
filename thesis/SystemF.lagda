@@ -141,44 +141,44 @@ variable
 \end{code}
 \newcommand{\FSub}[0]{\begin{code}
 Sub : Sorts → Sorts → Set
-Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
+Sub S₁ S₂ = ∀ s → Var S₁ s → Term S₂ s
 \end{code}}
 \newcommand{\Fidsub}[0]{\begin{code}[inline]
 idₛ : Sub S S
 \end{code}}
 \begin{code}[hide]
-idₛ = `_
+idₛ s = `_
 \end{code}
 \newcommand{\Fext}[0]{\begin{code}
-extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
-extₛ σ (here refl) = ` here refl
-extₛ σ (there x) = wk (σ x)
+extₛ : Sub S₁ S₂ → (s : Sort ⊤ᶜ) →  Sub (S₁ ▷ s) (S₂ ▷ s)
+extₛ σ s _ (here refl) = ` here refl
+extₛ σ s _ (there x) = wk (σ _ x)
 \end{code}}
 \begin{code}[hide]
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
-dropₛ σ x = wk (σ x)
+dropₛ σ _ x = wk (σ _ x)
 \end{code}
 \newcommand{\Fsinglesub}[0]{\begin{code}[inline]
 singleₛ : Sub S₁ S₂ → Term S₂ s → Sub (S₁ ▷ s) S₂
 \end{code}}
 \begin{code}[hide]
-singleₛ σ t (here refl) = t
-singleₛ σ t (there x) = σ x
+singleₛ σ t _ (here refl) = t
+singleₛ σ t _ (there x) = σ _ x
 \end{code}
 \newcommand{\Fsub}[0]{\begin{code}[inline]
 sub : Sub S₁ S₂ → (Term S₁ s → Term S₂ s)
 \end{code}}
 \begin{code}[hide]
-sub σ (` x) = (σ x)
+sub σ (` x) = (σ _ x)
 sub σ tt = tt
-sub σ (λ`x→ e) = λ`x→ (sub (extₛ σ) e)
-sub σ (Λ`α→ e) = Λ`α→ (sub (extₛ σ) e)
+sub σ (λ`x→ e) = λ`x→ (sub (extₛ σ _) e)
+sub σ (Λ`α→ e) = Λ`α→ (sub (extₛ σ _) e)
 sub σ (e₁ · e₂) = sub σ e₁ · sub σ e₂
 sub σ (e • τ) = sub σ e • sub σ τ
-sub σ (let`x= e₂ `in e₁) = let`x= sub σ e₂ `in (sub (extₛ σ) e₁)
+sub σ (let`x= e₂ `in e₁) = let`x= sub σ e₂ `in (sub (extₛ σ _) e₁)
 sub σ `⊤ = `⊤
 sub σ (τ₁ ⇒ τ₂) = sub σ τ₁ ⇒ sub σ τ₂
-sub σ (∀`α τ) = ∀`α (sub (extₛ σ) τ)
+sub σ (∀`α τ) = ∀`α (sub (extₛ σ _) τ)
 sub σ ⋆ = ⋆
 \end{code}
 \newcommand{\Fsubs}[0]{\begin{code}
@@ -276,43 +276,9 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
 \newcommand{\FSubTyping}[0]{\begin{code}
 _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set
 _∶_⇒ₛ_ {S₁ = S₁} σ Γ₁ Γ₂ = ∀ {s} (x : Var S₁ s) → 
-                           Γ₂ ⊢ σ x ∶ (sub σ (lookup Γ₁ x))
+                           Γ₂ ⊢ σ _ x ∶ (sub σ (lookup Γ₁ x))
 \end{code}}
 \begin{code}[hide]
-extₛidₛ≡idₛ : ∀ (x : Var (S ▷ s') s) → extₛ idₛ x ≡ idₛ x
-extₛidₛ≡idₛ (here refl) = refl
-extₛidₛ≡idₛ (there x) = refl 
-
-⊢ext-σ₁≡ext-σ₂ : ∀ {σ₁ σ₂ : Sub S₁ S₂} → 
- (∀ {s} (x : Var S₁ s) → σ₁ x ≡ σ₂ x) → 
- (∀ {s} (x : Var (S₁ ▷ s') s) → (extₛ σ₁) x ≡ (extₛ σ₂) x)
-⊢ext-σ₁≡ext-σ₂ σ₁≡σ₂ (here refl) = refl
-⊢ext-σ₁≡ext-σ₂ σ₁≡σ₂ (there x) = cong wk (σ₁≡σ₂ x)
-
-σ₁≡σ₂→σ₁τ≡σ₂τ : ∀ {σ₁ σ₂ : Sub S₁ S₂} (τ : Type S₁) → 
-  (∀ {s} (x : Var S₁ s) → σ₁ x ≡ σ₂ x) → 
-  sub σ₁ τ ≡ sub σ₂ τ
-σ₁≡σ₂→σ₁τ≡σ₂τ (` x) σ₁≡σ₂ = σ₁≡σ₂ x
-σ₁≡σ₂→σ₁τ≡σ₂τ `⊤ σ₁≡σ₂ = refl
-σ₁≡σ₂→σ₁τ≡σ₂τ (τ₁ ⇒ τ₂) σ₁≡σ₂ = cong₂ _⇒_ (σ₁≡σ₂→σ₁τ≡σ₂τ τ₁ σ₁≡σ₂) (σ₁≡σ₂→σ₁τ≡σ₂τ τ₂ σ₁≡σ₂)
-σ₁≡σ₂→σ₁τ≡σ₂τ (∀`α τ) σ₁≡σ₂ = cong ∀`α_ (σ₁≡σ₂→σ₁τ≡σ₂τ τ (⊢ext-σ₁≡ext-σ₂ σ₁≡σ₂))
-
-idₛτ≡τ : (τ : Type S) →
-  sub idₛ τ ≡ τ
-idₛτ≡τ (` x) = refl
-idₛτ≡τ `⊤ = refl
-idₛτ≡τ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (idₛτ≡τ τ₁) (idₛτ≡τ τ₂)
-idₛτ≡τ (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁τ≡σ₂τ τ extₛidₛ≡idₛ) (idₛτ≡τ τ))
-
-⊢idₛ : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (kind-of s)} (⊢t : Γ ⊢ t ∶ T) → idₛ ∶ Γ ⇒ₛ Γ
-⊢idₛ {Γ = Γ} ⊢t {eₛ} x = ⊢`x (sym (idₛτ≡τ (lookup Γ x)))
-⊢idₛ {Γ = Γ} ⊢t {τₛ} x with lookup Γ x
-... | ⋆ = ⊢τ
-
-⊢singleₛ : ∀ {T' : Term S (kind-of s)} (⊢t : Γ ⊢ t ∶ T) → singleₛ idₛ t ∶ (Γ ▶ T') ⇒ₛ Γ
-⊢singleₛ ⊢t (here px) = {!   !}
-⊢singleₛ ⊢t (there x) = {!   !} 
-
 -- Semantics ----------------------------------------------------------------------------
 \end{code}
 \newcommand{\FVal}[0]{\begin{code}
@@ -401,46 +367,44 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   sub (singleₛ σ t') (wk t) ≡ sub σ t
 σ↑idₛ≡σ t t' σ = {!   !}
 
-⊢extₛ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Expr S₂} {τ : Type S₁} →
-  σ ∶ Γ₁ ⇒ₛ Γ₂ →
-  Γ₂ ⊢ t ∶ sub σ τ →
-  singleₛ σ t ∶ Γ₁ ▶ τ ⇒ₛ Γ₂ 
-⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e (here refl) = subst (_ ⊢ t ∶_) (sym (σ↑idₛ≡σ τ t σ)) ⊢e
-⊢extₛ {σ = σ} {Γ₁ = Γ₁} {t = t} {τ = τ} ⊢σ ⊢e {eₛ} (there x) = subst (_ ⊢ σ x ∶_) (sym (σ↑idₛ≡σ (lookup Γ₁ x) t σ)) (⊢σ x)
-⊢extₛ {σ = σ} {t = t} {τ = τ} ⊢σ ⊢e {τₛ} (there x) = {!  !}
-
-τ[e]≡τ : ∀ {τ : Type S} {e : Expr S} → wk τ [ e ] ≡ τ  
-τ[e]≡τ {τ = τ} {e = e} = 
-  begin 
-    wk τ [ e ]
-  ≡⟨ σ↑idₛ≡σ τ e idₛ ⟩
-    sub idₛ τ
-  ≡⟨ idₛτ≡τ τ ⟩
-    τ
-  ∎
 
 variable
   ℓ ℓ₁ ℓ₂ ℓ₃ : Level
   A B C      : Set ℓ
 
+postulate
+  fun-ext : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} →
+    (∀ (x : A) → f x ≡ g x) →
+    f ≡ g
 
-postulate 
-  ↑σρ≡↑σ·↑ρ : ∀ {s'} (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
-    extₛ {s = s'} (σ ∘ ρ) ≡ (extₛ {s = s'} σ) ∘ (extᵣ {s = s'} ρ)
+fun-ext₂ : ∀ {A₁ : Set ℓ₁} {A₂ : A₁ → Set ℓ₂} {B : (x : A₁) → A₂ x → Set ℓ₃}
+             {f g : (x : A₁) → (y : A₂ x) → B x y} →
+    (∀ (x : A₁) (y : A₂ x) → f x y ≡ g x y) →
+    f ≡ g
+fun-ext₂ h = fun-ext λ x → fun-ext λ y → h x y
+
+_∘ᵣₛ_ : Ren S₁ S₂ → Sub S₂ S₃ → Sub S₁ S₃
+(ρ ∘ᵣₛ σ) x y = {!   !}
+_∘ₛᵣ_ : Sub S₁ S₂ → Ren S₂ S₃ → Sub S₁ S₃
+(σ ∘ₛᵣ ρ) x y = {!   !}
+
+↑σρ≡↑σ·↑ρ : ∀ s (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
+  extₛ (ρ ∘ᵣₛ σ) s ≡  (extᵣ ρ) ∘ᵣₛ (extₛ σ s)
+↑σρ≡↑σ·↑ρ s ρ σ = {!   !}
 
 mutual 
   ρ↑t·σ≡ρ·σ↑t : ∀ (t : Term (S₁ ▷ s') s) (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
-    sub (extₛ σ) (ren (extᵣ ρ) t) ≡ sub (extₛ (σ ∘ ρ)) t
-  ρ↑t·σ≡ρ·σ↑t {s' = s'} {s = s} t ρ σ = begin  
-      sub (extₛ σ) (ren (extᵣ ρ) t)
-    ≡⟨ ρt·σ≡ρ·σt t (extᵣ ρ) (extₛ σ) ⟩
-      sub (extₛ σ ∘ extᵣ ρ) t
-    ≡⟨ cong (λ σ → sub {!  σ !} t) (sym (↑σρ≡↑σ·↑ρ {s' = s'} ρ σ)) ⟩
-      sub (extₛ (σ ∘ ρ)) t
+    sub (extₛ σ _) (ren (extᵣ ρ) t) ≡ sub (extₛ (ρ ∘ᵣₛ σ) _) t
+  ρ↑t·σ≡ρ·σ↑t t ρ σ = begin  
+      sub (extₛ σ _) (ren (extᵣ ρ) t)
+    ≡⟨ ρt·σ≡ρ·σt t (extᵣ ρ) (extₛ σ _) ⟩
+      sub (extᵣ ρ ∘ᵣₛ extₛ σ _) t
+    ≡⟨ cong (λ σ → sub {! extₛ σ _ !} t) (sym (↑σρ≡↑σ·↑ρ _ ρ σ)) ⟩
+      sub (extₛ (ρ ∘ᵣₛ σ) _) t
     ∎
 
   ρt·σ≡ρ·σt : ∀ (t : Term S₁ s) (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
-    sub σ (ren ρ t) ≡ sub (σ ∘ ρ) t
+    sub σ (ren ρ t) ≡ sub (ρ ∘ᵣₛ σ) t
   ρt·σ≡ρ·σt (` x) ρ σ = refl
   ρt·σ≡ρ·σt tt ρ σ = refl
   ρt·σ≡ρ·σt (λ`x→ e) ρ σ = cong λ`x→_ (ρ↑t·σ≡ρ·σ↑t e ρ σ)
@@ -454,41 +418,41 @@ mutual
   ρt·σ≡ρ·σt ⋆ ρ σ = refl 
 
 
-↑ρσ≡↑ρ·↑σ : ∀ {s} (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
-  extₛ {s = s} (λ x → ren ρ (σ x)) ≡ (λ x → ren (extᵣ {s = s} ρ) ((extₛ {s = s} σ) x))
-↑ρσ≡↑ρ·↑σ σ ρ = {!   !} 
+↑ρσ≡↑ρ·↑σ : ∀ s (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
+  extₛ (σ ∘ₛᵣ ρ) s ≡ (extₛ σ _ ∘ₛᵣ extᵣ ρ)
+↑ρσ≡↑ρ·↑σ σ ρ = {!   !}  
 
 mutual 
   σ↑t·ρ≡σ·ρ↑t : ∀ (t : Term (S₁ ▷ s') s) (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
-    ren (extᵣ ρ) (sub (extₛ σ) t) ≡ sub (λ x → ren (extᵣ ρ) ((extₛ σ) x)) t
-  σ↑t·ρ≡σ·ρ↑t t σ ρ = {!   !} 
+    ren (extᵣ ρ) (sub (extₛ σ _) t) ≡ sub (extₛ σ _ ∘ₛᵣ extᵣ ρ) t
+  σ↑t·ρ≡σ·ρ↑t t σ ρ = {!    !} 
 
 
   σt·ρ≡σ·ρt : ∀ (t : Term S₁ s) (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
-    ren ρ (sub σ t) ≡ sub (λ x → ren ρ (σ x)) t
+    ren ρ (sub σ t) ≡ sub (σ ∘ₛᵣ ρ) t
   σt·ρ≡σ·ρt = {!    !}
 
-σ↑·wkt≡wk·σt : ∀ {s'} (σ : Sub S₁ S₂) (t : Term S₁ s) →
-  sub (extₛ {s = s'} σ) (wk {s' = s'} t) ≡ wk (sub σ t)
-σ↑·wkt≡wk·σt {s'} σ t = 
+σ↑·wkt≡wk·σt : ∀ s' (σ : Sub S₁ S₂) (t : Term S₁ s) →
+  sub (extₛ σ _) (wk {s' = s'} t) ≡ wk (sub σ t)
+σ↑·wkt≡wk·σt s' σ t = 
   begin 
-    sub (extₛ σ) (wk t) 
-  ≡⟨ ρt·σ≡ρ·σt t there (extₛ σ) ⟩
-    sub (λ x → ren there (σ x)) t
+    sub (extₛ σ _) (wk t) 
+  ≡⟨ ρt·σ≡ρ·σt t there (extₛ σ _) ⟩
+    sub {!   !} t
   ≡⟨ sym (σt·ρ≡σ·ρt t σ there) ⟩
     ren there (sub σ t)
   ∎
 
 σ·t[t']≡σ↑·t[σ·t'] : ∀ {s'} (σ : Sub S₁ S₂) (t : Term (S₁ ▷ s') s) (t' : Term S₁ s') →
-  sub σ (t [ t' ]) ≡ (sub (extₛ σ) t) [ sub σ t' ]  
-σ·t[t']≡σ↑·t[σ·t'] = {!   !}
+  sub σ (t [ t' ]) ≡ (sub (extₛ σ _) t) [ sub σ t' ]  
+σ·t[t']≡σ↑·t[σ·t'] = {!    !}
 
 ⊢σ↑ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T : Term S₁ (kind-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
-  extₛ σ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub σ T)
-⊢σ↑ {σ = σ} {T = τ} ⊢σ {eₛ} (here refl) = ⊢`x (sym (σ↑·wkt≡wk·σt σ τ))
+  extₛ σ _ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub σ T)
+⊢σ↑ {σ = σ} {T = τ} ⊢σ {eₛ} (here refl) = ⊢`x (sym (σ↑·wkt≡wk·σt _ σ τ))
 ⊢σ↑ ⊢σ {τₛ} (here refl) = {!    !}
-⊢σ↑ ⊢σ (there x) = {!   !}
+⊢σ↑ ⊢σ (there x) = {!    !}
 \end{code}
 \newcommand{\Fpreserves}[0]{\begin{code}
 ⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} 
@@ -501,14 +465,62 @@ mutual
 ⊢σ-preserves ⊢σ (⊢`x {x = x} refl) = ⊢σ x
 ⊢σ-preserves ⊢σ ⊢⊤ = ⊢⊤
 ⊢σ-preserves {σ = σ} ⊢σ (⊢λ {τ' = τ'} ⊢e) = ⊢λ 
-  (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e))
+  (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt _ σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e))
 ⊢σ-preserves ⊢σ (⊢Λ ⊢e) = ⊢Λ (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e)
 ⊢σ-preserves ⊢σ (⊢· ⊢e₁ ⊢e₂) = ⊢· (⊢σ-preserves ⊢σ ⊢e₁) (⊢σ-preserves ⊢σ ⊢e₂)
 ⊢σ-preserves {σ = σ} ⊢σ (⊢• {e = e} {τ = τ} {τ' = τ'} ⊢e) =
   subst (_ ⊢ sub σ (e • τ') ∶_) (sym (σ·t[t']≡σ↑·t[σ·t'] σ τ τ')) (⊢• (⊢σ-preserves ⊢σ ⊢e))
 ⊢σ-preserves {σ = σ} ⊢σ (⊢let {τ' = τ'} ⊢e₂ ⊢e₁) = ⊢let (⊢σ-preserves ⊢σ ⊢e₂) 
-  (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e₁))
+  (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt _ σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e₁))
 ⊢σ-preserves ⊢σ ⊢τ = ⊢τ
+
+⊢singleₛ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₂ s} {T : Term S₁ (kind-of s)} →
+  σ ∶ Γ₁ ⇒ₛ Γ₂ →
+  Γ₂ ⊢ t ∶ sub σ T →
+  singleₛ σ t ∶ Γ₁ ▶ T ⇒ₛ Γ₂ 
+⊢singleₛ {σ = σ} {t = t} {T = T} ⊢σ ⊢e (here refl) = subst (_ ⊢ t ∶_) (sym (σ↑idₛ≡σ T t σ)) ⊢e
+⊢singleₛ {σ = σ} {Γ₁ = Γ₁} {t = t} ⊢σ ⊢e {eₛ} (there x) = subst (_ ⊢ σ _ x ∶_) (sym (σ↑idₛ≡σ (lookup Γ₁ x) t σ)) (⊢σ x)
+⊢singleₛ {σ = σ} {t = t} ⊢σ ⊢e {τₛ} (there x) = {!  !}
+
+extₛidₛ≡idₛ : ∀ (x : Var (S ▷ s') s) → extₛ idₛ _ _ x ≡ idₛ _ x
+extₛidₛ≡idₛ (here refl) = refl
+extₛidₛ≡idₛ (there x) = refl 
+
+⊢ext-σ₁≡ext-σ₂ : ∀ {σ₁ σ₂ : Sub S₁ S₂} → 
+ (∀ {s} (x : Var S₁ s) → σ₁ _ x ≡ σ₂ _ x) → 
+ (∀ {s} (x : Var (S₁ ▷ s') s) → (extₛ σ₁ _) _ x ≡ (extₛ σ₂ _) _ x)
+⊢ext-σ₁≡ext-σ₂ σ₁≡σ₂ (here refl) = refl
+⊢ext-σ₁≡ext-σ₂ σ₁≡σ₂ (there x) = cong wk (σ₁≡σ₂ x)
+
+σ₁≡σ₂→σ₁τ≡σ₂τ : ∀ {σ₁ σ₂ : Sub S₁ S₂} (τ : Type S₁) → 
+  (∀ {s} (x : Var S₁ s) → σ₁ _ x ≡ σ₂ _ x) → 
+  sub σ₁ τ ≡ sub σ₂ τ
+σ₁≡σ₂→σ₁τ≡σ₂τ (` x) σ₁≡σ₂ = σ₁≡σ₂ x
+σ₁≡σ₂→σ₁τ≡σ₂τ `⊤ σ₁≡σ₂ = refl
+σ₁≡σ₂→σ₁τ≡σ₂τ (τ₁ ⇒ τ₂) σ₁≡σ₂ = cong₂ _⇒_ (σ₁≡σ₂→σ₁τ≡σ₂τ τ₁ σ₁≡σ₂) (σ₁≡σ₂→σ₁τ≡σ₂τ τ₂ σ₁≡σ₂)
+σ₁≡σ₂→σ₁τ≡σ₂τ (∀`α τ) σ₁≡σ₂ = cong ∀`α_ (σ₁≡σ₂→σ₁τ≡σ₂τ τ (⊢ext-σ₁≡ext-σ₂ σ₁≡σ₂))
+
+idₛτ≡τ : (τ : Type S) →
+  sub idₛ τ ≡ τ
+idₛτ≡τ (` x) = refl
+idₛτ≡τ `⊤ = refl
+idₛτ≡τ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (idₛτ≡τ τ₁) (idₛτ≡τ τ₂)
+idₛτ≡τ (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁τ≡σ₂τ τ extₛidₛ≡idₛ) (idₛτ≡τ τ))
+
+⊢idₛ : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (kind-of s)} (⊢t : Γ ⊢ t ∶ T) → idₛ ∶ Γ ⇒ₛ Γ
+⊢idₛ {Γ = Γ} ⊢t {eₛ} x = ⊢`x (sym (idₛτ≡τ (lookup Γ x)))
+⊢idₛ {Γ = Γ} ⊢t {τₛ} x with lookup Γ x
+... | ⋆ = ⊢τ
+
+τ[e]≡τ : ∀ {τ : Type S} {e : Expr S} → wk τ [ e ] ≡ τ  
+τ[e]≡τ {τ = τ} {e = e} = 
+  begin 
+    wk τ [ e ]
+  ≡⟨ σ↑idₛ≡σ τ e idₛ ⟩
+    sub idₛ τ
+  ≡⟨ idₛτ≡τ τ ⟩
+    τ
+  ∎
 \end{code}
 \newcommand{\Feepreserves}[0]{\begin{code}
 e[e]-preserves :  ∀ {Γ : Ctx S} {e₁ : Expr (S ▷ eₛ)} {e₂ : Expr S} {τ τ' : Type S} →
@@ -518,7 +530,7 @@ e[e]-preserves :  ∀ {Γ : Ctx S} {e₁ : Expr (S ▷ eₛ)} {e₂ : Expr S} {�
 \end{code}}
 \begin{code}[hide]
 e[e]-preserves {τ = τ} ⊢e₁ ⊢e₂ = subst (_ ⊢ _ ∶_) τ[e]≡τ 
-  (⊢σ-preserves (⊢extₛ (⊢idₛ ⊢e₂) (subst (_ ⊢ _ ∶_) (sym (idₛτ≡τ τ)) ⊢e₂)) ⊢e₁) 
+  (⊢σ-preserves (⊢singleₛ (⊢idₛ ⊢e₂) (subst (_ ⊢ _ ∶_) (sym (idₛτ≡τ τ)) ⊢e₂)) ⊢e₁) 
 \end{code}
 \newcommand{\Fetpreserves}[0]{\begin{code}
 e[τ]-preserves :  ∀ {Γ : Ctx S} {e : Expr (S ▷ τₛ)} {τ : Type S} {τ' : Type (S ▷ τₛ)} →
@@ -527,7 +539,7 @@ e[τ]-preserves :  ∀ {Γ : Ctx S} {e : Expr (S ▷ τₛ)} {τ : Type S} {τ' 
   Γ ⊢ e [ τ ] ∶ τ' [ τ ] 
 \end{code}}
 \begin{code}[hide]
-e[τ]-preserves ⊢e ⊢τ = ⊢σ-preserves (⊢singleₛ ⊢τ) ⊢e
+e[τ]-preserves {τ = τ} ⊢e ⊢τ = ⊢σ-preserves (⊢singleₛ (⊢idₛ {t = τ} ⊢τ) ⊢τ) ⊢e
 \end{code}
 \newcommand{\FSubjectReduction}[0]{\begin{code}
 subject-reduction : ∀ {Γ : Ctx S} →

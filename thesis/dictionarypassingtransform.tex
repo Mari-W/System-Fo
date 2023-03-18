@@ -45,10 +45,11 @@ Thus, the corresponding function type for that binding is expected in \Sym{Γ} a
 \subsubsection{Renaming \& Substitution}\hfill\\\\
 Typed renamings in System \Fo\ translate to untyped renamings in System F.
 \DPTRen
-Typed renamings \Constr{⊢idᵣ}, \Constr{⊢extᵣ} and \Constr{⊢dropᵣ} translate to their untyped counterparts. 
 \noindent Because constraints in contexts translate to actual bindings, the constructor \Constr{⊢drop-cstrᵣ} translates to \Data{dropᵣ} in System F.
 
-\noindent The translation of typed substitutions to untyped substitutions follows the same idea.
+\noindent Typed renamings \Constr{⊢idᵣ}, \Constr{⊢extᵣ} and \Constr{⊢dropᵣ} translate to their untyped counterparts. 
+
+\noindent The translation of typed substitutions to untyped substitutions follows similarly.
 \DPTSub 
 
 \noindent The typed renaming \Constr{⊢typeₛ} translates to its untyped counterpart for arbitrary terms \Data{singleₛ}.
@@ -155,4 +156,4 @@ Additional complexity arieses because we need to deal with the fact that constra
 \noindent Lemma \Data{o∶τ∈Γ⇝Γx≡τ} can proven via induction over the type for resolved constraints \Data{[} \Sym{c} \Data{]∈} \Sym{Γ}. 
 The proof is analogous to the proof shown for \Data{Γx≡τ⇝Γx≡τ} because the type for resolved constraints preserves the structure of context \Sym{Γ}. 
 
-\noindent This finishes up the type preservation proof for the Dictionary Passing Transform from System \Fo\ to System F. The full proof is available as Agda file [CITE].
+\noindent This finishes up the type preservation proof for the Dictionary Passing Transform from System \Fo\ to System F.
