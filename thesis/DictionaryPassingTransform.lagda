@@ -132,15 +132,15 @@ I⇝T {s = τₛ} ⋆ = ⋆
 -- Substititution
 \end{code}
 \newcommand{\DPTSub}[0]{\begin{code}
-⊢σ⇝σ : ∀  {σ : Fᴼ.Sub Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} → 
+⊢σ⇝σ : ∀ {σ : Fᴼ.Sub Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} → 
   σ Fᴼ.∶ Γ₁ ⇒ₛ Γ₂ →
   F.Sub (Γ⇝S Γ₁) (Γ⇝S Γ₂)
 ⊢σ⇝σ (⊢typeₛ {τ = τ} ⊢σ) = F.singleₛ (⊢σ⇝σ ⊢σ) (τ⇝τ τ)
 -- ...
 \end{code}}
 \begin{code}[hide]
-⊢σ⇝σ ⊢idₛ = F.idₛ _
-⊢σ⇝σ (⊢extₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
+⊢σ⇝σ ⊢idₛ = F.idₛ
+⊢σ⇝σ (⊢extₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ) _ 
 ⊢σ⇝σ (⊢dropₛ ⊢σ) = F.dropₛ (⊢σ⇝σ ⊢σ)
 -- ⊢σ⇝σ (⊢ext-cstrₛ ⊢σ) = F.extₛ (⊢σ⇝σ ⊢σ)
 ⊢σ⇝σ (⊢drop-cstrₛ ⊢σ) = F.dropₛ (⊢σ⇝σ ⊢σ)
@@ -150,7 +150,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 
 -- Renaming
 
-⊢ρ⇝ρ·x⇝x≡x⇝ρ·x :  {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
+⊢ρ⇝ρ·x⇝x≡x⇝ρ·x : {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
   (⊢ρ : ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂) → 
   (x : Fᴼ.Var Fᴼ.S₁ Fᴼ.s) →
 \end{code}

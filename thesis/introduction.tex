@@ -7,13 +7,13 @@ Python, for example, uses magic methods to overload commonly used operators on u
 \subsection{Typeclasses in Haskell}
 Essentially, typeclasses allow to declare function names with generic type signatures.
 We can give one of possibly many meanings to a typeclass by instantiating the typeclass for concrete types. 
-Instantiating a typeclass gives concrete meaning to all functions defined by the typeclass.
-When we invoke an overloaded function name defined by a typeclass, we expect the compiler to determine the correct instance based on the types of the arguments applied. 
-Furthermore, Haskell allows to constrain bound type variables \mono{α} via type constraints \inl{Tc α ⇒ τ'} to only be substituted by concrete types \mono{τ}, if there exists an instance \inl{Tc} \mono{τ}.
+Instantiating a typeclass gives an actual implementation to all functions defined by the typeclass based on the concrete types that the typeclass is instantiated for.
+When we invoke an overloaded function name defined by a typeclass, we expect the compiler to determine the correct instance based on the types of the arguments that were applied to the overloaded function name. 
+Furthermore, Haskell allows to constrain a type variable \mono{α} via type constraints \inl{Tc α ⇒ τ'} to only be substituted by a concrete type \mono{τ} if there exists an instance \inl{Tc} \mono{τ}.
 
 \subsubsection{Example: Overloading Equality in Haskell}\hfill\\\\
 In this example the function \inl{|\Blk eq| : α → α → Bool} is overloaded with different meanings for different substitutions $\{α \mapsto τ\}$. 
-We want to be able to call \mono{eq} on both $\{$\mono{α} $\mapsto$ \inl{Nat}$\}$ and $\{$\mono{α} $\mapsto$ \inl{[β]}$\}$, where \mono{β} is a concrete type and there exists an instance that gives meaning to \inl{|\Blk eq| : β → β → Bool}. The intuition here is that we want to be able to compare natural numbers \inl{Nat} and lists \mono{[β]}, given the elements of type \mono{β} are known to be comparable.
+We want to be able to call \mono{eq} on both $\{$\mono{α} $\mapsto$ \inl{Nat}$\}$ and $\{$\mono{α} $\mapsto$ \inl{[β]}$\}$, where \mono{β} is a type and there exists an instance that gives meaning to \inl{|\Blk eq| : β → β → Bool}. The intuition here is that we want to be able to compare natural numbers \inl{Nat} and lists \mono{[β]}, given the elements of type \mono{β} are known to be comparable.
 \begin{minted}[escapeinside=||]{haskell}
     class Eq α where
       eq :: α → α → Bool 
@@ -32,7 +32,7 @@ Hence we can call \mono{eq} on expressions with type \inl{Nat} and \inl{[Nat]}. 
 
 \subsection{Desugaring Typeclass Functionality to System \Fo}
 System \Fo\ is a minimal calculus with support for overloading and polymorphism based on System F.  
-In System \Fo\ we give up high level language constructs and instead desugar typeclass like functionality to simple overloaded identifiers. 
+In System \Fo\ we give up high level language constructs and instead work with simple overloaded identifiers. 
 
 \noindent Using the \inl{|\Decl o| in e'} expression we can introduce an new overloaded variable \mono{o}. 
 If declared as overloaded, \mono{o} can be instantiated for type \mono{τ} of expression \mono{e} using the \inl{|\Inst o| = e in e'} expression.
@@ -40,8 +40,8 @@ In Haskell, instances must comply with the generic type signatures defined by th
 Locally shadowing other instances of the same type is allowed.
 Constraints can be introduced on the expression level using constraint abstractions \inl{|\lambdabar| (o : τ). e'}. 
 Constraint abstractions result in constraint types \inl{[o : τ] ⇒ τ'}. 
-We introduce constraints on the expression level because instance expressions do not have an explicit type annotation in System \Fo.
-Expressions with constraint types \inl{[o : τ] ⇒ τ'} are implicitly treated as expressions of type \Sym{τ'}, given that the constraint \inl{|\Blk{o}| : τ} can be resolved.
+We introduce constraints on the expression level because instance expressions do not have a type annotation in System \Fo.
+Expressions with constraint types \inl{[o : τ] ⇒ τ'} are implicitly treated as expressions of type \Sym{τ'} by the type system, given that the constraint \inl{|\Blk{o}| : τ} can be resolved.
 
 \subsubsection{Example: Overloading Equality in System \Fo}\hfill\\\\
 Recall the Haskell example from above. 
@@ -61,12 +61,12 @@ First, we declare \mono{eq} to be an overloaded identifier and instantiate \mono
 Next, we instantiate \mono{eq} for equality on lists \inl{[β]}, given that the constraint \inl{|\Blk{eq}| : β → β → Bool} introduced by the constraint abstraction \mono{ƛ} is satisfied. 
 Because System \Fo\ is based on System F, we are required to bind type variables using type abstractions \inl{Λ} and eliminate type variables using type application. 
 
-\noindent A little caveat: the instance for lists would potentially need to recursively call \mono{eq} for sublists but System \Fo's formalization does not actually support recursion. Extending System \Fo\ with recursive let bindings and thus recursive instances is known to be straight forward. 
+\noindent A little caveat: the instance for lists would potentially need to recursively call \mono{eq} for sublists but the formalization of System \Fo does not actually support recursion. Extending System \Fo\ with recursive let bindings and thus recursive instances is known to be straight forward. 
 
 \subsection{Translating System \Fo\ back to System F}
-System \Fo\ can be translated back to System F. Hence, System \Fo\ is not more expressive or powerful than System F. Overloading is a convenience feature after all. We simply could use let bindings with unique variable names and pass constraints as higher order functions.
+System \Fo\ can be translated back to System F. Hence, System \Fo\ is not more expressive or powerful than System F. After all, overloading is more of a convenience feature. We simply could use let bindings with unique variable names and pass constraints as higher order functions.
 
-\noindent The Dictionary Passing Transform translates well typed System \Fo\ expressions to well typed System F expressions. The translation requires knowledge acquired during type checking. More specifically, we need to know the instances that were resolved for invocations of overloaded identifiers and the instances that constraints were implicitly resolved with.
+\noindent The Dictionary Passing Transform translates well typed System \Fo\ expressions to well typed System F expressions. The translation requires knowledge acquired during type checking. More specifically, we need to know the instances that were resolved for invocations of overloaded identifiers and the instances that constraints were implicitly resolved to.
 
 \noindent The translation removes all \inl{|\Decl o| in e} expressions. Instance expressions \inl{|\Inst o| = e in e'} are replaced with \inl{let o|$_τ$| = e in e'} expressions, where \mono{o$_τ$} is a unique name with respect to the type \mono{τ} of the expression \mono{e}. 
 Constraint abstractions \inl{|\lambdabar|(o : τ). e'} translate to normal abstractions \mono{λo$_τ$. e'}. 
@@ -86,6 +86,6 @@ Applying the Dictionary Passing Transform to the example above results in a well
     .. eq₁ 42 0 .. eq₂ Nat eq₁ [42, 0] [42, 0] .. 
 \end{minted}
 We drop the \inl{|\Decl|}expression and transform \inl{|\Inst|}definitions to \inl{let} bindings with unique names. 
-Inside the instance for lists, the constraint abstraction translates to a normal lambda abstraction. The lambda abstraction now takes the constraint that was implicitly resolved in System \Fo as explicit higher order function argument.
+Inside the instance for lists, the constraint abstraction translates to a normal lambda abstraction. The lambda abstraction takes the constraint that was implicitly resolved in System \Fo\ as explicit higher order function argument.
 Invocations of \mono{eq} translate to the correct unique variables \mono{eq$_i$}.
-When \mono{eq$_2$} is invoked, we must pass the correct instance to eliminate the former constraint abstraction, now higher order function binding, by explicitly passing instance \mono{eq$_1$} as argument.
+When \mono{eq$_2$} is invoked for lists of numbers, we must pass the correct instance to eliminate the former constraint abstraction, now higher order function binding, by explicitly passing instance \mono{eq$_1$} as argument.
