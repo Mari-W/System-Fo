@@ -15,18 +15,18 @@ module SystemF where
 
 -- Sorts --------------------------------------------------------------------------------
 
-data Ctxable : Set where
-  ⊤ᶜ : Ctxable
-  ⊥ᶜ : Ctxable
+data Bindable : Set where
+  ⊤ᴮ : Bindable
+  ⊥ᴮ : Bindable
 \end{code}
 \newcommand{\FSort}[0]{\begin{code}
-data Sort : Ctxable → Set where
-  eₛ  : Sort ⊤ᶜ
-  τₛ  : Sort ⊤ᶜ
-  κₛ  : Sort ⊥ᶜ
+data Sort : Bindable → Set where
+  eₛ  : Sort ⊤ᴮ
+  τₛ  : Sort ⊤ᴮ
+  κₛ  : Sort ⊥ᴮ
 
 Sorts : Set
-Sorts = List (Sort ⊤ᶜ)
+Sorts = List (Sort ⊤ᴮ)
 \end{code}}
 \begin{code}[hide]
 infix 25 _▷_ _▷▷_
@@ -35,7 +35,7 @@ _▷▷_ : {A : Set} → List A → List A → List A
 xs ▷▷ ys = ys ++ xs
 
 variable
-  r r' r'' r₁ r₂ : Ctxable
+  r r' r'' r₁ r₂ : Bindable
   s s' s'' s₁ s₂ : Sort r
   S S' S'' S₁ S₂ : Sorts
   x x' x'' x₁ x₂ : eₛ ∈ S
@@ -62,7 +62,7 @@ data Term : Sorts → Sort r → Set where
   ⋆            : Term S κₛ
 \end{code}}
 \begin{code}[hide]
-Var : Sorts → Sort ⊤ᶜ → Set
+Var : Sorts → Sort ⊤ᴮ → Set
 \end{code}
 \newcommand{\FVar}[0]{\begin{code}[inline]
 Var S s = s ∈ S 
@@ -182,28 +182,28 @@ variable
 
 -- Context ------------------------------------------------------------------------------
 
-kind-ctxable : Sort ⊤ᶜ → Ctxable
-kind-ctxable eₛ = ⊤ᶜ
-kind-ctxable τₛ = ⊥ᶜ
+kind-Bindable : Sort ⊤ᴮ → Bindable
+kind-Bindable eₛ = ⊤ᴮ
+kind-Bindable τₛ = ⊥ᴮ
 
 
-kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
+type-of : (s : Sort ⊤ᴮ) → Sort (kind-Bindable s)
 \end{code}}
 \newcommand{\Fkind}[0]{\begin{code}
-kind-of eₛ = τₛ
-kind-of τₛ = κₛ
+type-of eₛ = τₛ
+type-of τₛ = κₛ
 \end{code}}
 \begin{code}[hide]
 variable 
-  T T' T'' T₁ T₂ : Term S (kind-of s)
+  T T' T'' T₁ T₂ : Term S (type-of s)
 \end{code}
 \newcommand{\FCtx}[0]{\begin{code}
 data Ctx : Sorts → Set where
   ∅   : Ctx []
-  _▶_ : Ctx S → Term S (kind-of s) → Ctx (S ▷ s)
+  _▶_ : Ctx S → Term S (type-of s) → Ctx (S ▷ s)
 \end{code}}
 \newcommand{\Flookup}[0]{\begin{code}[inline]
-lookup : Ctx S → Var S s → Term S (kind-of s) 
+lookup : Ctx S → Var S s → Term S (type-of s) 
 \end{code}}
 \begin{code}[hide]
 lookup (Γ ▶ T) (here refl) = wk T
@@ -220,7 +220,7 @@ variable
 infix 3 _⊢_∶_
 \end{code}
 \newcommand{\FTyping}[0]{\begin{code}
-data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
+data _⊢_∶_ : Ctx S → Term S s → Term S (type-of s) → Set where
   ⊢`x :  
     lookup Γ x ≡ τ →
     Γ ⊢ ` x ∶ τ
@@ -254,15 +254,15 @@ infix 3 _∶_⇒ᵣ_
 \newcommand{\FRenTyping}[0]{\begin{code}
 data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
   ⊢idᵣ : ∀ {Γ} → _∶_⇒ᵣ_ {S₁ = S} {S₂ = S} idᵣ Γ Γ
-  ⊢extᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₁ (kind-of s)} → 
+  ⊢extᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₁ (type-of s)} → 
     ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
     (extᵣ ρ) ∶ (Γ₁ ▶ T') ⇒ᵣ (Γ₂ ▶ ren ρ T')
-  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₂ (kind-of s)} →
+  ⊢dropᵣ : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T' : Term S₂ (type-of s)} →
     ρ ∶ Γ₁  ⇒ᵣ Γ₂ →
     (dropᵣ ρ) ∶ Γ₁ ⇒ᵣ (Γ₂ ▶ T')
 \end{code}}
 \begin{code}[hide]
-⊢wkᵣ : ∀ {T : Term S (kind-of s)} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ T)
+⊢wkᵣ : ∀ {T : Term S (type-of s)} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ T)
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
 \end{code}
 \newcommand{\FSubTyping}[0]{\begin{code}
@@ -295,12 +295,12 @@ idₛτ≡τ `⊤ = refl
 idₛτ≡τ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (idₛτ≡τ τ₁) (idₛτ≡τ τ₂)
 idₛτ≡τ (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁τ≡σ₂τ τ extₛidₛ≡idₛ) (idₛτ≡τ τ))
 
-⊢idₛ : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (kind-of s)} (⊢t : Γ ⊢ t ∶ T) → idₛ ∶ Γ ⇒ₛ Γ
+⊢idₛ : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (type-of s)} (⊢t : Γ ⊢ t ∶ T) → idₛ ∶ Γ ⇒ₛ Γ
 ⊢idₛ {Γ = Γ} ⊢t {eₛ} x = ⊢`x (sym (idₛτ≡τ (lookup Γ x)))
 ⊢idₛ {Γ = Γ} ⊢t {τₛ} x with lookup Γ x
 ... | ⋆ = ⊢τ
 
-⊢singleₛ : ∀ {T' : Term S (kind-of s)} (⊢t : Γ ⊢ t ∶ T) → singleₛ idₛ t ∶ (Γ ▶ T') ⇒ₛ Γ
+⊢singleₛ : ∀ {T' : Term S (type-of s)} (⊢t : Γ ⊢ t ∶ T) → singleₛ idₛ t ∶ (Γ ▶ T') ⇒ₛ Γ
 ⊢singleₛ ⊢t {eₛ} x = {!   !} 
 ⊢singleₛ ⊢t {τₛ} x = {!   !}
 
@@ -372,7 +372,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   ren ρ (lookup Γ₁ x) ≡ lookup Γ₂ (ρ x)
 ⊢ρ-preserves-Γ x ⊢ρ = {!       !}
 
-⊢ρ-preserves : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (kind-of s)} →
+⊢ρ-preserves : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (type-of s)} →
   ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
   Γ₁ ⊢ t ∶ T →
   Γ₂ ⊢ (ren ρ t) ∶ (ren ρ T)
@@ -385,7 +385,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 ⊢ρ-preserves ⊢ρ (⊢let ⊢e₂ ⊢e₁) = ⊢let (⊢ρ-preserves ⊢ρ ⊢e₂) {!   !} 
 ⊢ρ-preserves ⊢ρ ⊢τ = ⊢τ
 
-⊢wk-preserves : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (kind-of s)} {T' : Term S (kind-of s')} →
+⊢wk-preserves : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (type-of s)} {T' : Term S (type-of s')} →
   Γ ⊢ t ∶ T →
   Γ ▶ T' ⊢ wk t ∶ wk T 
 ⊢wk-preserves ⊢e = ⊢ρ-preserves (⊢dropᵣ ⊢idᵣ) ⊢e
@@ -418,7 +418,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
   sub σ (t [ t' ]) ≡ (sub (extₛ σ) t) [ sub σ t' ]  
 σ·t[t']≡σ↑·t[σ·t'] = {!   !}
 
-⊢σ↑ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T : Term S₁ (kind-of s)} →
+⊢σ↑ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T : Term S₁ (type-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   extₛ σ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub σ T)
 ⊢σ↑ {σ = σ} {T = τ} ⊢σ {eₛ} (here refl) = ⊢`x (sym (σ↑·wkt≡wk·σt σ τ))
@@ -427,7 +427,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 \end{code}
 \newcommand{\Fpreserves}[0]{\begin{code}
 ⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} 
-                 {t : Term S₁ s} {T : Term S₁ (kind-of s)} →
+                 {t : Term S₁ s} {T : Term S₁ (type-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   Γ₁ ⊢ t ∶ T →
   Γ₂ ⊢ (sub σ t) ∶ (sub σ T)

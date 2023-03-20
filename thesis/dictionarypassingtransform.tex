@@ -1,7 +1,7 @@
 \subsection{Translation}
 \subsubsection{Sorts}\hfill\\\\
-The translation of System \Fo\ sorts to System F sorts only considers sorts that are contextable. 
-The two missing non-contextable sorts \Constr{cₛ} and \Constr{κₛ} do not need to be translated. 
+The translation of System \Fo\ sorts to System F sorts only considers sorts that are bindable. 
+The two missing non-bindable sorts \Constr{cₛ} and \Constr{κₛ} do not need to be translated. 
 Intuitively there does not even exist a sensible translation for \Constr{cₛ}.
 \DPTSort
 Sorts \Constr{eₛ} and \Constr{τₛ} translate to their corresponding counterparts in System F. 
@@ -99,46 +99,46 @@ Using lemma \Data{o∶τ∈Γ⇝Γx≡τ} the typing rule for overloaded variabl
 
 \noindent Typed let bindings \Constr{⊢let} \Sym{⊢e₂} \Sym{⊢e₁} translate to typed let bindings in System F. 
 The typing rule \Sym{⊢e₂} is translated directly using the induction hypothesis. 
-Because the typing for \Sym{e₁} in \Sym{⊢e₁} results in \Data{wk} \Sym{τ'}, proof is needed that \Sym{τ'} weakened in System \Fo\ and translated to System F is equivalent to the weakening of the translated \Sym{τ'} in System F. 
+Because the typing for \Sym{e₁} results in \Data{wk} \Sym{τ'}, proof is needed that \Sym{τ'} weakened in System \Fo\ and translated to System F is equivalent to the weakening of the translated \Sym{τ'} in System F. 
 Lemma \Data{τ⇝wk·τ≡wk·τ⇝τ} is used to substitute the required equivalence into the translated typing rule \Data{⊢t⇝⊢t} \Sym{⊢e₁}.
 
 \noindent Typed constraint abstractions \Constr{⊢ƛ} translate to normal abstractions in System F.
 Inside the typing \Sym{⊢e}, the result type \Sym{τ} for \Sym{e} does not need to be weakened because the constraint abstraction only introduced a constraint to context \Sym{Γ} and no actual binding. 
 After the translation the former constraint will be bound by a binding and thus a new item in \Data{Γ⇝Γ} \Sym{Γ} will exist. To ignore the binding \Sym{τ} is weakened in the abstraction rule \Constr{⊢λ}.
-Lemma \Data{τ⇝wk·τ≡wk-inst·τ⇝τ} proves that translating \Sym{τ} in \Sym{Γ} extended by a constraint is equivalent to weakening \Sym{τ} after the translation. 
+Lemma \Data{τ⇝wk-inst·τ≡wk·τ⇝τ} proves that translating \Sym{τ} in \Sym{Γ} extended by a constraint is equivalent to weakening \Sym{τ} after the translation. 
 The lemma follows because the constraint translates to an actual binding and consequently, both sides have an additional unnecessary expression binding that \Sym{τ} cannot use.
 
-\noindent Implicitly resolved constraints \Constr{⊢⊘} carry the information about the instance that was resolved. In System F the former constraint is now explicitly passed as variable pointing to the correct translated instance. 
+\noindent Implicitly resolved constraints \Constr{⊢⊘} carry the information about the instance that was resolved. In System F the former constraint is explicitly passed as variable pointing to the correct translated instance. 
 Thus, \Constr{⊢⊘} results in typed application \Constr{⊢·}. 
 We apply the correct instance using lemma \Data{o∶τ∈Γ⇝Γx≡τ} to get the correct unique variable for the resolved constraint.
 
 \noindent The Type application rule \Constr{⊢•} contains type in type substitution. Hence, we need proof that it is irrelevant, if \Sym{τ'} is substituted into \Sym{τ} and then translated or both \Sym{τ} and \Sym{τ'} are translated and substituted in System F. 
-Using lemma \Data{τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ]} we can substitute the equivalence into the System F typing rule \Constr{⊢•} $(\Data{⊢t⇝⊢t} \Sym{⊢e}$).
+Using lemma \Data{τ'⇝τ'[τ⇝τ]≡τ'[τ]⇝τ} we can substitute the equivalence into the System F typing rule \Constr{⊢•} $(\Data{⊢t⇝⊢t} \Sym{⊢e}$).
 
-\noindent The translation of \Constr{⊢⊤}, \Constr{⊢λ}, \Constr{⊢·}, \Constr{⊢decl} and \Constr{⊢inst} is either a direct translation or does not use other lemmas than the ones discussed.
+\noindent The translation of \Constr{⊢⊤}, \Constr{⊢λ}, \Constr{⊢·}, \Constr{⊢decl} and \Constr{⊢inst} is either a direct translation or uses similar ideas and no other lemmas than the ones discussed.
 
 \subsubsection{Renaming}\hfill\\\\
-Both \Data{τ⇝wk·τ≡wk·τ⇝τ} and \Data{τ⇝wk·τ≡wk-inst·τ⇝τ} directly follow from a more general lemma \Data{⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ} for arbitrary renamings. 
-The lemma \Data{⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ} proves that translating both the typed renaming \Sym{⊢ρ} and type \Sym{τ} and then applying the renaming in System F is equivalent to applying the renaming \Sym{ρ} in System \Fo\ and then translating renamed \Sym{τ}. 
+Both \Data{τ⇝wk·τ≡wk·τ⇝τ} and \Data{τ⇝wk-inst·τ≡wk·τ⇝τ} directly follow from a more general lemma \Data{⊢ρ⇝ρ·τ⇝τ≡ρτ⇝τ} for arbitrary renamings. 
+The lemma \Data{⊢ρ⇝ρ·τ⇝τ≡ρτ⇝τ} proves that translating both the typed renaming \Sym{⊢ρ} and type \Sym{τ} and then applying the renaming in System F is equivalent to applying the renaming \Sym{ρ} in System \Fo\ and then translating renamed \Sym{τ}. 
 The lemma can be proven by induction over System \Fo\ types \Sym{τ}.
 \DPTTypePresRen
-The case for type variables needs an additional lemma \Data{⊢ρ⇝ρ·x⇝x≡x⇝ρ·x} specifically for type variables.
-Lemma \Data{⊢ρ⇝ρ·x⇝x≡x⇝ρ·x} proves an analogous statement, but for type variables applied to a renaming: \DPTVarPresRen. 
+The case for type variables needs an additional lemma \Data{⊢ρ⇝ρ·x⇝x≡ρx⇝x} specifically for type variables.
+Lemma \Data{⊢ρ⇝ρ·x⇝x≡ρx⇝x} proves an analogous statement, but for type variables applied to a renaming: \DPTVarPresRen. 
 This statement can be proven via straight forward induction over typed System \Fo\ renamings \Sym{⊢ρ}.
 
 \noindent All other cases follow directly from the induction hypothesis. 
 The only small exception is the constraint type, where we need to respect that it translates to a function type.
 
 \subsubsection{Substitution}\hfill\\\\
-Similar to renamings, the lemma for single substitution on types \Data{τ'⇝τ'[τ⇝τ]≡τ⇝τ'[τ]} follows from a more general lemma about type in type substitutions: \DPTTypePresSingleSub. 
-The more general lemma \Data{⊢σ⇝σ·τ⇝τ≡τ⇝σ·τ} follows by straight forward induction over System \Fo\ types as well, except the case for type variables. 
-Other than with renamings, the cases for lemma \Data{⊢σ⇝σ·x⇝x≡τ⇝σ·x} do not follow directly from the induction hypothesis. 
+Similar to renamings, the lemma for single substitution on types \Data{τ'⇝τ'[τ⇝τ]≡τ'[τ]⇝τ} follows from a more general lemma about type in type substitutions: \DPTTypePresSingleSub. 
+The more general lemma \Data{⊢σ⇝σ·τ⇝τ≡στ⇝τ} follows by straight forward induction over System \Fo\ types as well, except the case for type variables. 
+Other than with renamings, the cases for lemma \Data{⊢σ⇝σ·x⇝x≡σx⇝τ} do not follow directly from the induction hypothesis. 
 To understand why, we at look at the case \Constr{⊢extₛ}.
 \DPTVarPresSub
 The case \Constr{⊢extₛ} is proven via induction over variable \Sym{x}, similar to how \Data{extₛ} is defined. 
 The base case holds by definition. 
 In the induction case we weaken both sides of the equality that results from the outer induction hypothesis. We then combine the weakened induction hypothesis with proof that weakenings preserve the translation using transitivity. 
-The intuition here is that we need the renaming lemma \Data{⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ} because \Data{extₛ} is defined by weakening the term that result of the substitution \Sym{σ} being applied to the variable \Sym{x}.
+The intuition here is that we need the renaming lemma \Data{⊢ρ⇝ρ·τ⇝τ≡ρτ⇝τ} because \Data{extₛ} is defined by weakening the term that result of the substitution \Sym{σ} being applied to the variable \Sym{x}.
 
 \noindent Both \Constr{⊢idₛ} and \Constr{⊢typeₛ} follow directly from the induction hypothesis. 
 The cases for \Constr{⊢dropₛ}, \Constr{⊢drop-cstrₛ} and \Constr{⊢ext-cstrₛ} are similar to \Constr{⊢extₛ}.
@@ -149,7 +149,7 @@ Lemma \Data{Γx≡τ⇝Γx≡τ} is proven via induction over the System \Fo\ co
 \DPTVarPresLookup
 As an example we will look at case \Sym{Γ} \Constr{▶} \Sym{τ}. The case is proven via induction over variables \Sym{x}. 
 The prove follows the same reasoning as the \Constr{⊢extₛ} case for substitutions above. 
-Because the function \Data{lookup} weakens the type \Sym{τ} that is looked up in \Sym{Γ} in both the base case and induction step, both use lemma \Data{⊢ρ⇝ρ·τ⇝τ≡τ⇝ρ·τ} to account for the weakening. 
+Because the function \Data{lookup} weakens the type \Sym{τ} that is looked up in \Sym{Γ} in both the base case and induction step, both use lemma \Data{⊢ρ⇝ρ·τ⇝τ≡ρτ⇝τ} to account for the weakening. 
 
 \noindent The case \Sym{Γ} \Constr{▸} \Sym{c} is a little more complicated but uses similar concepts.
 Additional complexity arises because we need to deal with the fact that constraints were ignored by the \Data{lookup} method in System \Fo\ but then are translated to actual context items in System F.

@@ -11,7 +11,7 @@ But instances would need to be restricted as well. For each overloaded variable 
 With these two restrictions full type inference for instances and overloaded variables should be preserved.
 The inference algorithm would treat instance expressions similar to let bindings and could infer the type of an overloaded identifier via the type of the first argument applied. For now it remains unclear if constraints still could be eliminated deterministically by the inference algorithm.
 
-\subsection{Proving Semantic Preservation }
+\subsection{Proving Semantic Preservation}
 For now System \Fo\ does not have semantics formalized.
 Semantics for System \Fo\ would need to be typed semantics because applications \Constr{`} \Sym{o} \Constr{·} \Sym{e₁} $..$ \Constr{·} \Sym{e$_n$} need type information to reduce properly.
 The correct instance for \Sym{o} needs to be resolved based on the types of arguments \Sym{e₁} $..$ \Sym{e$_n$}. 
@@ -26,7 +26,7 @@ For now it remains unclear if semantic preservation can be proven using inductio
 The ideas for the required restrictions to preserve the inference algorithm in Section \ref{sec:hm} originate from System O~\cite{syso}. 
 System O is a language extension to the Hindley-Milner System. 
 In contrast to System \Fo, constraints are not introduced on the expression level and instead are introduced via explicit type annotations of instances as part of forall types. 
-For instance, the \HMo\ type \inl{∀α. ∀β. [a : α → α → α] => [b : β → β → β] => ..} would look like \inl{∀α. (a : α → α → α) => ∀β. (b : β → β → β) => ..} in System O. 
+For instance, the valid System \Fo\ type \inl{∀α. ∀β. [a : α → α → α] => [b : β → β → β] => ..} would be expressed as \inl{∀α. (a : α → α → α) => ∀β. (b : β → β → β) => ..} in System O. 
 Here we only introduce one constraint per type variable, but a list of constraints is allowed. 
 Originally the plan was to formalize System O in Agda, but multiple issues arose in the type preservation proof. 
 First, because we have a list of \Sym{n} constraints for each forall type, translating them results in \Sym{n} new lambda bindings in one induction step. 

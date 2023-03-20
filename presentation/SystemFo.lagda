@@ -12,27 +12,27 @@ open import Function using (id; _∘_)
 module SystemFo where
 
 -- Sorts --------------------------------------------------------------------------------
-data Ctxable : Set where
-  ⊤ᶜ : Ctxable
-  ⊥ᶜ : Ctxable
+data Bindable : Set where
+  ⊤ᴮ : Bindable
+  ⊥ᴮ : Bindable
 
 variable
-  r r' r'' r₁ r₂ : Ctxable
+  r r' r'' r₁ r₂ : Bindable
 \end{code}
 \newcommand{\FoSort}[0]{\begin{code}
-data Sort : Ctxable → Set where
-  oₛ  : Sort ⊤ᶜ
-  cₛ  : Sort ⊥ᶜ
+data Sort : Bindable → Set where
+  oₛ  : Sort ⊤ᴮ
+  cₛ  : Sort ⊥ᴮ
   -- ...
 \end{code}}
 \begin{code}[hide]
-  eₛ  : Sort ⊤ᶜ
-  τₛ  : Sort ⊤ᶜ
-  κₛ  : Sort ⊥ᶜ
+  eₛ  : Sort ⊤ᴮ
+  τₛ  : Sort ⊤ᴮ
+  κₛ  : Sort ⊥ᴮ
 \end{code}
 \begin{code}[hide]
 Sorts : Set
-Sorts = List (Sort ⊤ᶜ)
+Sorts = List (Sort ⊤ᴮ)
 
 infix 25 _▷_ _▷▷_
 pattern _▷_ xs x = x ∷ xs
@@ -46,7 +46,7 @@ variable
   o o' o'' o₁ o₂ : oₛ ∈ S
   α α' α'' α₁ α₂ : τₛ ∈ S
 
-Var : Sorts → Sort ⊤ᶜ → Set
+Var : Sorts → Sort ⊤ᴮ → Set
 Var S s = s ∈ S  
 
 -- Syntax -------------------------------------------------------------------------------
@@ -183,12 +183,12 @@ variable
  
 -- Context ------------------------------------------------------------------------------
 
-item-ctxable : Sort ⊤ᶜ → Ctxable
-item-ctxable eₛ = ⊤ᶜ
-item-ctxable τₛ = ⊥ᶜ
-item-ctxable oₛ = ⊥ᶜ
+item-Bindable : Sort ⊤ᴮ → Bindable
+item-Bindable eₛ = ⊤ᴮ
+item-Bindable τₛ = ⊥ᴮ
+item-Bindable oₛ = ⊥ᴮ
 
-item-of : (s : Sort ⊤ᶜ) → Sort (item-ctxable s)
+item-of : (s : Sort ⊤ᴮ) → Sort (item-Bindable s)
 \end{code}
 \newcommand{\Foitem}[0]{\begin{code}
 item-of eₛ = τₛ
@@ -225,27 +225,27 @@ data [_]∈_ : Cstr S → Ctx S → Set where
 \begin{code}[hide]
 -- Typing -------------------------------------------------------------------------------
 
-kind-ctxable : Sort ⊤ᶜ → Ctxable
-kind-ctxable eₛ = ⊤ᶜ
-kind-ctxable τₛ = ⊥ᶜ
-kind-ctxable oₛ = ⊤ᶜ
+kind-Bindable : Sort ⊤ᴮ → Bindable
+kind-Bindable eₛ = ⊤ᴮ
+kind-Bindable τₛ = ⊥ᴮ
+kind-Bindable oₛ = ⊤ᴮ
 
-kind-of : (s : Sort ⊤ᶜ) → Sort (kind-ctxable s)
+type-of : (s : Sort ⊤ᴮ) → Sort (kind-Bindable s)
 \end{code}
 \newcommand{\Fokind}[0]{\begin{code}
-kind-of eₛ = τₛ
-kind-of τₛ = κₛ
-kind-of oₛ = τₛ
+type-of eₛ = τₛ
+type-of τₛ = κₛ
+type-of oₛ = τₛ
 \end{code}}
 \begin{code}[hide]
 variable 
-  T T' T'' T₁ T₂ : Term S (kind-of s)
+  T T' T'' T₁ T₂ : Term S (type-of s)
 
 
 infix 3 _⊢_∶_
 \end{code}
 \newcommand{\FoTyping}[0]{\begin{code}
-data _⊢_∶_ : Ctx S → Term S s → Term S (kind-of s) → Set where
+data _⊢_∶_ : Ctx S → Term S s → Term S (type-of s) → Set where
   ⊢inst :
     Γ ⊢ e₂ ∶ τ →
     Γ ▸ (` o ∶ τ) ⊢ e₁ ∶ τ' →

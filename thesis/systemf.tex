@@ -2,17 +2,17 @@
 \subsubsection{Sorts}\hfill\\\\
 The formalization of System F requires three sorts: \Constr{eₛ} for expressions, \Constr{τₛ} for types and \Constr{κₛ} for kinds. 
 \FSort
-Sorts are indexed by the boolean data type \Data{Ctxable}. 
-The index \Constr{⊤ᶜ} indicates that variables for terms of a sort can be bound. 
-In contrast, \Constr{⊥ᶜ} says that variables for terms of a sort cannot be bound. 
+Sorts are indexed by the boolean data type \Data{Bindable}. 
+The index \Constr{⊤ᴮ} indicates that variables for terms of a sort can be bound. 
+In contrast, \Constr{⊥ᴮ} says that variables for terms of a sort cannot be bound. 
 In this case, System F supports abstracting over expressions and types, but not over kinds. 
-Going forward, we will use the variable \Sym{s} for sorts and the variable \Sym{S} for lists of contextable sorts with type \FSorts.
+Going forward, we will use the variable \Sym{s} for sorts and the variable \Sym{S} for lists of bindable sorts with type \FSorts.
 
 \subsubsection{Syntax}\hfill\\\\
 The syntax of System F is represented in a single data type \Data{Term}, indexed by sorts \Sym{S} and sort \Sym{s}. 
 The index \Sym{S} is inspired by Debruijn indices. Debruijn indices reference variables using a number that counts the amount of binders that are in scope between the binding of the variable and the position it is used at.
-In Agda, terms are often indexed by the amount of bound variables. The variable constructor then only accepts Debruijn indices that are smaller or equal to the current amount of bound variables. 
-Thus, unbound variables cannot be referenced by definition.
+In Agda, terms are often indexed by the amount of bound variables. The variable constructor then only accepts Debruijn indices that are smaller or equal to the current amount of bound variables.
+Thus, unbound variables cannot be referenced by definition. This technique is also referred to as intrinsically scoped.
 But indexing \Data{Term} with a number is not sufficient because System F has both expression variables and type variables that need to be distinguished. 
 To solve this problem, we need to extend the idea of Debruijn indices and store the corresponding sort for each variable. Thus, we let \Sym{S} be a list of sorts instead of a number.
 The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list represent the sort of the variable bound at debruijn index \Sym{i}. 
@@ -22,7 +22,7 @@ Variables \Constr{`} \Sym{x} are represented as membership proofs of type \Sym{s
 Membership proofs are inductively defined, similar to the definition of natural numbers. 
 Membership proofs can be constructed using the constructor \Constr{here refl}, where \Constr{refl} is proof that the last element in \Sym{S} is the element we searched for. 
 Alternatively, membership proofs can be constructed via the constructor \Constr{there} \Sym{x}, where \Sym{x} is another membership proof for \Sym{S} with one element less. 
-In consequence, we can only reference already bound variables.
+In consequence, we can only reference already bound variables by definition. 
 
 \noindent The unit element \Constr{tt} and unit type \Constr{`⊤} represent base expressions and types respectively. 
 
@@ -40,14 +40,16 @@ Both abstractions introduce an additional sort \Constr{eₛ}, or \Constr{τₛ} 
 \noindent We use abbreviations \FVar, \FExpr, \FType\ and variables \Sym{x}, \Sym{e} and \Sym{τ} respectively. Furthermore, we use the variable \Sym{t} for an arbitrary \Data{Term} \Sym{S} \Sym{s}.
 
 \subsubsection{Renaming}\hfill\\\\
-Renamings \Sym{ρ} of type \Data{Ren} \Sym{S₁} \Sym{S₂} are defined as total functions mapping variables \Data{Var} \Sym{S₁} \Sym{s} to variables \Data{Var} \Sym{S₂} \Sym{s}. 
+Renamings \Sym{ρ} of type \Data{Ren} \Sym{S₁} \Sym{S₂} are defined as total functions that map variables \Data{Var} \Sym{S₁} \Sym{s} to variables \Data{Var} \Sym{S₂} \Sym{s}. 
 Renamings preserve the sort \Sym{s} of the variable.
 \FRen
-Applying a renaming \Data{Ren} \Sym{S₁} \Sym{S₂} to a term \Data{Term} \Sym{S₁} \Sym{s} yields a new term \Data{Term} \Sym{S₂} \Sym{s}, where variables are now represented as references to elements in \Sym{S₂} instead of \Sym{S₁}.
+Applying a renaming \Data{Ren} \Sym{S₁} \Sym{S₂} to a term \Data{Term} \Sym{S₁} \Sym{s} yields a new term \Data{Term} \Sym{S₂} \Sym{s}, where variables are represented as references to elements in \Sym{S₂} instead of \Sym{S₁}.
 \Fren
 The renaming is applied to all variables \Sym{x}.
 
-\noindent When we encounter a binder for a term of sort \Sym{s}, the renaming is extended using \Frenext. 
+\noindent When we encounter a binder for a term of sort \Sym{s}, the renaming is extended, using function \Data{extᵣ}. 
+\Frenext
+The extension of a renaming introduces an additional variable of sort \Sym{s}. Thus, if we encounter the new binding \Constr{here refl} in the extended renaming, then we return the variable for the new binding \Constr{here refl}. The variables \Sym{x} of the original renaming \Sym{ρ} are weakened by wrapping them in an additional \Constr{there} constructor.
 
 \noindent The weakening of a term can be defined as shifting all variables by one.
 \Fwk 
@@ -58,7 +60,8 @@ The definition of substitutions \Sym{σ} with type \Data{Sub} \Sym{S₁} \Sym{S�
 \FSub
 Applying a substitution using the \Data{sub} function is analogous to applying a renaming using \Data{ren}. If we encounter a binder in \Data{sub}, the substitution must be extended using function \Data{extₛ}.
 \Fext
-The extension of a substitution is defined as the weakening of all terms that result in the substitution being applied to variables \Sym{x}.
+For the newly introduced binder of variable \Constr{here refl}, we return the variable term \Constr{` here refl}.  
+Furthermore, all terms originally present in the substitution \Sym{σ} are weakened using the function \Data{wk} that itself uses renaming to shift all variables in the term by one recursively.
 
 \noindent The substitution operator \Sym{t} \Data{[} \Sym{t'} \Data{]} substitutes the last bound variable in \Sym{t} with \Sym{t'}, given that the sort of the last binder corresponds to the sort of term \Sym{t'}.
 \Fsubs
@@ -67,11 +70,11 @@ A single substitution \Fsinglesub\ takes an existing substitution \Sym{σ'} and 
 \subsubsection{Context}\hfill\\\\
 Similar to terms, typing contexts \Sym{Γ} of type \Data{Ctx} \Sym{S} are indexed by the list of bound variables as well. In consequence, only types and kinds for bound variables can be stored in \Sym{Γ} by definition.
 \FCtx
-Contexts are inductively defined and can either be empty \Constr{∅} or extended with one element \Sym{T}, using the constructor \Sym{Γ} \Constr{▶} \Sym{T}. The variable \Sym{T} represents terms of the sort \Data{kind-of} \Sym{s}. 
-\noindent The function \Data{kind-of} maps contextable sorts \Sym{s} to the sort of the term that is stored in \Sym{Γ} for variables of the sort \Sym{s}.
+Contexts are inductively defined and can either be empty \Constr{∅} or extended with one element \Sym{T}, using the constructor \Sym{Γ} \Constr{▶} \Sym{T}. The variable \Sym{T} represents terms of the sort \Data{type-of} \Sym{s}. 
+\noindent The function \Data{type-of} maps bindable sorts \Sym{s} to the sort of the term that is stored in \Sym{Γ} for variables of the sort \Sym{s}.
 \Fkind
 Expression variables require \Sym{Γ} to store the corresponding type. 
-For type variables, \Sym{Γ} stores the corresponding kind. Thus, if we bind a new variable for a term of the sort \Sym{s}, the context \Sym{Γ} needs to be extended by a term of the sort \Data{kind-of} \Sym{s}.
+For type variables, \Sym{Γ} stores the corresponding kind. Thus, if we bind a new variable for a term of the sort \Sym{s}, the context \Sym{Γ} needs to be extended by a term of the sort \Data{type-of} \Sym{s}.
 
 \noindent The \Data{lookup} function resolves the type or kind for a variable \Sym{x} in \Sym{Γ}.
 \Flookup
@@ -100,12 +103,15 @@ Hence, \Sym{τ'} aligns with \Sym{τ} in the list of bound variables to form the
 
 \subsubsection{Typing of Renaming \& Substitution}\hfill\\\\
 Because of extrinsic typing, both renamings and substitutions need to have typed counterparts.
-We formalize typed renamings \Sym{⊢ρ} inductively as order preserving embeddings. 
+
+\noindent We formalize typed renamings \Sym{⊢ρ} inductively as order preserving embeddings. 
 Thus, if a variable \Sym{x₁} of type \Sym{s₁} \Data{∈} \Sym{S₁} references an element with an index smaller than some other variable \Sym{x₂} in \Sym{S₁}, then renamed \Sym{x₁} must still reference an element with a smaller index than renamed \Sym{x₂} in \Sym{S₂}.
 Arbitrary renamings would allow swapping items and potentially violate the telescoping. 
-Telescoping allows types stored in the context to depend on type variables bound before them.
+Telescoping allows types stored in the context to depend on type variables bound before them. 
+
+\noindent Interestingly, because of the intrinsically scoped definition of terms, all renamings must be order preserving embeddings by definition. Thus, it should be possible to prove order preservation in the form of lemmas. Instead we choose to represent the rules for order preserving embeddings as constructors of a data type, such that we can access the property of order preservation by matching on the data type.
 \FRenTyping
-The identity renaming \Constr{⊢idᵣ} is typed by definition. 
+The identity renaming \Constr{⊢idᵣ} is typed by definition.
 
 \noindent The typed extension of a renaming \Constr{⊢extᵣ} allows to extend both \Sym{Γ₁} and \Sym{Γ₂} by \Sym{T'} and renamed \Sym{T'} respectively. The constructor \Constr{⊢extᵣ} corresponds to the typed version of the function \Data{extᵣ} that is used when a binder is encountered. 
 
@@ -114,7 +120,7 @@ Hence, \Constr{⊢dropᵣ ⊢idᵣ} corresponds to the typed weakening of a term
 
 \noindent Typed Substitutions are defined as total functions, similar to untyped substitutions.
 \FSubTyping
-Typed substitutions \Sym{⊢σ} map variables \Sym{x} \Constr{∈} \Sym{S₁} to the corresponding typing of \Sym{σ x} in \Sym{Γ₂}. The typing result of \Sym{σ x} is the original type of \Sym{x} in \Sym{Γ₁} applied to \Sym{σ}.
+Typed substitutions \Sym{⊢σ} map variables \Sym{x} \Constr{∈} \Sym{S₁} to the corresponding typing of the term \Sym{σ x} in \Sym{Γ₂}. The type of the term \Sym{σ x} must be the original type of \Sym{x} in \Sym{Γ₁} applied to the substitution \Sym{σ}.
 \subsubsection{Semantics}\hfill\\\\
 The semantics of System F are formalized as call-by-value, that is, there is no reduction under binders. 
 
@@ -148,5 +154,8 @@ The \Sym{ξ} reduction cases \Constr{ξ-·₁}, \Constr{ξ-·₂}, \Constr{ξ-�
 \noindent For the \Sym{β} reduction cases \Constr{β-λ}, \Constr{β–Λ} and \Constr{β-let} we need to prove that substitutions preserve the typing. We have two different types of substitution present inside the reduction rules: \Sym{e} \Data{[} \Sym{e} \Data{]} and \Sym{e} \Data{[} \Sym{τ} \Data{]}.
 Both \Data{e[e]-preserves} and \Data{e[τ]-preserves} follow from a more general lemma \Data{⊢σ-preserves}. The lemma \Data{⊢σ-preserves} proves that all typed substitutions preserve typing.
 \Fpreserves
-The lemma \Data{⊢σ-preserves} follows by induction over the typing rules and lemmas about the interaction between renamings and substitutions~\footnote{Because the soundness proof for System F is not the main part of this work, the explanation is rather short. The full proof along all necessary lemmas can be found on GitHub: \url{https://github.com/Mari-W/System-Fo/blob/main/proofs/SystemF.agda\#L327}}.
+The lemma \Data{⊢σ-preserves} follows by induction over the typing rules and lemmas about the type preservation of substitutions and renamings. 
+More specifically, we need to prove that all operations on substitutions preserve the typing as well. 
+For instance, we need to prove that the extension of a substitution \Data{extₛ}, that itself uses renaming under the hood, is type preserving. Thus, we also need to prove that renamings are type preserving.
+~\footnote{The soundness proof for System F is not the main part of this work and thus, the explanation is rather short. The full proof can be found on GitHub: \url{https://github.com/Mari-W/System-Fo/blob/main/proofs/SystemF.agda}}.
 \noindent The soundness property of System F follows as a consequence of \Data{progress} and \Data{subject-reduction}. 
