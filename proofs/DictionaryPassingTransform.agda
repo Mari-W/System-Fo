@@ -134,8 +134,8 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⊢ρ⇝ρ (⊢drop-cstrᵣ ⊢ρ) = F.dropᵣ (⊢ρ⇝ρ ⊢ρ)
 -- ...
 -- [latex] hide 
-⊢ρ⇝ρ ⊢idᵣ = id
-⊢ρ⇝ρ (⊢extᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ)
+⊢ρ⇝ρ ⊢idᵣ _ = id
+⊢ρ⇝ρ (⊢extᵣ ⊢ρ) = F.extᵣ (⊢ρ⇝ρ ⊢ρ) _
 ⊢ρ⇝ρ (⊢dropᵣ ⊢ρ) = F.dropᵣ (⊢ρ⇝ρ ⊢ρ)
 
 -- [latex] hide
@@ -166,7 +166,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   (⊢ρ : ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂) → 
   (x : Fᴼ.Var Fᴼ.S₁ Fᴼ.s) →
 -- [latex] inline(VarPresRen)
-  (⊢ρ⇝ρ ⊢ρ) (x⇝x x) ≡ x⇝x (ρ x)  
+  (⊢ρ⇝ρ ⊢ρ) _ (x⇝x x) ≡ x⇝x (ρ x)  
 -- [latex] hide
 ⊢ρ⇝ρ·x⇝x≡ρx⇝x ⊢idᵣ x = refl
 ⊢ρ⇝ρ·x⇝x≡ρx⇝x (⊢extᵣ ⊢ρ) (here refl) = refl

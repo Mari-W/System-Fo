@@ -42,24 +42,24 @@ Both abstractions introduce an additional sort \Constr{eₛ}, or \Constr{τₛ} 
 \subsubsection{Renaming}\hfill\\\\
 Renamings \Sym{ρ} of type \Data{Ren} \Sym{S₁} \Sym{S₂} are defined as total functions that map variables \Data{Var} \Sym{S₁} \Sym{s} to variables \Data{Var} \Sym{S₂} \Sym{s}. 
 Renamings preserve the sort \Sym{s} of the variable.
-\FRen
+\FoRen
 Applying a renaming \Data{Ren} \Sym{S₁} \Sym{S₂} to a term \Data{Term} \Sym{S₁} \Sym{s} yields a new term \Data{Term} \Sym{S₂} \Sym{s}, where variables are represented as references to elements in \Sym{S₂} instead of \Sym{S₁}.
-\Fren
+\Foren
 The renaming is applied to all variables \Sym{x}.
 
 \noindent When we encounter a binder for a term of sort \Sym{s}, the renaming is extended, using function \Data{extᵣ}. 
-\Frenext
+\Forenext
 The extension of a renaming introduces an additional variable of sort \Sym{s}. Thus, if we encounter the new binding \Constr{here refl} in the extended renaming, then we return the variable for the new binding \Constr{here refl}. The variables \Sym{x} of the original renaming \Sym{ρ} are weakened by wrapping them in an additional \Constr{there} constructor.
 
 \noindent The weakening of a term can be defined as shifting all variables by one.
-\Fwk 
+\Fowk 
 Because variables are represented as membership proofs, shifting variables by one binder is accomplished by wrapping them in an additional \Constr{there} constructor.
 
 \subsubsection{Substitution}\hfill\\\\
 The definition of substitutions \Sym{σ} with type \Data{Sub} \Sym{S₁} \Sym{S₂} is similar to the definition of renamings. But rather than mapping variables to variables, substitutions map variables to terms.
-\FSub
+\FoSub
 Applying a substitution using the \Data{sub} function is analogous to applying a renaming using \Data{ren}. If we encounter a binder in \Data{sub}, the substitution must be extended using function \Data{extₛ}.
-\Fext
+\Foext
 For the newly introduced binder of variable \Constr{here refl}, we return the variable term \Constr{` here refl}.  
 Furthermore, all terms originally present in the substitution \Sym{σ} are weakened using the function \Data{wk} that itself uses renaming to shift all variables in the term by one recursively.
 
@@ -156,6 +156,6 @@ Both \Data{e[e]-preserves} and \Data{e[τ]-preserves} follow from a more general
 \Fpreserves
 The lemma \Data{⊢σ-preserves} follows by induction over the typing rules and lemmas about the type preservation of substitutions and renamings. 
 More specifically, we need to prove that all operations on substitutions preserve the typing as well. 
-For instance, we need to prove that the extension of a substitution \Data{extₛ}, that itself uses renaming under the hood, is type preserving. Thus, we also need to prove that renamings are type preserving.
+For instance, we need to prove the lemma \Data{⊢σ↑} that says that the typed extension of a substitution \Constr{⊢extₛ} is type preserving. Because \Data{extₛ} uses renaming under the hood, we also need to prove the lemma that renamings preserve typing \Data{⊢ρ-preserves}. Other lemmas that we need to prove include the lemmas \Data{σt·ρ≡σ·ρt} and \Data{ρt·σ≡ρ·σt} that prove the operations of applying a renaming and substitution to be associative in some cases and lemma \Data{idₛτ≡τ} that proves that applying the identity substitution to a type \Sym{τ} leaves \Sym{τ} unaffected. The latter proof seems obvious, but because substitutions are modeled as functions and the forall type introduces bindings for types, the proof actually involves another 3 sublemmas.
 ~\footnote{The soundness proof for System F is not the main part of this work and thus, the explanation is rather short. The full proof can be found on GitHub: \url{https://github.com/Mari-W/System-Fo/blob/main/proofs/SystemF.agda}}.
 \noindent The soundness property of System F follows as a consequence of \Data{progress} and \Data{subject-reduction}. 

@@ -92,9 +92,10 @@ variable
   τ τ' τ'' τ₁ τ₂ : Type S
  
 -- Renaming -----------------------------------------------------------------------------
-
+-- [latex] block(Ren)
 Ren : Sorts → Sorts → Set
 Ren S₁ S₂ = ∀ {s} → Var S₁ s → Var S₂ s
+-- [latex] hide
 
 idᵣ : Ren S S
 idᵣ = id
@@ -102,17 +103,25 @@ idᵣ = id
 wkᵣ : Ren S (S ▷ s) 
 wkᵣ = there
 
+-- [latex] block(renext)
 extᵣ : Ren S₁ S₂ → Ren (S₁ ▷ s) (S₂ ▷ s)
 extᵣ ρ (here refl) = here refl
 extᵣ ρ (there x) = there (ρ x)
 
+-- [latex] hide
+
 dropᵣ : Ren S₁ S₂ → Ren S₁ (S₂ ▷ s) 
 dropᵣ ρ x = there (ρ x)
 
+-- [latex] block(ren)
+
 ren : Ren S₁ S₂ → (Term S₁ s → Term S₂ s)
 ren ρ (` x) = ` (ρ x)
-ren ρ tt = tt
 ren ρ (λ`x→ e) = λ`x→ (ren (extᵣ ρ) e)
+ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
+-- ...
+-- [latex] hide 
+ren ρ tt = tt
 ren ρ (Λ`α→ e) = Λ`α→ (ren (extᵣ ρ) e)
 ren ρ (ƛ c ⇒ e) = ƛ ren ρ c ⇒ ren ρ e 
 ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
@@ -122,28 +131,37 @@ ren ρ (decl`o`in e) = decl`o`in ren (extᵣ ρ) e
 ren ρ (inst` o `= e₂ `in e₁) = inst` (ren ρ o) `=  ren ρ e₂ `in ren ρ e₁
 ren ρ (o ∶ τ) = ren ρ o ∶ ren ρ τ
 ren ρ `⊤ = `⊤
-ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
 ren ρ (∀`α τ) = ∀`α (ren (extᵣ ρ) τ)
 ren ρ ([ c ]⇒ τ) = [ ren ρ c ]⇒ (ren ρ τ)
 ren ρ ⋆ = ⋆
 
+-- [latex] block(wk)
+
 wk : Term S s → Term (S ▷ s') s
 wk = ren there
+
+-- [latex] hide
 
 variable
   ρ ρ' ρ'' ρ₁ ρ₂ : Ren S₁ S₂ 
 
 -- Substitution -------------------------------------------------------------------------
 
+-- [latex] block(Sub)
 Sub : Sorts → Sorts → Set
 Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
 
+-- [latex] inline(idsub)
 idₛ : Sub S S
+-- [latex] hide
 idₛ = `_
 
+-- [latex] block(ext)
 extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
 extₛ σ (here refl) = ` here refl
-extₛ σ (there x) = ren wkᵣ (σ x)
+extₛ σ (there x) = wk (σ x)
+-- [latex] hide
+
 
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
 dropₛ σ x = wk (σ x)

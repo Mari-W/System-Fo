@@ -151,10 +151,10 @@ As an example we will look at case \Sym{Γ} \Constr{▶} \Sym{τ}. The case is p
 The prove follows the same reasoning as the \Constr{⊢extₛ} case for substitutions above. 
 Because the function \Data{lookup} weakens the type \Sym{τ} that is looked up in \Sym{Γ} in both the base case and induction step, both use lemma \Data{⊢ρ⇝ρ·τ⇝τ≡ρτ⇝τ} to account for the weakening. 
 
-\noindent The case \Sym{Γ} \Constr{▸} \Sym{c} is a little more complicated but uses similar concepts.
-Additional complexity arises because we need to deal with the fact that constraints were ignored by the \Data{lookup} method in System \Fo\ but then are translated to actual context items in System F.
+
+\noindent The case \Sym{Γ} \Constr{▸} \Sym{c} is a analogous and case \Sym{∅} is impossible because by definition there must exist a context item if there exists a variable.
 
 \noindent Lemma \Data{o∶τ∈Γ⇝Γx≡τ} can proven via induction over the type for resolved constraints \Data{[} \Sym{c} \Data{]∈} \Sym{Γ}. 
-The proof is analogous to the proof shown for \Data{Γx≡τ⇝Γx≡τ} because the type for resolved constraints preserves the structure of context \Sym{Γ}. 
+The proof is analogous to the proof shown for \Data{Γx≡τ⇝Γx≡τ} because the type for resolved constraints preserves the structure of the context \Sym{Γ} perfectly. 
 
 \noindent This finishes up the type preservation proof for the Dictionary Passing Transform from System \Fo\ to System F.

@@ -95,27 +95,36 @@ variable
   τ τ' τ'' τ₁ τ₂ : Type S
  
 -- Renaming -----------------------------------------------------------------------------
-
+\end{code}
+\newcommand{\FoRen}[0]{\begin{code}
 Ren : Sorts → Sorts → Set
 Ren S₁ S₂ = ∀ {s} → Var S₁ s → Var S₂ s
-
+\end{code}}
+\begin{code}[hide]
 idᵣ : Ren S S
 idᵣ = id
 
 wkᵣ : Ren S (S ▷ s) 
 wkᵣ = there
-
+\end{code}
+\newcommand{\Forenext}[0]{\begin{code}
 extᵣ : Ren S₁ S₂ → Ren (S₁ ▷ s) (S₂ ▷ s)
 extᵣ ρ (here refl) = here refl
 extᵣ ρ (there x) = there (ρ x)
-
+\end{code}}
+\begin{code}[hide]
 dropᵣ : Ren S₁ S₂ → Ren S₁ (S₂ ▷ s) 
 dropᵣ ρ x = there (ρ x)
-
+\end{code}
+\newcommand{\Foren}[0]{\begin{code}
 ren : Ren S₁ S₂ → (Term S₁ s → Term S₂ s)
 ren ρ (` x) = ` (ρ x)
-ren ρ tt = tt
 ren ρ (λ`x→ e) = λ`x→ (ren (extᵣ ρ) e)
+ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
+-- ...
+\end{code}}
+\begin{code}[hide]
+ren ρ tt = tt
 ren ρ (Λ`α→ e) = Λ`α→ (ren (extᵣ ρ) e)
 ren ρ (ƛ c ⇒ e) = ƛ ren ρ c ⇒ ren ρ e 
 ren ρ (e₁ · e₂) = (ren ρ e₁) · (ren ρ e₂)
@@ -125,29 +134,36 @@ ren ρ (decl`o`in e) = decl`o`in ren (extᵣ ρ) e
 ren ρ (inst` o `= e₂ `in e₁) = inst` (ren ρ o) `=  ren ρ e₂ `in ren ρ e₁
 ren ρ (o ∶ τ) = ren ρ o ∶ ren ρ τ
 ren ρ `⊤ = `⊤
-ren ρ (τ₁ ⇒ τ₂) = ren ρ τ₁ ⇒ ren ρ τ₂
 ren ρ (∀`α τ) = ∀`α (ren (extᵣ ρ) τ)
 ren ρ ([ c ]⇒ τ) = [ ren ρ c ]⇒ (ren ρ τ)
 ren ρ ⋆ = ⋆
-
+\end{code}
+\newcommand{\Fowk}[0]{\begin{code}
 wk : Term S s → Term (S ▷ s') s
 wk = ren there
-
+\end{code}}
+\begin{code}[hide]
 variable
   ρ ρ' ρ'' ρ₁ ρ₂ : Ren S₁ S₂ 
 
 -- Substitution -------------------------------------------------------------------------
-
+\end{code}
+\newcommand{\FoSub}[0]{\begin{code}
 Sub : Sorts → Sorts → Set
 Sub S₁ S₂ = ∀ {s} → Var S₁ s → Term S₂ s
-
+\end{code}}
+\newcommand{\Foidsub}[0]{\begin{code}[inline]
 idₛ : Sub S S
+\end{code}}
+\begin{code}[hide]
 idₛ = `_
-
+\end{code}
+\newcommand{\Foext}[0]{\begin{code}
 extₛ : Sub S₁ S₂ → Sub (S₁ ▷ s) (S₂ ▷ s)
 extₛ σ (here refl) = ` here refl
-extₛ σ (there x) = ren wkᵣ (σ x)
-
+extₛ σ (there x) = wk (σ x)
+\end{code}}
+\begin{code}[hide]
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
 dropₛ σ x = wk (σ x)
 

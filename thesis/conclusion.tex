@@ -9,7 +9,7 @@ Because there are no expression level constructs to introduce type variables in 
 The explicit type annotation for instances would allow poly types because instance expressions translate to let bindings after all.
 But instances would need to be restricted as well. For each overloaded variable \Sym{o}, all instances would need to differ in the type of their first argument.
 With these two restrictions full type inference for instances and overloaded variables should be preserved.
-The inference algorithm would treat instance expressions similar to let bindings and could infer the type of an overloaded identifier via the type of the first argument applied. For now it remains unclear if constraints still could be eliminated deterministically by the inference algorithm.
+The inference algorithm would treat instance expressions similar to let bindings and could infer the type of an overloaded identifier via the type of the first argument applied.
 
 \subsection{Proving Semantic Preservation}
 For now System \Fo\ does not have semantics formalized.
@@ -26,12 +26,12 @@ For now it remains unclear if semantic preservation can be proven using inductio
 The ideas for the required restrictions to preserve the inference algorithm in Section \ref{sec:hm} originate from System O~\cite{syso}. 
 System O is a language extension to the Hindley-Milner System. 
 In contrast to System \Fo, constraints are not introduced on the expression level and instead are introduced via explicit type annotations of instances as part of forall types. 
-For instance, the valid System \Fo\ type \inl{∀α. ∀β. [a : α → α → α] => [b : β → β → β] => ..} would be expressed as \inl{∀α. (a : α → α → α) => ∀β. (b : β → β → β) => ..} in System O. 
-Here we only introduce one constraint per type variable, but a list of constraints is allowed. 
+For instance, the valid System \Fo\ (and \HMo) type \inl{∀α. ∀β. [a : α → α → α] => [b : β → β → β] => ..} would be expressed as \inl{∀α. (a : α → α → α) => ∀β. (b : β → β → β) => ..} in System O. 
+Inside the System O type, we only introduce one constraint per type variable, but a list of constraints would be allowed. 
 Originally the plan was to formalize System O in Agda, but multiple issues arose in the type preservation proof. 
 First, because we have a list of \Sym{n} constraints for each forall type, translating them results in \Sym{n} new lambda bindings in one induction step. 
 Furthermore, the translation of the System O type above must pull out quantifiers, because translating the constraints directly to higher oder functions would break the rule that function types are only allowed to be built from mono types. 
-Thus the translated System O type should not be \inl{∀α. (α → α → α) → ∀β. (β → β → β) → ..} but rather \inl{∀α. ∀β. (α → α → α) → (β → β → β) → ..}. Including the additional transform on types complicates the type preservation proof immensely, because the transform affects the type of the next \Sym{n} expressions and thus straight forward induction cannot be used.
+Thus, the translated System O type should not be \inl{∀α. (α → α → α) → ∀β. (β → β → β) → ..}, but rather \inl{∀α. ∀β. (α → α → α) → (β → β → β) → ..}. Including the additional transform on types complicates the type preservation proof immensely, because the transform affects the type of the next \Sym{n} expressions and thus straight forward induction cannot be used.
 
 \noindent There exist other formalizations that are more similar to actual typeclasses in Haskell~\cite{ahp}~\cite{tc}. A more general approach to constraint types is presented by the theory of qualified types~\cite{qt}.
 
