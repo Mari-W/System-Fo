@@ -1,19 +1,32 @@
 \subsection{Dependently Typed Programming in Agda}
 Agda is a dependently typed programming language and proof assistant~\cite{agda}.
 Agda's type system is based on intuitionistic type theory and allows to construct proofs based on the Curry-Howard correspondence. 
-The Curry-Howard correspondence is an isomorphic relationship between programs written in dependently typed languages and mathematical proofs written in first order logic. 
+The Curry-Howard correspondence is an isomorphic relationship between programs written in dependently typed programming languages and mathematical proofs written in first order logic. 
 Because of the Curry-Howard correspondence, programs correspond to proofs and formulae correspond to types. 
-Thus, type checked Agda programs imply the correctness of the corresponding proofs, assuming we do not use unsafe Agda features and Agda is implemented correctly. We will use Agda to formalize the type preservation proof for the Dictionary Passing Transform from System \Fo\ to System F.
+Thus, type checked Agda programs imply the correctness of the corresponding proofs, assuming we do not use unsafe Agda features and Agda is implemented correctly. 
+We will use Agda to formalize the type preservation proof for the Dictionary Passing Transform from System \Fo\ to System F.
 
 \subsection{Design Decisions for the Agda Formalization}
 To formalize syntaxes in Agda we use a single data type \Data{Term} indexed by sorts \Sym{s} to represent the syntax. 
 Sorts distinguish between different categories of terms.
-For example, the sort \Constr{eₛ} represents expressions \Sym{e}, \Constr{τₛ} represents types \Sym{τ} and \Constr{κₛ} represents kind. Although, in System F and System \Fo\ there only exists a single kind \Constr{⋆}. The idea of sorts originates from the theory of pure type systems~\cite{pts}, but neither System F nor System \Fo\ allow any interesting dependencies between terms of the sort \Constr{eₛ}, \Constr{τₛ}, and \Constr{κₛ}.
+For example, the sort \Constr{eₛ} represents expressions \Sym{e}, \Constr{τₛ} represents types \Sym{τ} and \Constr{κₛ} represents kinds. In System F and System \Fo\ there only exists a single kind \Constr{⋆}. 
+The idea of sorts originates from the theory of pure type systems~\cite{pts}, but neither System F nor System \Fo\ allow any interesting dependencies between terms of the sort \Constr{eₛ}, \Constr{τₛ}, and \Constr{κₛ}.
 Using a single data type to formalize the syntax yields more elegant proofs involving contexts, substitutions and renamings. 
 In consequence of using a single data type, we must use extrinsic typing because intrinsically typed terms \Data{Term} \Constr{eₛ} \Constr{⊢} \Data{Term} \Constr{τₛ} would need to be indexed by themselves and Agda does not support self-indexed data types. 
-In the actual implementation, \Data{Term} has another index \Sym{S} that we will ignore for now.
+In the actual implementation, the data type \Data{Term} has another index \Sym{S} that we will ignore for now.
 
-\subsection{Overview of the Type Preservation Proof}
-The overall goal will be to prove that the Dictionary Passing Transform is type preserving. Let \Sym{⊢t} be any well formed System \Fo\ term \Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}, where \Sym{Γ} is a typing environment of type \Data{Ctx$_{F_O}$}, \Sym{t} is a \Data{Term$_{F_O}$} \Sym{s}, \Sym{T} is a \Data{Term$_{F_O}$} \Sym{s'} and s' is the sort of the typing result for terms of the sort \Sym{s}. There exist two cases for typings: \Sym{Γ} \Constr{⊢} \Sym{e} \Constr{:} \Sym{τ} and \Sym{Γ} \Constr{⊢} \Sym{τ} \Constr{:} \Constr{⋆}. Let \Data{⇝} : $($\Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}$)$ \Sym{→} \Data{Term$_F$} \Sym{s} be the Dictionary Passing Transform that translates well typed System \Fo\ terms to untyped System F terms. Further, let \Data{⇝$_\Gamma$} : \Data{Ctx$_{F_O}$} \Sym{→} \Data{Ctx$_F$} be the transform of contexts and \Data{⇝$_T$} : \Data{Term$_{F_O}$} \Sym{s'} \Sym{→} \Data{Term$_F$} \Sym{s'} be the transform of untyped types and kinds. We show that for all well typed System \Fo\  terms \Sym{⊢t} the Dictionary Passing Transform results in a well typed System F term (\Data{⇝$_\Gamma$} \Sym{Γ)} \Constr{⊢$_{F}$} (\Data{⇝} \Sym{⊢t}) \Constr{:} (\Data{⇝$_T$} \Sym{T}). 
+\subsection{Overview of the Type Preservation Proof}\label{sec:ov}
+The overall goal will be to prove that the Dictionary Passing Transform is type-preserving. 
+Let \Sym{⊢t} be any well formed System \Fo\ term \Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}, where \Sym{Γ} is a typing environment of type \Data{Ctx$_{F_O}$}, \Sym{t} is a \Data{Term$_{F_O}$} \Sym{s}, \Sym{T} is a \Data{Term$_{F_O}$} \Sym{s'} and s' is the sort of the typing result for terms of the sort \Sym{s}. 
+There exist two cases for typings: \Sym{Γ} \Constr{⊢} \Sym{e} \Constr{:} \Sym{τ} and \Sym{Γ} \Constr{⊢} \Sym{τ} \Constr{:} \Constr{⋆}.
+Let \Data{⇝} : $($\Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}$)$ \Sym{→} \Data{Term$_F$} \Sym{s} be the Dictionary Passing Transform that translates well typed System \Fo\ terms to untyped System F terms. 
+Further, let \Data{⇝$_\Gamma$} : \Data{Ctx$_{F_O}$} \Sym{→} \Data{Ctx$_F$} be the transform of contexts and \Data{⇝$_T$} : \Data{Term$_{F_O}$} \Sym{s'} \Sym{→} \Data{Term$_F$} \Sym{s'} be the transform of untyped types and kinds. 
+We show that for all well typed System \Fo\  terms \Sym{⊢t} the Dictionary Passing Transform results in a well typed System F term (\Data{⇝$_\Gamma$} \Sym{Γ)} \Constr{⊢$_{F}$} (\Data{⇝} \Sym{⊢t}) \Constr{:} (\Data{⇝$_T$} \Sym{T}). 
 
-\noindent We begin by formalizing the syntax, typing and semantic of System F in Agda and prove its soundness in section \ref{sec:sysf}. In section \ref{sec:sysfo}, we formalize System \Fo's syntax and typing. In the end, we formalize the translation of the Dictionary Passing Transform and prove it to be type preserving in section \ref{sec:dpt}.
+\noindent We begin by formalizing the syntax, typing and semantic of System F in Agda and prove its soundness in section \ref{sec:sysf}. 
+In section \ref{sec:sysfo}, we formalize System \Fo's syntax and typing. 
+In the end, we formalize the translation of the Dictionary Passing Transform and prove it to be type-preserving in section \ref{sec:dpt}. 
+We do not formalize semantics and soundness for System \Fo. 
+In a way, correct semantics for System \Fo\ are already given by the type-preserving translation from System \Fo\ to System F. 
+This is because we can simply apply the semantics of System F after translating. 
+And furthermore, the semantics of System F are proven to be sound in combination with the type system that System \Fo\ is translated to.

@@ -3,14 +3,14 @@
 \subsubsection{Sorts}\hfill\\\\
 In addition to the sorts of System F, System \Fo\ introduces two new sorts: \Constr{oₛ} for overloaded variables and \Constr{cₛ} for constraints.
 \FoSort
-Terms of sort \Constr{oₛ} can only be constructed using the variable constructor \Constr{`\_}. Thus, terms of sort \Constr{oₛ} are called overloaded variables. We use the variable \Sym{o} for overloaded variables and variable \Sym{c} for constraints. 
-Variables for constraints do not exist in System \Fo\ and thus \Constr{cₛ} is indexed by \Constr{⊥ᴮ}. 
+Terms of sort \Constr{oₛ} can only be constructed using the variable constructor \Constr{`\_}. Thus, terms of sort \Constr{oₛ} are called overloaded variables and sort \Constr{oₛ} is indexed by \Constr{var}. We use the variable \Sym{o} for overloaded variables and variable \Sym{c} for constraints. 
+Variables for constraints do not exist in System \Fo\ and thus \Constr{cₛ} is indexed by \Constr{no-var}. 
 
 \subsubsection{Syntax}\hfill\\\\
 We only discuss additions to the syntax of System F.
 \FoTerm
 Declarations \Constr{decl`o`in} \Sym{e} introduce a new overloaded variable \Sym{o}. 
-Hence, \Sym{S} is extended by sort \Constr{oₛ} inside the body \Sym{e}. 
+Hence, \Sym{S} is extended by the sort \Constr{oₛ} inside the body \Sym{e}. 
 
 \noindent The expression \Constr{inst`} \Sym{o} \Constr{=} \Sym{e₂} \Constr{`in} \Sym{e₁} introduces an additional instance for \Sym{o}. 
 The actual meaning for the instance is given by \Sym{e₂}.
@@ -26,25 +26,28 @@ Instance expressions do not introduce new bindings and thus, the index \Sym{S} i
 Renamings and substitutions in System \Fo\ are formalized identically to renamings and substitutions in System F. 
 The only difference is that we define the substitution operator only on types. 
 \Fosubs
-Because we do not formalize semantics for System \Fo, only substitutions of types in types are necessary. Type in type substitution appears in the typing rule for type application.
+The \Data{single-typeₛ} function only introduces a new binding for types and not arbitrary terms.
+Because we do not formalize direct semantics for System \Fo, only substitutions of types in types are necessary. Type in type substitution appears in the typing rule for type application.
 
 \subsubsection{Context}\hfill\\\\
-In addition to normal context items, the existence of overloaded variables is stored inside the context. Overloaded variables act as normal context items. 
+In addition to types and kinds, the existence of overloaded variables is stored inside the context. Overloaded variables act as normal context items. 
 Because overloaded variables themselves do not have a type, but rather multiple types that they can take on, we only need to store their existence in \Sym{Γ}. Thus, similar to type variables, we store kind \Constr{⋆} in \Sym{Γ} to denote the existence of an overloaded variable. As a result, the \Data{type-of} function is extended and returns the sort \Constr{κₛ} when applied to the sort \Constr{oₛ}.
 
 \noindent The types that an overloaded variable can take on are stored in the form of constraints. Constraints can be introduced to the context by both constraint abstractions and instance expressions.
 \FoCtx
 We write \Sym{Γ} \Constr{▸} \Sym{c} to pick up a constraint \Sym{c}. 
-Constraints give an additional meaning to an overloaded variable that is already bound. Hence index \Sym{S} is not modified. 
+Because constraints give an additional meaning to an overloaded variable that is already bound, the index \Sym{S} is not modified. 
 
 \noindent The \Data{lookup} function in System \Fo\ is defined analogously to \Data{lookup} in System F and simply ignores constraints stored in the context.
 
 \subsubsection{Constraint Solving}\hfill\\\\
-The search for constraints in a context is formalized analogously to membership proofs \Sym{s} \Constr{∈} \Sym{S}. The subtle difference is that we reference constraints in \Sym{Γ} and not in \Sym{S}. 
+The search for constraints in a context is formalized analogously to membership proofs \Sym{s} \Constr{∈} \Sym{S}. The subtle difference is that we reference constraints in \Sym{Γ} and not in \Sym{S}. The constraint solving type does need to search in \Sym{Γ} because \Sym{S} does not know about the existence of constraints.
 \FoCstrSolve
 The \Constr{here} constructor is analogous to the \Constr{here} constructor of memberships and can be used when the last item in \Sym{Γ} is the desired constraint \Sym{c}.
 
-\noindent If the last item in the context is not the desired constraint \Sym{c}, then \Sym{c} must be further inside the context. The constraint can either behind a item stored in \Sym{Γ} (\Constr{under-bind}) or a constraint (\Constr{under-cstr}). In the case that \Sym{c} is under a binder, the constraint needs to be weakened, to align in \Sym{S} with the position it is resolved for. 
+\noindent If the last item in the context is not the desired constraint \Sym{c}, then \Sym{c} must be further inside the context. The constraint can either behind an item stored in \Sym{Γ} (\Constr{under-bind}) or a constraint (\Constr{under-cstr}). In the case that \Sym{c} is under a binder, the constraint needs to be weakened, to align in \Sym{S} with the position it is resolved for.
+
+\noindent We use the constraint solving type inside the type system to resolve the instance for usages of overloaded variables and to implicitly eliminate constraints.
 
 \subsubsection{Typing}\hfill\\\\
 We only discuss typing rules not already discussed in the System F specification. 
@@ -53,10 +56,10 @@ The rule for overloaded variables \Constr{⊢`o} says that if we can resolve the
 
 \noindent The rule for constraint abstraction \Constr{⊢ƛ} appends the constraint \Sym{c} to \Sym{Γ} and thus assumes \Sym{c} to be valid inside the body \Sym{e}. Constraint abstractions result in the corresponding constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ} that lifts the constraint onto the type level.
 
-\noindent Expressions \Sym{e} with constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ'} have the constraint implicitly eliminated using the \Constr{⊢⊘} rule, given \Sym{c} can be resolved in \Sym{Γ}. Because the rule can be applied to arbitrary \Sym{e}, it is not syntax directed.
+\noindent Expressions \Sym{e} with constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ'} have the constraint implicitly eliminated using the rule \Constr{⊢⊘}, given \Sym{c} can be resolved in \Sym{Γ}. Because the rule can be applied to arbitrary \Sym{e}, it is not syntax directed.
 
 \noindent The rule \Constr{⊢decl} introduces a new overloaded variable \Sym{o} to \Sym{e}. 
-To introduce \Sym{o} in \Sym{Γ}, we only need to store the information that \Sym{o} exists as overloaded variable. The existence of \Sym{o} is denoted by extending \Sym{Γ} with kind \Constr{⋆}. The types that \Sym{o} can take on, will be stored inside constraints.
+To introduce \Sym{o} in \Sym{Γ}, we only need to store the information that \Sym{o} exists as overloaded variable. The existence of \Sym{o} is denoted by extending \Sym{Γ} with kind \Constr{⋆}.
 Analogous to the type \Sym{τ'} inside the abstraction rule \Constr{⊢λ}, the resulting type \Sym{τ} is weakened to align in \Sym{S} with \Sym{Γ} not extended by \Constr{⋆}, such that it can act as the resulting type of the typing.
 
 \noindent An instance for an overloaded variable \Sym{o} is typed using the rule \Constr{⊢inst}. We extend \Sym{Γ} with constraint \Sym{o} \Constr{:} \Sym{τ} inside \Sym{e₁}, where \Sym{τ} is the type of \Sym{e₂}. 
@@ -70,8 +73,8 @@ Dropping a constraint corresponds to a typed weakening, similar to constructor \
 \noindent Other than in System F, arbitrary substitutions will not be allowed in System \Fo. 
 Similar to the substitution operator we restrict typed substitutions in System \Fo\ to substitutions of types in types. 
 \FoSubTyping
-\noindent The constructor \Constr{⊢typeₛ} allows to introduce an additional new type variable binder that is substituted with type \Sym{τ}.
-Thus, \Constr{⊢typeₛ} complements the \Data{single-typeₛ} function. 
+\noindent The constructor \Constr{⊢single-typeₛ} allows to introduce an additional new type variable binder that is substituted with type \Sym{τ}.
+Thus, the constructor \Constr{⊢single-typeₛ} complements the \Data{single-typeₛ} function. 
 The intuition here is that if we would allow all terms to be introduced using a \Constr{⊢termₛ} constructor, then typed substitutions in System \Fo\ would be arbitrary again. 
 The restriction to type in type substitutions simplifies the type preservation proof for the Dictionary Passing Transform by eliminating cases for non-type terms that would otherwise needed to be proven.
 Constructors  \Constr{⊢idₛ}, \Constr{⊢extₛ}, \Constr{⊢dropₛ} and \Constr{⊢drop-cstrₛ} are not shown. All of them function the same way as their counterparts in typed renamings.

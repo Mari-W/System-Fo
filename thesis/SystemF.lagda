@@ -17,20 +17,20 @@ module SystemF where
 -- Sorts --------------------------------------------------------------------------------
 
 data Bindable : Set where
-  ⊤ᴮ : Bindable
-  ⊥ᴮ : Bindable
+  var : Bindable
+  no-var : Bindable
 \end{code}
 \newcommand{\FSort}[0]{\begin{code}
 data Sort : Bindable → Set where
-  eₛ  : Sort ⊤ᴮ
-  τₛ  : Sort ⊤ᴮ
-  κₛ  : Sort ⊥ᴮ
+  eₛ  : Sort var
+  τₛ  : Sort var
+  κₛ  : Sort no-var
 \end{code}}
 \begin{code}[hide]
 Sorts : Set
 \end{code}
 \newcommand{\FSorts}[0]{\begin{code}[inline]
-Sorts = List (Sort ⊤ᴮ)
+Sorts = List (Sort var)
 \end{code}}
 \begin{code}[hide]
 infix 25 _▷_ _▷▷_
@@ -66,7 +66,7 @@ data Term : Sorts → Sort r → Set where
   ⋆            : Term S κₛ
 \end{code}}
 \begin{code}[hide]
-Var : Sorts → Sort ⊤ᴮ → Set
+Var : Sorts → Sort var → Set
 \end{code}
 \newcommand{\FVar}[0]{\begin{code}[inline]
 Var S s = s ∈ S 
@@ -98,12 +98,13 @@ Ren S₁ S₂ = ∀ s → Var S₁ s → Var S₂ s
 \begin{code}[hide]
 idᵣ : Ren S S
 idᵣ _ = id
-
+\end{code}
+\newcommand{\Frenwk}[0]{\begin{code}
 wkᵣ : Ren S (S ▷ s) 
 wkᵣ _ = there
-\end{code}
+\end{code}}
 \newcommand{\Frenext}[0]{\begin{code}
-extᵣ : Ren S₁ S₂ → (s : Sort ⊤ᴮ) → Ren (S₁ ▷ s) (S₂ ▷ s)
+extᵣ : Ren S₁ S₂ → (s : Sort var) → Ren (S₁ ▷ s) (S₂ ▷ s)
 extᵣ ρ _ _ (here refl) = here refl
 extᵣ ρ _ _ (there x) = there (ρ _ x)
 \end{code}}
@@ -130,7 +131,7 @@ ren ρ ⋆ = ⋆
 \end{code}
 \newcommand{\Fwk}[0]{\begin{code}
 wk : Term S s → Term (S ▷ s') s
-wk = ren (λ _ → there)  
+wk = ren wkᵣ  
 \end{code}}
 \begin{code}[hide]
 variable
@@ -149,7 +150,7 @@ idₛ : Sub S S
 idₛ s = `_
 \end{code}
 \newcommand{\Fext}[0]{\begin{code}
-extₛ : Sub S₁ S₂ → (s : Sort ⊤ᴮ) →  Sub (S₁ ▷ s) (S₂ ▷ s)
+extₛ : Sub S₁ S₂ → (s : Sort var) →  Sub (S₁ ▷ s) (S₂ ▷ s)
 extₛ σ s _ (here refl) = ` here refl
 extₛ σ s _ (there x) = wk (σ _ x)
 \end{code}}
@@ -190,11 +191,11 @@ variable
 
 -- Context ------------------------------------------------------------------------------
 
-kind-Bindable : Sort ⊤ᴮ → Bindable
-kind-Bindable eₛ = ⊤ᴮ
-kind-Bindable τₛ = ⊥ᴮ
+kind-Bindable : Sort var → Bindable
+kind-Bindable eₛ = var
+kind-Bindable τₛ = no-var
 
-type-of : (s : Sort ⊤ᴮ) → Sort (kind-Bindable s)
+type-of : (s : Sort var) → Sort (kind-Bindable s)
 \end{code}}
 \newcommand{\Fkind}[0]{\begin{code}
 type-of eₛ = τₛ
@@ -341,7 +342,7 @@ progress (⊢let  {e₂ = e₂} {e₁ = e₁} ⊢e₂ ⊢e₁) with progress ⊢
 
 variable
   ℓ ℓ₁ ℓ₂ ℓ₃ : Level
-  A B C      : Set ℓ
+  A B        : Set ℓ
 
 postulate
   fun-ext : ∀ {A : Set ℓ₁} {B : A → Set ℓ₂} {f g : (x : A) → B x} →
@@ -354,6 +355,7 @@ fun-ext₂ : ∀ {A₁ : Set ℓ₁} {A₂ : A₁ → Set ℓ₂} {B : (x : A₁
     f ≡ g
 fun-ext₂ h = fun-ext λ x → fun-ext λ y → h x y
 
+
 _ρσ→σ_ : Ren S₁ S₂ → Sub S₂ S₃ → Sub S₁ S₃
 (ρ ρσ→σ σ) _ x = σ _ (ρ _ x)
 
@@ -363,125 +365,269 @@ _ρρ→ρ_ : Ren S₁ S₂ → Ren S₂ S₃ → Ren S₁ S₃
 _σρ→σ_ : Sub S₁ S₂ → Ren S₂ S₃ → Sub S₁ S₃
 (σ σρ→σ ρ) _ x = ren ρ (σ _ x)
 
+_σσ→σ_ : Sub S₁ S₂ → Sub S₂ S₃ → Sub S₁ S₃
+(σ₁ σσ→σ σ₂) _ x = sub σ₂ (σ₁ _ x)
 
-σ↑idₛ≡σ : ∀ (t : Term S₁ s) (t' : Term S₂ s') (σ : Sub S₁ S₂) →
-  sub (singleₛ σ t') (wk t) ≡ sub σ t
-σ↑idₛ≡σ t t' σ = {!   !}
+extᵣidᵣ≡idᵣ : ∀ (x : Var (S ▷ s') s) → extᵣ idᵣ _ _ x ≡ idᵣ _ x
+extᵣidᵣ≡idᵣ (here refl) = refl
+extᵣidᵣ≡idᵣ (there x) = refl 
 
-↑σρ≡↑σ·↑ρ : ∀ s (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
+ρ₁≡ρ₂→ext-ρ₁≡ext-ρ₂ : ∀ {ρ₁ ρ₂ : Ren S₁ S₂} → 
+ (∀ {s} (x : Var S₁ s) → ρ₁ _ x ≡ ρ₂ _ x) → 
+ (∀ {s} (x : Var (S₁ ▷ s') s) → (extᵣ ρ₁ _) _ x ≡ (extᵣ ρ₂ _) _ x)
+ρ₁≡ρ₂→ext-ρ₁≡ext-ρ₂ ρ₁≡ρ₂ (here refl) = refl
+ρ₁≡ρ₂→ext-ρ₁≡ext-ρ₂ ρ₁≡ρ₂ (there x) = cong there (ρ₁≡ρ₂ x)
+
+ρ₁≡ρ₂→ρ₁τ≡ρ₂τ : ∀ {ρ₁ ρ₂ : Ren S₁ S₂} (τ : Type S₁) → 
+  (∀ {s} (x : Var S₁ s) → ρ₁ _ x ≡ ρ₂ _ x) → 
+  ren ρ₁ τ ≡ ren ρ₂ τ
+ρ₁≡ρ₂→ρ₁τ≡ρ₂τ (` x) ρ₁≡ρ₂ = cong `_ (ρ₁≡ρ₂ x)
+ρ₁≡ρ₂→ρ₁τ≡ρ₂τ `⊤ ρ₁≡ρ₂ = refl
+ρ₁≡ρ₂→ρ₁τ≡ρ₂τ (τ₁ ⇒ τ₂) ρ₁≡ρ₂ = cong₂ _⇒_ (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ τ₁ ρ₁≡ρ₂) (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ τ₂ ρ₁≡ρ₂)
+ρ₁≡ρ₂→ρ₁τ≡ρ₂τ (∀`α τ) ρ₁≡ρ₂ = cong ∀`α_ (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ τ (ρ₁≡ρ₂→ext-ρ₁≡ext-ρ₂ ρ₁≡ρ₂))
+
+idᵣτ≡τ : (τ : Type S) →
+  ren idᵣ τ ≡ τ
+idᵣτ≡τ (` x) = refl
+idᵣτ≡τ `⊤ = refl
+idᵣτ≡τ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (idᵣτ≡τ τ₁) (idᵣτ≡τ τ₂)
+idᵣτ≡τ (∀`α τ) = cong ∀`α_ (trans (ρ₁≡ρ₂→ρ₁τ≡ρ₂τ τ extᵣidᵣ≡idᵣ) (idᵣτ≡τ τ))
+
+extₛidₛ≡idₛ : ∀ (x : Var (S ▷ s') s) → extₛ idₛ _ _ x ≡ idₛ _ x
+extₛidₛ≡idₛ (here refl) = refl
+extₛidₛ≡idₛ (there x) = refl 
+
+σ₁≡σ₂→ext-σ₁≡ext-σ₂ : ∀ {σ₁ σ₂ : Sub S₁ S₂} → 
+ (∀ {s} (x : Var S₁ s) → σ₁ _ x ≡ σ₂ _ x) → 
+ (∀ {s} (x : Var (S₁ ▷ s') s) → (extₛ σ₁ _) _ x ≡ (extₛ σ₂ _) _ x)
+σ₁≡σ₂→ext-σ₁≡ext-σ₂ σ₁≡σ₂ (here refl) = refl
+σ₁≡σ₂→ext-σ₁≡ext-σ₂ σ₁≡σ₂ (there x) = cong wk (σ₁≡σ₂ x)
+
+σ₁≡σ₂→σ₁t≡σ₂t : ∀ {σ₁ σ₂ : Sub S₁ S₂} (t : Term S₁ s) → 
+  (∀ {s} (x : Var S₁ s) → σ₁ _ x ≡ σ₂ _ x) → 
+  sub σ₁ t ≡ sub σ₂ t
+σ₁≡σ₂→σ₁t≡σ₂t (` x) σ₁≡σ₂ = σ₁≡σ₂ x
+σ₁≡σ₂→σ₁t≡σ₂t `⊤ σ₁≡σ₂ = refl
+σ₁≡σ₂→σ₁t≡σ₂t (τ₁ ⇒ τ₂) σ₁≡σ₂ = cong₂ _⇒_ (σ₁≡σ₂→σ₁t≡σ₂t τ₁ σ₁≡σ₂) (σ₁≡σ₂→σ₁t≡σ₂t τ₂ σ₁≡σ₂)
+σ₁≡σ₂→σ₁t≡σ₂t (∀`α τ) σ₁≡σ₂ = cong ∀`α_ (σ₁≡σ₂→σ₁t≡σ₂t τ (σ₁≡σ₂→ext-σ₁≡ext-σ₂ σ₁≡σ₂))
+σ₁≡σ₂→σ₁t≡σ₂t tt σ₁≡σ₂ = refl
+σ₁≡σ₂→σ₁t≡σ₂t (λ`x→ e) σ₁≡σ₂ = cong λ`x→_ (σ₁≡σ₂→σ₁t≡σ₂t e (σ₁≡σ₂→ext-σ₁≡ext-σ₂ σ₁≡σ₂))
+σ₁≡σ₂→σ₁t≡σ₂t (Λ`α→ e) σ₁≡σ₂ = cong Λ`α→_ (σ₁≡σ₂→σ₁t≡σ₂t e (σ₁≡σ₂→ext-σ₁≡ext-σ₂ σ₁≡σ₂))
+σ₁≡σ₂→σ₁t≡σ₂t (e₁ · e₂) σ₁≡σ₂ = cong₂ _·_ (σ₁≡σ₂→σ₁t≡σ₂t e₁ σ₁≡σ₂) (σ₁≡σ₂→σ₁t≡σ₂t e₂ σ₁≡σ₂)
+σ₁≡σ₂→σ₁t≡σ₂t (e • τ) σ₁≡σ₂ = cong₂ _•_ (σ₁≡σ₂→σ₁t≡σ₂t e σ₁≡σ₂) (σ₁≡σ₂→σ₁t≡σ₂t τ σ₁≡σ₂)
+σ₁≡σ₂→σ₁t≡σ₂t (let`x= e₂ `in e₁) σ₁≡σ₂ = cong₂ let`x=_`in_ (σ₁≡σ₂→σ₁t≡σ₂t e₂ σ₁≡σ₂) (σ₁≡σ₂→σ₁t≡σ₂t e₁(σ₁≡σ₂→ext-σ₁≡ext-σ₂ σ₁≡σ₂))
+σ₁≡σ₂→σ₁t≡σ₂t ⋆ σ₁≡σ₂ = refl
+
+idₛt≡t : (t : Term S s) →
+  sub idₛ t ≡ t
+idₛt≡t (` x) = refl
+idₛt≡t `⊤ = refl
+idₛt≡t (τ₁ ⇒ τ₂) = cong₂ _⇒_ (idₛt≡t τ₁) (idₛt≡t τ₂)
+idₛt≡t (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁t≡σ₂t τ extₛidₛ≡idₛ) (idₛt≡t τ))
+idₛt≡t tt = refl
+idₛt≡t (λ`x→ e) = cong λ`x→_ (trans (σ₁≡σ₂→σ₁t≡σ₂t e extₛidₛ≡idₛ) (idₛt≡t e))
+idₛt≡t (Λ`α→ e) = cong Λ`α→_ (trans (σ₁≡σ₂→σ₁t≡σ₂t e extₛidₛ≡idₛ) (idₛt≡t e))
+idₛt≡t (e₁ · e₂) = cong₂ _·_ (idₛt≡t e₁) (idₛt≡t e₂)
+idₛt≡t (e • τ) = cong₂ _•_ (idₛt≡t e) (idₛt≡t τ)
+idₛt≡t (let`x= e₂ `in e₁) = cong₂ let`x=_`in_ (idₛt≡t e₂) (trans (σ₁≡σ₂→σ₁t≡σ₂t e₁ extₛidₛ≡idₛ) (idₛt≡t e₁))
+idₛt≡t ⋆ = refl
+
+⊢idₛ : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (type-of s)} (⊢t : Γ ⊢ t ∶ T) → idₛ ∶ Γ ⇒ₛ Γ
+⊢idₛ {Γ = Γ} ⊢t {eₛ} x = ⊢`x (sym (idₛt≡t (lookup Γ x)))
+⊢idₛ {Γ = Γ} ⊢t {τₛ} x with lookup Γ x
+... | ⋆ = ⊢τ
+
+sub↑-dist-ren↑ : ∀ s (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
   extₛ (ρ ρσ→σ σ) s ≡ (extᵣ ρ _) ρσ→σ (extₛ σ s)
-↑σρ≡↑σ·↑ρ s ρ σ = fun-ext₂ λ { _ (here refl) → refl
+sub↑-dist-ren↑ s ρ σ = fun-ext₂ λ { _ (here refl) → refl
                              ; _ (there x) → refl }
 
 mutual 
-  ρ↑t·σ≡ρ·σ↑t : ∀ (t : Term (S₁ ▷ s') s) (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
+  assoc-sub↑-ren↑ : ∀ (t : Term (S₁ ▷ s') s) (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
     sub (extₛ σ _) (ren (extᵣ ρ _) t) ≡ sub (extₛ (ρ ρσ→σ σ) _) t
-  ρ↑t·σ≡ρ·σ↑t {s' = s'} t ρ σ = begin  
+  assoc-sub↑-ren↑ {s' = s'} t ρ σ = begin  
       sub (extₛ σ _) (ren (extᵣ ρ _) t)
-    ≡⟨ ρt·σ≡ρ·σt t (extᵣ ρ _) (extₛ σ _) ⟩
+    ≡⟨ assoc-sub-ren t (extᵣ ρ _) (extₛ σ _) ⟩
       sub (extᵣ ρ _ ρσ→σ extₛ σ _) t
-    ≡⟨ cong (λ σ → sub σ t) (sym (↑σρ≡↑σ·↑ρ s' ρ σ)) ⟩
+    ≡⟨ cong (λ σ → sub σ t) (sym (sub↑-dist-ren↑ s' ρ σ)) ⟩
       sub (extₛ (ρ ρσ→σ σ) _) t
     ∎
 
-  ρt·σ≡ρ·σt : ∀ (t : Term S₁ s) (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
+  assoc-sub-ren : ∀ (t : Term S₁ s) (ρ : Ren S₁ S₂) (σ : Sub S₂ S₃) →
     sub σ (ren ρ t) ≡ sub (ρ ρσ→σ σ) t
-  ρt·σ≡ρ·σt (` x) ρ σ = refl
-  ρt·σ≡ρ·σt tt ρ σ = refl
-  ρt·σ≡ρ·σt (λ`x→ e) ρ σ = cong λ`x→_ (ρ↑t·σ≡ρ·σ↑t e ρ σ)
-  ρt·σ≡ρ·σt (Λ`α→ e) ρ σ = cong Λ`α→_ (ρ↑t·σ≡ρ·σ↑t e ρ σ)
-  ρt·σ≡ρ·σt (e₁ · e₂) ρ σ = cong₂ _·_ (ρt·σ≡ρ·σt e₁ ρ σ) (ρt·σ≡ρ·σt e₂ ρ σ)
-  ρt·σ≡ρ·σt (e • τ) ρ σ = cong₂ _•_ (ρt·σ≡ρ·σt e ρ σ) (ρt·σ≡ρ·σt τ ρ σ)
-  ρt·σ≡ρ·σt (let`x= e₂ `in e₁) ρ σ = cong₂ let`x=_`in_ (ρt·σ≡ρ·σt e₂ ρ σ) (ρ↑t·σ≡ρ·σ↑t e₁ ρ σ)
-  ρt·σ≡ρ·σt `⊤ ρ σ = refl
-  ρt·σ≡ρ·σt (τ₁ ⇒ τ₂) ρ σ = cong₂ _⇒_ (ρt·σ≡ρ·σt τ₁ ρ σ) (ρt·σ≡ρ·σt τ₂ ρ σ)
-  ρt·σ≡ρ·σt (∀`α τ) ρ σ = cong ∀`α_ (ρ↑t·σ≡ρ·σ↑t τ ρ σ)
-  ρt·σ≡ρ·σt ⋆ ρ σ = refl 
+  assoc-sub-ren (` x) ρ σ = refl
+  assoc-sub-ren tt ρ σ = refl
+  assoc-sub-ren (λ`x→ e) ρ σ = cong λ`x→_ (assoc-sub↑-ren↑ e ρ σ)
+  assoc-sub-ren (Λ`α→ e) ρ σ = cong Λ`α→_ (assoc-sub↑-ren↑ e ρ σ)
+  assoc-sub-ren (e₁ · e₂) ρ σ = cong₂ _·_ (assoc-sub-ren e₁ ρ σ) (assoc-sub-ren e₂ ρ σ)
+  assoc-sub-ren (e • τ) ρ σ = cong₂ _•_ (assoc-sub-ren e ρ σ) (assoc-sub-ren τ ρ σ)
+  assoc-sub-ren (let`x= e₂ `in e₁) ρ σ = cong₂ let`x=_`in_ (assoc-sub-ren e₂ ρ σ) (assoc-sub↑-ren↑ e₁ ρ σ)
+  assoc-sub-ren `⊤ ρ σ = refl
+  assoc-sub-ren (τ₁ ⇒ τ₂) ρ σ = cong₂ _⇒_ (assoc-sub-ren τ₁ ρ σ) (assoc-sub-ren τ₂ ρ σ)
+  assoc-sub-ren (∀`α τ) ρ σ = cong ∀`α_ (assoc-sub↑-ren↑ τ ρ σ)
+  assoc-sub-ren ⋆ ρ σ = refl 
 
-↑ρρ≡↑ρ·↑ρ : ∀ s (ρ₁ : Ren S₁ S₂) (ρ₂ : Ren S₂ S₃) →
+ren↑-dist-ren↑ : ∀ s (ρ₁ : Ren S₁ S₂) (ρ₂ : Ren S₂ S₃) →
   extᵣ (ρ₁ ρρ→ρ ρ₂) s ≡ (extᵣ ρ₁ _) ρρ→ρ (extᵣ ρ₂ _)
-↑ρρ≡↑ρ·↑ρ s ρ₁ ρ₂ = fun-ext₂ λ { _ (here refl) → refl
+ren↑-dist-ren↑ s ρ₁ ρ₂ = fun-ext₂ λ { _ (here refl) → refl
                                ; _ (there x) → refl }
 
-
 mutual 
-  ρ↑t·ρ≡ρ·ρ↑t : ∀ (t : Term (S₁ ▷ s') s) (ρ₁ : Ren S₁ S₂) (ρ₂ : Ren S₂ S₃) →
+  assoc-ren↑-ren↑ : ∀ (t : Term (S₁ ▷ s') s) (ρ₁ : Ren S₁ S₂) (ρ₂ : Ren S₂ S₃) →
     ren (extᵣ ρ₂ _) (ren (extᵣ ρ₁ _) t) ≡ ren (extᵣ (ρ₁ ρρ→ρ ρ₂) _) t
-  ρ↑t·ρ≡ρ·ρ↑t t ρ₁ ρ₂ = begin  
+  assoc-ren↑-ren↑ t ρ₁ ρ₂ = begin  
       ren (extᵣ ρ₂ _) (ren (extᵣ ρ₁ _) t)
-    ≡⟨ ρt·ρ≡ρ·ρt t (extᵣ ρ₁ _) (extᵣ ρ₂ _) ⟩
+    ≡⟨ assoc-ren-ren t (extᵣ ρ₁ _) (extᵣ ρ₂ _) ⟩
       ren (extᵣ ρ₁ _ ρρ→ρ extᵣ ρ₂ _) t
-    ≡⟨ cong (λ x → {!   !}) (sym (ρ↑t·ρ≡ρ·ρ↑t t ρ₁ ρ₂)) ⟩
+    ≡⟨ cong (λ ρ → ren ρ t) (sym (ren↑-dist-ren↑ _ ρ₁ ρ₂)) ⟩
       ren (extᵣ (ρ₁ ρρ→ρ ρ₂) _) t
     ∎
 
-  ρt·ρ≡ρ·ρt : ∀ (t : Term S₁ s) (ρ₁ : Ren S₁ S₂) (ρ₂ : Ren S₂ S₃) →
+  assoc-ren-ren : ∀ (t : Term S₁ s) (ρ₁ : Ren S₁ S₂) (ρ₂ : Ren S₂ S₃) →
     ren ρ₂ (ren ρ₁ t) ≡ ren (ρ₁ ρρ→ρ ρ₂) t
-  ρt·ρ≡ρ·ρt (` x) ρ₁ ρ₂ = refl
-  ρt·ρ≡ρ·ρt tt ρ₁ ρ₂ = refl
-  ρt·ρ≡ρ·ρt (λ`x→ e) ρ₁ ρ₂ = cong λ`x→_ (ρ↑t·ρ≡ρ·ρ↑t e ρ₁ ρ₂)
-  ρt·ρ≡ρ·ρt (Λ`α→ e) ρ₁ ρ₂ = cong Λ`α→_ (ρ↑t·ρ≡ρ·ρ↑t e ρ₁ ρ₂)
-  ρt·ρ≡ρ·ρt (e₁ · e₂) ρ₁ ρ₂ = cong₂ _·_ (ρt·ρ≡ρ·ρt e₁ ρ₁ ρ₂) (ρt·ρ≡ρ·ρt e₂ ρ₁ ρ₂)
-  ρt·ρ≡ρ·ρt (e • τ) ρ₁ ρ₂ = cong₂ _•_ (ρt·ρ≡ρ·ρt e ρ₁ ρ₂) (ρt·ρ≡ρ·ρt τ ρ₁ ρ₂)
-  ρt·ρ≡ρ·ρt (let`x= e₂ `in e₁) ρ₁ ρ₂ = cong₂ let`x=_`in_ (ρt·ρ≡ρ·ρt e₂ ρ₁ ρ₂) (ρ↑t·ρ≡ρ·ρ↑t e₁ ρ₁ ρ₂)
-  ρt·ρ≡ρ·ρt `⊤ ρ₁ ρ₂ = refl
-  ρt·ρ≡ρ·ρt (τ₁ ⇒ τ₂) ρ₁ ρ₂ = cong₂ _⇒_ (ρt·ρ≡ρ·ρt τ₁ ρ₁ ρ₂) (ρt·ρ≡ρ·ρt τ₂ ρ₁ ρ₂)
-  ρt·ρ≡ρ·ρt (∀`α τ) ρ₁ ρ₂ = cong ∀`α_ (ρ↑t·ρ≡ρ·ρ↑t τ ρ₁ ρ₂)
-  ρt·ρ≡ρ·ρt ⋆ ρ₁ ρ₂ = refl 
+  assoc-ren-ren (` x) ρ₁ ρ₂ = refl
+  assoc-ren-ren tt ρ₁ ρ₂ = refl
+  assoc-ren-ren (λ`x→ e) ρ₁ ρ₂ = cong λ`x→_ (assoc-ren↑-ren↑ e ρ₁ ρ₂)
+  assoc-ren-ren (Λ`α→ e) ρ₁ ρ₂ = cong Λ`α→_ (assoc-ren↑-ren↑ e ρ₁ ρ₂)
+  assoc-ren-ren (e₁ · e₂) ρ₁ ρ₂ = cong₂ _·_ (assoc-ren-ren e₁ ρ₁ ρ₂) (assoc-ren-ren e₂ ρ₁ ρ₂)
+  assoc-ren-ren (e • τ) ρ₁ ρ₂ = cong₂ _•_ (assoc-ren-ren e ρ₁ ρ₂) (assoc-ren-ren τ ρ₁ ρ₂)
+  assoc-ren-ren (let`x= e₂ `in e₁) ρ₁ ρ₂ = cong₂ let`x=_`in_ (assoc-ren-ren e₂ ρ₁ ρ₂) (assoc-ren↑-ren↑ e₁ ρ₁ ρ₂)
+  assoc-ren-ren `⊤ ρ₁ ρ₂ = refl
+  assoc-ren-ren (τ₁ ⇒ τ₂) ρ₁ ρ₂ = cong₂ _⇒_ (assoc-ren-ren τ₁ ρ₁ ρ₂) (assoc-ren-ren τ₂ ρ₁ ρ₂)
+  assoc-ren-ren (∀`α τ) ρ₁ ρ₂ = cong ∀`α_ (assoc-ren↑-ren↑ τ ρ₁ ρ₂)
+  assoc-ren-ren ⋆ ρ₁ ρ₂ = refl 
 
 ↑ρ·wkt≡wk·ρt : ∀ (t : Term S₁ s') (ρ : Ren S₁ S₂) →
   ren (extᵣ ρ s) (wk t) ≡ wk (ren ρ t) 
-↑ρ·wkt≡wk·ρt = {!   !}
+↑ρ·wkt≡wk·ρt {s = s} t ρ = 
+  begin 
+    ren (extᵣ ρ s) (ren wkᵣ t)
+  ≡⟨ assoc-ren-ren t wkᵣ (extᵣ ρ s) ⟩
+    ren (wkᵣ ρρ→ρ extᵣ ρ s) t
+  ≡⟨ sym (assoc-ren-ren t ρ wkᵣ) ⟩
+    ren wkᵣ (ren ρ t)
+  ∎
 
-↑ρσ≡↑ρ·↑σ : ∀ s (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
+ren↑-dist-sub↑ : ∀ s (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
   extₛ (σ σρ→σ ρ) s ≡ (extₛ σ _ σρ→σ extᵣ ρ _)
-↑ρσ≡↑ρ·↑σ s σ ρ =  fun-ext₂ λ { _ (here refl) → refl
+ren↑-dist-sub↑ s σ ρ =  fun-ext₂ λ { _ (here refl) → refl
                               ; _ (there x) →  sym (↑ρ·wkt≡wk·ρt (σ _ x) ρ) } 
 
 mutual 
-  σ↑t·ρ≡σ·ρ↑t : ∀ (t : Term (S₁ ▷ s') s) (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
+  assoc-ren↑-sub↑ : ∀ (t : Term (S₁ ▷ s') s) (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
     ren (extᵣ ρ _) (sub (extₛ σ _) t) ≡ sub (extₛ (σ σρ→σ ρ) _) t
-  σ↑t·ρ≡σ·ρ↑t {s' = s'} t σ ρ = begin 
+  assoc-ren↑-sub↑ {s' = s'} t σ ρ = begin 
       ren (extᵣ ρ _) (sub (extₛ σ s') t)
-    ≡⟨ σt·ρ≡σ·ρt t (extₛ σ _) (extᵣ ρ _) ⟩
+    ≡⟨ assoc-ren-sub t (extₛ σ _) (extᵣ ρ _) ⟩
       sub (extₛ σ s' σρ→σ extᵣ ρ _) t
-    ≡⟨ cong (λ σ → sub σ t) (sym (↑ρσ≡↑ρ·↑σ s' σ ρ)) ⟩
+    ≡⟨ cong (λ σ → sub σ t) (sym (ren↑-dist-sub↑ s' σ ρ)) ⟩
       sub (extₛ (σ σρ→σ ρ) s') t
     ∎ 
 
-  σt·ρ≡σ·ρt : ∀ (t : Term S₁ s) (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
+  assoc-ren-sub : ∀ (t : Term S₁ s) (σ : Sub S₁ S₂) (ρ : Ren S₂ S₃) →
     ren ρ (sub σ t) ≡ sub (σ σρ→σ ρ) t
-  σt·ρ≡σ·ρt (` x) σ ρ = refl
-  σt·ρ≡σ·ρt tt σ ρ = refl
-  σt·ρ≡σ·ρt (λ`x→ e) σ ρ = cong λ`x→_ (σ↑t·ρ≡σ·ρ↑t e σ ρ)
-  σt·ρ≡σ·ρt (Λ`α→ e) σ ρ = cong Λ`α→_ (σ↑t·ρ≡σ·ρ↑t e σ ρ)
-  σt·ρ≡σ·ρt (e₁ · e₂) σ ρ = cong₂ _·_ (σt·ρ≡σ·ρt e₁ σ ρ) (σt·ρ≡σ·ρt e₂ σ ρ)
-  σt·ρ≡σ·ρt (e • τ) σ ρ = cong₂ _•_ (σt·ρ≡σ·ρt e σ ρ) (σt·ρ≡σ·ρt τ σ ρ)
-  σt·ρ≡σ·ρt (let`x= e₂ `in e₁) σ ρ = cong₂ let`x=_`in_  (σt·ρ≡σ·ρt e₂ σ ρ) (σ↑t·ρ≡σ·ρ↑t e₁ σ ρ)
-  σt·ρ≡σ·ρt `⊤ σ ρ = refl
-  σt·ρ≡σ·ρt (τ₁ ⇒ τ₂) σ ρ = cong₂ _⇒_ (σt·ρ≡σ·ρt τ₁ σ ρ) (σt·ρ≡σ·ρt τ₂ σ ρ)
-  σt·ρ≡σ·ρt (∀`α τ) σ ρ = cong ∀`α_ (σ↑t·ρ≡σ·ρ↑t τ σ ρ)
-  σt·ρ≡σ·ρt ⋆ σ ρ = refl
+  assoc-ren-sub (` x) σ ρ = refl
+  assoc-ren-sub tt σ ρ = refl
+  assoc-ren-sub (λ`x→ e) σ ρ = cong λ`x→_ (assoc-ren↑-sub↑ e σ ρ)
+  assoc-ren-sub (Λ`α→ e) σ ρ = cong Λ`α→_ (assoc-ren↑-sub↑ e σ ρ)
+  assoc-ren-sub (e₁ · e₂) σ ρ = cong₂ _·_ (assoc-ren-sub e₁ σ ρ) (assoc-ren-sub e₂ σ ρ)
+  assoc-ren-sub (e • τ) σ ρ = cong₂ _•_ (assoc-ren-sub e σ ρ) (assoc-ren-sub τ σ ρ)
+  assoc-ren-sub (let`x= e₂ `in e₁) σ ρ = cong₂ let`x=_`in_  (assoc-ren-sub e₂ σ ρ) (assoc-ren↑-sub↑ e₁ σ ρ)
+  assoc-ren-sub `⊤ σ ρ = refl
+  assoc-ren-sub (τ₁ ⇒ τ₂) σ ρ = cong₂ _⇒_ (assoc-ren-sub τ₁ σ ρ) (assoc-ren-sub τ₂ σ ρ)
+  assoc-ren-sub (∀`α τ) σ ρ = cong ∀`α_ (assoc-ren↑-sub↑ τ σ ρ)
+  assoc-ren-sub ⋆ σ ρ = refl
 
 σ↑·wkt≡wk·σt : ∀ s' (σ : Sub S₁ S₂) (t : Term S₁ s) →
   sub (extₛ σ _) (wk {s' = s'} t) ≡ wk (sub σ t)
 σ↑·wkt≡wk·σt s' σ t = 
   begin 
     sub (extₛ σ _) (wk t) 
-  ≡⟨ ρt·σ≡ρ·σt t (λ _ → there) (extₛ σ _) ⟩
+  ≡⟨ assoc-sub-ren t wkᵣ (extₛ σ _) ⟩
     sub (σ σρ→σ λ _ → there) t
-  ≡⟨ sym (σt·ρ≡σ·ρt t σ (λ _ → there)) ⟩
-    ren (λ _ → there) (sub σ t)
+  ≡⟨ sym (assoc-ren-sub t σ wkᵣ) ⟩
+    ren wkᵣ (sub σ t)
   ∎
+
+sub↑-dist-sub↑ : ∀ s (σ₁ : Sub S₁ S₂) (σ₂ : Sub S₂ S₃) →
+  extₛ (σ₁ σσ→σ σ₂) s ≡ (extₛ σ₁ _ σσ→σ extₛ σ₂ _)
+sub↑-dist-sub↑ s σ₁ σ₂ =  fun-ext₂ 
+  λ { _ (here refl) → refl
+    ; s' (there x) → 
+      begin 
+        (extₛ (σ₁ σσ→σ σ₂) s) s' (there x) 
+      ≡⟨ sym (σ↑·wkt≡wk·σt s σ₂ (σ₁ s' x)) ⟩
+        (extₛ σ₁ s σσ→σ extₛ σ₂ s) s' (there x)
+      ∎
+  } 
+
+mutual 
+  assoc-sub↑-sub↑ : ∀ (t : Term (S₁ ▷ s') s) (σ₁ : Sub S₁ S₂) (σ₂ : Sub S₂ S₃) →
+    sub (extₛ σ₂ _) (sub (extₛ σ₁ _) t) ≡ sub (extₛ (σ₁ σσ→σ σ₂) _) t
+  assoc-sub↑-sub↑ {s' = s'} t σ₁ σ₂ = begin 
+      sub (extₛ σ₂ _) (sub (extₛ σ₁ _) t)
+    ≡⟨ assoc-sub-sub t (extₛ σ₁ _) (extₛ σ₂ _) ⟩
+      sub (extₛ σ₁ s' σσ→σ extₛ σ₂ s') t
+    ≡⟨ cong (λ σ → sub σ t) (sym (sub↑-dist-sub↑ s' σ₁ σ₂)) ⟩
+      sub (extₛ (σ₁ σσ→σ σ₂) s') t
+    ∎ 
+
+  assoc-sub-sub : ∀ (t : Term S₁ s) (σ₁ : Sub S₁ S₂) (σ₂ : Sub S₂ S₃) →
+    sub σ₂ (sub σ₁ t) ≡ sub (σ₁ σσ→σ σ₂) t
+  assoc-sub-sub (` x) σ₁ σ₂ = refl
+  assoc-sub-sub tt σ₁ σ₂ = refl
+  assoc-sub-sub (λ`x→ e) σ₁ σ₂ = cong λ`x→_ (assoc-sub↑-sub↑ e σ₁ σ₂)
+  assoc-sub-sub (Λ`α→ e) σ₁ σ₂ = cong Λ`α→_ (assoc-sub↑-sub↑ e σ₁ σ₂)
+  assoc-sub-sub (e₁ · e₂) σ₁ σ₂ = cong₂ _·_ (assoc-sub-sub e₁ σ₁ σ₂) (assoc-sub-sub e₂ σ₁ σ₂)
+  assoc-sub-sub (e • τ) σ₁ σ₂ = cong₂ _•_ (assoc-sub-sub e σ₁ σ₂) (assoc-sub-sub τ σ₁ σ₂)
+  assoc-sub-sub (let`x= e₂ `in e₁) σ₁ σ₂ = cong₂ let`x=_`in_  (assoc-sub-sub e₂ σ₁ σ₂) (assoc-sub↑-sub↑ e₁ σ₁ σ₂)
+  assoc-sub-sub `⊤ σ₁ σ₂ = refl
+  assoc-sub-sub (τ₁ ⇒ τ₂) σ₁ σ₂ = cong₂ _⇒_ (assoc-sub-sub τ₁ σ₁ σ₂) (assoc-sub-sub τ₂ σ₁ σ₂)
+  assoc-sub-sub (∀`α τ) σ₁ σ₂ = cong ∀`α_ (assoc-sub↑-sub↑ τ σ₁ σ₂)
+  assoc-sub-sub ⋆ σ₁ σ₂ = refl
+ 
 
 ⊢ρ-preserves-Γ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} (x : Var S₁ s) →
   ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
   ren ρ (lookup Γ₁ x) ≡ lookup Γ₂ (ρ _ x)
-⊢ρ-preserves-Γ x ⊢ρ = {!       !}
+⊢ρ-preserves-Γ {s = eₛ} {Γ₁ = Γ₁} x ⊢idᵣ = idᵣτ≡τ (lookup Γ₁ x)
+⊢ρ-preserves-Γ {s = τₛ} {Γ₁ = Γ₁} x ⊢idᵣ with (lookup Γ₁ x) 
+... | ⋆ = refl
+⊢ρ-preserves-Γ (here refl) (⊢extᵣ {ρ = ρ} {T' = T'} ⊢ρ) = (↑ρ·wkt≡wk·ρt T' ρ) 
+⊢ρ-preserves-Γ (there x) (⊢extᵣ {ρ = ρ} {Γ₁ = Γ₁} {Γ₂ = Γ₂} ⊢ρ) = 
+  begin 
+    ren (extᵣ ρ _) (wk (lookup Γ₁ x))
+  ≡⟨ ↑ρ·wkt≡wk·ρt (lookup Γ₁ x) ρ ⟩
+    wk (ren ρ (lookup Γ₁ x))
+  ≡⟨ cong wk (⊢ρ-preserves-Γ x ⊢ρ) ⟩
+    wk (lookup Γ₂ (ρ _ x))
+  ∎
+⊢ρ-preserves-Γ x (⊢dropᵣ {ρ = ρ} {Γ₁ = Γ₁} {Γ₂ = Γ₂} ⊢ρ) = 
+  begin 
+    ren (dropᵣ ρ) (lookup Γ₁ x)
+  ≡⟨ sym (assoc-ren-ren (lookup Γ₁ x) ρ wkᵣ) ⟩
+    ren wkᵣ (ren ρ (lookup Γ₁ x))
+  ≡⟨ cong wk (⊢ρ-preserves-Γ x ⊢ρ) ⟩
+    wk (lookup Γ₂ (ρ _ x))
+  ∎
+
+ρ[τ]≡[ρτ]·ρ↑ : ∀ (τ : Type S₁) (ρ : Ren S₁ S₂) →
+  ((singleₛ idₛ) τ σρ→σ ρ) ≡ ((extᵣ ρ τₛ) ρσ→σ (singleₛ idₛ (ren ρ τ)))
+ρ[τ]≡[ρτ]·ρ↑ T ρ = fun-ext₂ λ { _ (here refl) → refl
+                            ; _ (there x) → refl }
 
 ρτ[τ']≡ρτ[ρ↑τ'] : ∀ (ρ : Ren S₁ S₂) (τ : Type (S₁ ▷ τₛ)) (τ' : Type S₁) →
   ren ρ (τ [ τ' ]) ≡ ren (extᵣ ρ _) τ [ ren ρ τ' ]
-ρτ[τ']≡ρτ[ρ↑τ'] ρ τ τ' = {!    !}
+ρτ[τ']≡ρτ[ρ↑τ'] ρ τ τ' = 
+  begin 
+    ren ρ (τ [ τ' ])
+  ≡⟨ assoc-ren-sub τ (singleₛ idₛ τ') ρ ⟩
+    sub (singleₛ idₛ τ' σρ→σ ρ) τ
+  ≡⟨ cong (λ σ → sub σ τ) (ρ[τ]≡[ρτ]·ρ↑ τ' ρ) ⟩
+    sub ((extᵣ ρ τₛ) ρσ→σ (singleₛ idₛ (ren ρ τ'))) τ
+  ≡⟨ sym (assoc-sub-ren τ (extᵣ ρ τₛ) (singleₛ idₛ (ren ρ τ'))) ⟩
+    sub (singleₛ idₛ (ren ρ τ')) (ren (extᵣ ρ τₛ) τ)
+  ∎
 
 ⊢ρ-preserves : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (type-of s)} →
   ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
@@ -501,16 +647,47 @@ mutual
   Γ ▶ T' ⊢ wk t ∶ wk T 
 ⊢wk-preserves = ⊢ρ-preserves (⊢dropᵣ ⊢idᵣ)
 
-σ·t[t']≡σ↑·t[σ·t'] : ∀ {s'} (σ : Sub S₁ S₂) (t : Term (S₁ ▷ s') s) (t' : Term S₁ s') →
-  sub σ (t [ t' ]) ≡ (sub (extₛ σ _) t) [ sub σ t' ]  
-σ·t[t']≡σ↑·t[σ·t'] = {!     !}
+σ[τ]≡[στ]·σ↑ : ∀ (τ : Type S₁) (σ : Sub S₁ S₂) →
+  (singleₛ idₛ τ σσ→σ σ) ≡ ((extₛ σ τₛ) σσ→σ (singleₛ idₛ (sub σ τ)))
+σ[τ]≡[στ]·σ↑ τ σ = fun-ext₂ 
+  λ { _ (here refl) → refl
+    ; _ (there x) → 
+      begin 
+        σ _ x
+      ≡⟨ sym (idₛt≡t (σ _ x)) ⟩
+        sub idₛ (σ _ x)
+      ≡⟨ sym (assoc-sub-ren (σ _ x) wkᵣ (singleₛ idₛ (sub σ τ))) ⟩
+        sub (singleₛ idₛ (sub σ τ)) (wk (σ _ x))
+      ∎
+  }
+
+σ·t[t']≡σ↑·t[σ·t'] : ∀ (σ : Sub S₁ S₂) (τ : Type (S₁ ▷ τₛ)) (τ' : Type S₁) →
+  sub σ (τ [ τ' ]) ≡ (sub (extₛ σ _) τ) [ sub σ τ' ]  
+σ·t[t']≡σ↑·t[σ·t'] σ τ τ' = 
+   begin 
+    sub σ (τ [ τ' ]) 
+  ≡⟨ assoc-sub-sub τ (singleₛ idₛ τ') σ ⟩
+    sub (singleₛ idₛ τ' σσ→σ σ) τ
+  ≡⟨ cong (λ σ → sub σ τ) (σ[τ]≡[στ]·σ↑ τ' σ) ⟩
+   sub (extₛ σ τₛ σσ→σ singleₛ idₛ (sub σ τ')) τ
+  ≡⟨ sym (assoc-sub-sub τ (extₛ σ τₛ) (singleₛ idₛ (sub σ τ'))) ⟩
+    (sub (extₛ σ _) τ) [ sub σ τ' ]  
+  ∎
+
+wk·σt≡↑σ·wkt : ∀ {s'} (σ : Sub S₁ S₂) (t : Term S₁ s) → 
+  ren (wkᵣ {s = s'}) (sub σ t) ≡ sub (extₛ σ _) (ren wkᵣ t)
+wk·σt≡↑σ·wkt σ t = begin 
+    ren wkᵣ (sub σ t)
+  ≡⟨ sym (σ↑·wkt≡wk·σt _ σ t) ⟩
+    sub (extₛ σ _) (ren wkᵣ t)
+  ∎
 
 ⊢σ↑ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {T : Term S₁ (type-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   extₛ σ _ ∶ Γ₁ ▶ T ⇒ₛ (Γ₂ ▶ sub σ T)
 ⊢σ↑ {σ = σ} {T = τ} ⊢σ {eₛ} (here refl) = ⊢`x (sym (σ↑·wkt≡wk·σt _ σ τ))
 ⊢σ↑ {T = ⋆} ⊢σ {τₛ} (here refl) = ⊢τ
-⊢σ↑ ⊢σ (there x) = {!    !}
+⊢σ↑ {σ = σ} {Γ₁ = Γ₁} {Γ₂ = Γ₂} {T = T} ⊢σ (there x) = subst ((Γ₂ ▶ sub σ T) ⊢ wk (σ _ x) ∶_) (wk·σt≡↑σ·wkt σ (lookup Γ₁ x)) (⊢wk-preserves (⊢σ x))
 \end{code}
 \newcommand{\Fpreserves}[0]{\begin{code}
 ⊢σ-preserves : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} 
@@ -532,50 +709,24 @@ mutual
   (subst (_ ⊢ _ ∶_) (σ↑·wkt≡wk·σt _ σ τ') (⊢σ-preserves (⊢σ↑ ⊢σ) ⊢e₁))
 ⊢σ-preserves ⊢σ ⊢τ = ⊢τ
 
+σ↑·wkt≡στ : ∀ (t : Term S₁ s) (t' : Term S₂ s') (σ : Sub S₁ S₂) →
+  sub (singleₛ σ t') (wk t) ≡ sub σ t
+σ↑·wkt≡στ t t' σ = assoc-sub-ren t wkᵣ (singleₛ σ t')
+
 ⊢singleₛ : ∀ {σ : Sub S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₂ s} {T : Term S₁ (type-of s)} →
   σ ∶ Γ₁ ⇒ₛ Γ₂ →
   Γ₂ ⊢ t ∶ sub σ T →
   singleₛ σ t ∶ Γ₁ ▶ T ⇒ₛ Γ₂ 
-⊢singleₛ {σ = σ} {t = t} {T = T} ⊢σ ⊢e (here refl) = subst (_ ⊢ t ∶_) (sym (σ↑idₛ≡σ T t σ)) ⊢e
-⊢singleₛ {σ = σ} {Γ₁ = Γ₁} {t = t} ⊢σ ⊢e (there x) = subst (_ ⊢ σ _ x ∶_) (sym (σ↑idₛ≡σ (lookup Γ₁ x) t σ)) (⊢σ x)
-
-extₛidₛ≡idₛ : ∀ (x : Var (S ▷ s') s) → extₛ idₛ _ _ x ≡ idₛ _ x
-extₛidₛ≡idₛ (here refl) = refl
-extₛidₛ≡idₛ (there x) = refl 
-
-⊢ext-σ₁≡ext-σ₂ : ∀ {σ₁ σ₂ : Sub S₁ S₂} → 
- (∀ {s} (x : Var S₁ s) → σ₁ _ x ≡ σ₂ _ x) → 
- (∀ {s} (x : Var (S₁ ▷ s') s) → (extₛ σ₁ _) _ x ≡ (extₛ σ₂ _) _ x)
-⊢ext-σ₁≡ext-σ₂ σ₁≡σ₂ (here refl) = refl
-⊢ext-σ₁≡ext-σ₂ σ₁≡σ₂ (there x) = cong wk (σ₁≡σ₂ x)
-
-σ₁≡σ₂→σ₁τ≡σ₂τ : ∀ {σ₁ σ₂ : Sub S₁ S₂} (τ : Type S₁) → 
-  (∀ {s} (x : Var S₁ s) → σ₁ _ x ≡ σ₂ _ x) → 
-  sub σ₁ τ ≡ sub σ₂ τ
-σ₁≡σ₂→σ₁τ≡σ₂τ (` x) σ₁≡σ₂ = σ₁≡σ₂ x
-σ₁≡σ₂→σ₁τ≡σ₂τ `⊤ σ₁≡σ₂ = refl
-σ₁≡σ₂→σ₁τ≡σ₂τ (τ₁ ⇒ τ₂) σ₁≡σ₂ = cong₂ _⇒_ (σ₁≡σ₂→σ₁τ≡σ₂τ τ₁ σ₁≡σ₂) (σ₁≡σ₂→σ₁τ≡σ₂τ τ₂ σ₁≡σ₂)
-σ₁≡σ₂→σ₁τ≡σ₂τ (∀`α τ) σ₁≡σ₂ = cong ∀`α_ (σ₁≡σ₂→σ₁τ≡σ₂τ τ (⊢ext-σ₁≡ext-σ₂ σ₁≡σ₂))
-
-idₛτ≡τ : (τ : Type S) →
-  sub idₛ τ ≡ τ
-idₛτ≡τ (` x) = refl
-idₛτ≡τ `⊤ = refl
-idₛτ≡τ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (idₛτ≡τ τ₁) (idₛτ≡τ τ₂)
-idₛτ≡τ (∀`α τ) = cong ∀`α_ (trans (σ₁≡σ₂→σ₁τ≡σ₂τ τ extₛidₛ≡idₛ) (idₛτ≡τ τ))
-
-⊢idₛ : ∀ {Γ : Ctx S} {t : Term S s} {T : Term S (type-of s)} (⊢t : Γ ⊢ t ∶ T) → idₛ ∶ Γ ⇒ₛ Γ
-⊢idₛ {Γ = Γ} ⊢t {eₛ} x = ⊢`x (sym (idₛτ≡τ (lookup Γ x)))
-⊢idₛ {Γ = Γ} ⊢t {τₛ} x with lookup Γ x
-... | ⋆ = ⊢τ
+⊢singleₛ {σ = σ} {t = t} {T = T} ⊢σ ⊢e (here refl) = subst (_ ⊢ t ∶_) (sym (σ↑·wkt≡στ T t σ)) ⊢e
+⊢singleₛ {σ = σ} {Γ₁ = Γ₁} {t = t} ⊢σ ⊢e (there x) = subst (_ ⊢ σ _ x ∶_) (sym (σ↑·wkt≡στ (lookup Γ₁ x) t σ)) (⊢σ x)
 
 τ[e]≡τ : ∀ {τ : Type S} {e : Expr S} → wk τ [ e ] ≡ τ  
 τ[e]≡τ {τ = τ} {e = e} = 
   begin 
     wk τ [ e ]
-  ≡⟨ σ↑idₛ≡σ τ e idₛ ⟩
+  ≡⟨ σ↑·wkt≡στ τ e idₛ ⟩
     sub idₛ τ
-  ≡⟨ idₛτ≡τ τ ⟩
+  ≡⟨ idₛt≡t τ ⟩
     τ
   ∎
 \end{code}
@@ -587,7 +738,7 @@ e[e]-preserves :  ∀ {Γ : Ctx S} {e₁ : Expr (S ▷ eₛ)} {e₂ : Expr S} {�
 \end{code}}
 \begin{code}[hide]
 e[e]-preserves {τ = τ} ⊢e₁ ⊢e₂ = subst (_ ⊢ _ ∶_) τ[e]≡τ 
-  (⊢σ-preserves (⊢singleₛ (⊢idₛ ⊢e₂) (subst (_ ⊢ _ ∶_) (sym (idₛτ≡τ τ)) ⊢e₂)) ⊢e₁) 
+  (⊢σ-preserves (⊢singleₛ (⊢idₛ ⊢e₂) (subst (_ ⊢ _ ∶_) (sym (idₛt≡t τ)) ⊢e₂)) ⊢e₁) 
 \end{code}
 \newcommand{\Fetpreserves}[0]{\begin{code}
 e[τ]-preserves :  ∀ {Γ : Ctx S} {e : Expr (S ▷ τₛ)} {τ : Type S} {τ' : Type (S ▷ τₛ)} →

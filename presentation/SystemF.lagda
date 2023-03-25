@@ -16,17 +16,17 @@ module SystemF where
 -- Sorts --------------------------------------------------------------------------------
 
 data Bindable : Set where
-  ⊤ᴮ : Bindable
-  ⊥ᴮ : Bindable
+  B : Bindable
+  ¬B : Bindable
 \end{code}
 \newcommand{\FSort}[0]{\begin{code}
 data Sort : Bindable → Set where
-  eₛ  : Sort ⊤ᴮ
-  τₛ  : Sort ⊤ᴮ
-  κₛ  : Sort ⊥ᴮ
+  eₛ  : Sort B
+  τₛ  : Sort B
+  κₛ  : Sort ¬B
 
 Sorts : Set
-Sorts = List (Sort ⊤ᴮ)
+Sorts = List (Sort B)
 \end{code}}
 \begin{code}[hide]
 infix 25 _▷_ _▷▷_
@@ -62,7 +62,7 @@ data Term : Sorts → Sort r → Set where
   ⋆            : Term S κₛ
 \end{code}}
 \begin{code}[hide]
-Var : Sorts → Sort ⊤ᴮ → Set
+Var : Sorts → Sort B → Set
 \end{code}
 \newcommand{\FVar}[0]{\begin{code}[inline]
 Var S s = s ∈ S 
@@ -182,12 +182,12 @@ variable
 
 -- Context ------------------------------------------------------------------------------
 
-kind-Bindable : Sort ⊤ᴮ → Bindable
-kind-Bindable eₛ = ⊤ᴮ
-kind-Bindable τₛ = ⊥ᴮ
+kind-Bindable : Sort B → Bindable
+kind-Bindable eₛ = B
+kind-Bindable τₛ = ¬B
 
 
-type-of : (s : Sort ⊤ᴮ) → Sort (kind-Bindable s)
+type-of : (s : Sort B) → Sort (kind-Bindable s)
 \end{code}}
 \newcommand{\Fkind}[0]{\begin{code}
 type-of eₛ = τₛ

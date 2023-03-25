@@ -14,25 +14,25 @@ module SystemFo where
 
 -- Sorts --------------------------------------------------------------------------------
 data Bindable : Set where
-  ⊤ᴮ : Bindable
-  ⊥ᴮ : Bindable
+  var : Bindable
+  no-var : Bindable
 
 variable
   r r' r'' r₁ r₂ : Bindable
 
 -- [latex] block(Sort)
 data Sort : Bindable → Set where
-  oₛ  : Sort ⊤ᴮ
-  cₛ  : Sort ⊥ᴮ
+  oₛ  : Sort var
+  cₛ  : Sort no-var
   -- ...
   -- [latex] hide
-  eₛ  : Sort ⊤ᴮ
-  τₛ  : Sort ⊤ᴮ
-  κₛ  : Sort ⊥ᴮ
+  eₛ  : Sort var
+  τₛ  : Sort var
+  κₛ  : Sort no-var
 -- [latex] hide
 
 Sorts : Set
-Sorts = List (Sort ⊤ᴮ)
+Sorts = List (Sort var)
 
 infix 25 _▷_ _▷▷_
 pattern _▷_ xs x = x ∷ xs
@@ -46,7 +46,7 @@ variable
   o o' o'' o₁ o₂ : oₛ ∈ S
   α α' α'' α₁ α₂ : τₛ ∈ S
 
-Var : Sorts → Sort ⊤ᴮ → Set
+Var : Sorts → Sort var → Set
 Var S s = s ∈ S  
 
 -- Syntax -------------------------------------------------------------------------------
@@ -200,12 +200,12 @@ variable
  
 -- Context ------------------------------------------------------------------------------
 
-item-Bindable : Sort ⊤ᴮ → Bindable
-item-Bindable eₛ = ⊤ᴮ
-item-Bindable τₛ = ⊥ᴮ
-item-Bindable oₛ = ⊥ᴮ
+item-Bindable : Sort var → Bindable
+item-Bindable eₛ = var
+item-Bindable τₛ = no-var
+item-Bindable oₛ = no-var
 
-item-of : (s : Sort ⊤ᴮ) → Sort (item-Bindable s)
+item-of : (s : Sort var) → Sort (item-Bindable s)
 -- [latex] block(item)
 item-of eₛ = τₛ
 item-of τₛ = κₛ
@@ -249,12 +249,12 @@ data [_]∈_ : Cstr S → Ctx S → Set where
   
 -- Typing -------------------------------------------------------------------------------
 
-kind-Bindable : Sort ⊤ᴮ → Bindable
-kind-Bindable eₛ = ⊤ᴮ
-kind-Bindable τₛ = ⊥ᴮ
-kind-Bindable oₛ = ⊤ᴮ
+kind-Bindable : Sort var → Bindable
+kind-Bindable eₛ = var
+kind-Bindable τₛ = no-var
+kind-Bindable oₛ = var
 
-type-of : (s : Sort ⊤ᴮ) → Sort (kind-Bindable s)
+type-of : (s : Sort var) → Sort (kind-Bindable s)
 -- [latex] block(kind)
 type-of eₛ = τₛ
 type-of τₛ = κₛ
@@ -382,7 +382,7 @@ idᵣτ≡τ ([ ` o ∶ τ ]⇒ τ') = cong₂ [_]⇒_ (cong₂ _∶_ refl (id�
 infix 3 _∶_⇒ₛ_
 -- [latex] block(SubTyping)
 data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
-  ⊢typeₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ : Type S₂} →
+  ⊢single-typeₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ : Type S₂} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     single-typeₛ σ τ ∶ Γ₁ ▶ ⋆ ⇒ₛ Γ₂ 
   -- ...
@@ -400,7 +400,7 @@ data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
 
 -- [latex] block(SubTypingSingle)
 
-⊢single-typeₛ : single-typeₛ idₛ τ ∶ (Γ ▶ ⋆)  ⇒ₛ Γ
-⊢single-typeₛ = ⊢typeₛ ⊢idₛ
+⊢[] : single-typeₛ idₛ τ ∶ (Γ ▶ ⋆)  ⇒ₛ Γ
+⊢[] = ⊢single-typeₛ ⊢idₛ
 
 -- [latex] end    

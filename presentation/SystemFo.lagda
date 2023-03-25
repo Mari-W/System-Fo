@@ -13,26 +13,26 @@ module SystemFo where
 
 -- Sorts --------------------------------------------------------------------------------
 data Bindable : Set where
-  ⊤ᴮ : Bindable
-  ⊥ᴮ : Bindable
+  B : Bindable
+  ¬B : Bindable
 
 variable
   r r' r'' r₁ r₂ : Bindable
 \end{code}
 \newcommand{\FoSort}[0]{\begin{code}
 data Sort : Bindable → Set where
-  oₛ  : Sort ⊤ᴮ
-  cₛ  : Sort ⊥ᴮ
+  oₛ  : Sort B
+  cₛ  : Sort ¬B
   -- ...
 \end{code}}
 \begin{code}[hide]
-  eₛ  : Sort ⊤ᴮ
-  τₛ  : Sort ⊤ᴮ
-  κₛ  : Sort ⊥ᴮ
+  eₛ  : Sort B
+  τₛ  : Sort B
+  κₛ  : Sort ¬B
 \end{code}
 \begin{code}[hide]
 Sorts : Set
-Sorts = List (Sort ⊤ᴮ)
+Sorts = List (Sort B)
 
 infix 25 _▷_ _▷▷_
 pattern _▷_ xs x = x ∷ xs
@@ -46,7 +46,7 @@ variable
   o o' o'' o₁ o₂ : oₛ ∈ S
   α α' α'' α₁ α₂ : τₛ ∈ S
 
-Var : Sorts → Sort ⊤ᴮ → Set
+Var : Sorts → Sort B → Set
 Var S s = s ∈ S  
 
 -- Syntax -------------------------------------------------------------------------------
@@ -183,12 +183,12 @@ variable
  
 -- Context ------------------------------------------------------------------------------
 
-item-Bindable : Sort ⊤ᴮ → Bindable
-item-Bindable eₛ = ⊤ᴮ
-item-Bindable τₛ = ⊥ᴮ
-item-Bindable oₛ = ⊥ᴮ
+item-Bindable : Sort B → Bindable
+item-Bindable eₛ = B
+item-Bindable τₛ = ¬B
+item-Bindable oₛ = ¬B
 
-item-of : (s : Sort ⊤ᴮ) → Sort (item-Bindable s)
+item-of : (s : Sort B) → Sort (item-Bindable s)
 \end{code}
 \newcommand{\Foitem}[0]{\begin{code}
 item-of eₛ = τₛ
@@ -225,12 +225,12 @@ data [_]∈_ : Cstr S → Ctx S → Set where
 \begin{code}[hide]
 -- Typing -------------------------------------------------------------------------------
 
-kind-Bindable : Sort ⊤ᴮ → Bindable
-kind-Bindable eₛ = ⊤ᴮ
-kind-Bindable τₛ = ⊥ᴮ
-kind-Bindable oₛ = ⊤ᴮ
+kind-Bindable : Sort B → Bindable
+kind-Bindable eₛ = B
+kind-Bindable τₛ = ¬B
+kind-Bindable oₛ = B
 
-type-of : (s : Sort ⊤ᴮ) → Sort (kind-Bindable s)
+type-of : (s : Sort B) → Sort (kind-Bindable s)
 \end{code}
 \newcommand{\Fokind}[0]{\begin{code}
 type-of eₛ = τₛ
@@ -379,7 +379,7 @@ data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     -------------------------
     dropₛ σ ∶ Γ₁ ⇒ₛ (Γ₂ ▶ I) 
-  ⊢typeₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ : Type S₂} →
+  ⊢single-typeₛ : ∀ {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {τ : Type S₂} →
     σ ∶ Γ₁ ⇒ₛ Γ₂ →
     --------------
     single-typeₛ σ τ ∶ Γ₁ ▶ ⋆ ⇒ₛ Γ₂ 
@@ -394,5 +394,5 @@ data _∶_⇒ₛ_ : Sub S₁ S₂ → Ctx S₁ → Ctx S₂ -> Set where
 \end{code}}
 \begin{code}[hide]
 ⊢single-typeₛ : single-typeₛ idₛ τ ∶ (Γ ▶ ⋆)  ⇒ₛ Γ
-⊢single-typeₛ = ⊢typeₛ ⊢idₛ
+⊢single-typeₛ = ⊢single-typeₛ ⊢idₛ
 \end{code}
