@@ -42,26 +42,27 @@ Both abstractions introduce an additional sort \Constr{eₛ}, or \Constr{τₛ} 
 \subsubsection{Renaming}\hfill\\\\
 Renamings \Sym{ρ} of type \Data{Ren} \Sym{S₁} \Sym{S₂} are defined as total functions that map variables \Data{Var} \Sym{S₁} \Sym{s} to variables \Data{Var} \Sym{S₂} \Sym{s}. 
 Renamings preserve the sort \Sym{s} of the variable.
-\FoRen
+\FRen
 Applying a renaming \Data{Ren} \Sym{S₁} \Sym{S₂} to a term \Data{Term} \Sym{S₁} \Sym{s} yields a new term \Data{Term} \Sym{S₂} \Sym{s}, where variables are represented as references to elements in \Sym{S₂} instead of \Sym{S₁}.
-\Foren
+\Fren
 The renaming is applied to all variables \Sym{x}.
 
 \noindent When we encounter a binder for a term of sort \Sym{s}, the renaming is extended, using function \Data{extᵣ}. 
-\Forenext
+\Frenext
 The extension of a renaming introduces an additional variable of sort \Sym{s}. Thus, if we encounter the new binding \Constr{here refl} in the extended renaming, then we return the variable for the new binding \Constr{here refl}. The variables \Sym{x} of the original renaming \Sym{ρ} are weakened by wrapping them in an additional \Constr{there} constructor.
 
-\noindent The weakening of a term can be defined as shifting all variables by one.
-\Fowk 
-Because variables are represented as membership proofs, shifting variables by one binder is accomplished by wrapping them in an additional \Constr{there} constructor.
+\noindent Similar to variables, terms can be weakened by shifting all variables present in the term by one using the \Data{ren} function. 
+\Fwk 
+The \Data{wkᵣ} function wraps all variables in the original renaming in an additional \Constr{there}.
+\Frenwk
 
 \subsubsection{Substitution}\hfill\\\\
 The definition of substitutions \Sym{σ} with type \Data{Sub} \Sym{S₁} \Sym{S₂} is similar to the definition of renamings. But rather than mapping variables to variables, substitutions map variables to terms.
-\FoSub
+\FSub
 Applying a substitution using the \Data{sub} function is analogous to applying a renaming using \Data{ren}. If we encounter a binder in \Data{sub}, the substitution must be extended using function \Data{extₛ}.
-\Foext
+\Fext
 For the newly introduced binder of variable \Constr{here refl}, we return the variable term \Constr{` here refl}.  
-Furthermore, all terms originally present in the substitution \Sym{σ} are weakened using the function \Data{wk} that itself uses renaming to shift all variables in the term by one recursively.
+Furthermore, all terms originally present in the substitution \Sym{σ} are weakened using the function \Data{wk}, that itself uses renaming to shift all variables in the term by one recursively.
 
 \noindent The substitution operator \Sym{t} \Data{[} \Sym{t'} \Data{]} substitutes the last bound variable in \Sym{t} with \Sym{t'}, given that the sort of the last binder corresponds to the sort of term \Sym{t'}.
 \Fsubs

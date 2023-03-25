@@ -1,7 +1,7 @@
 \subsection{Overloading in Programming Languages}
 Overloading function names is a practical technique to overcome verbosity in real world programming languages. 
 In every language there exist commonly used function names and operators that are defined for a variety of type combinations.
-Overloading the meaning of function names for different type combinations helps overcome this verbosity. Overloading is sometimes also referred to as ad-hoc polymorphism.
+Overloading the meaning of function names for different type combinations helps overcome this verbosity. Overloading is also referred to as ad-hoc polymorphism. An ad-hoc polymorphic function is allowed to have multiple type-specific meanings for all types that it is defined for. In contrast, a parametric polymorphic function only defines abstract behavior that works for all types.
 Python, for example, uses magic methods to overload commonly used operators on user defined classes and Java utilizes method overloading. Both Python and Java implement rather restricted forms of overloading. Haskell solves the overloading problem with a more general concept, called typeclasses.
 
 \subsection{Typeclasses in Haskell}
@@ -9,7 +9,7 @@ Essentially, typeclasses allow to declare function names with generic type signa
 We can give one of possibly many meanings to a typeclass by instantiating the typeclass for concrete types. 
 Instantiating a typeclass gives an actual implementation to all functions defined by the typeclass based on the concrete types that the typeclass is instantiated for.
 When we invoke an overloaded function name defined by a typeclass, we expect the compiler to determine the correct instance based on the types of the arguments that were applied to the overloaded function name. 
-Furthermore, Haskell allows to constrain a type variable \mono{α} via type constraints \inl{Tc α ⇒ τ'} to only be substituted by a concrete type \mono{τ} if there exists an instance \inl{Tc} \mono{τ}. Type constraints allow to abstract over all types that inherit a specific behavior that can differ for each types that implements the behavior. Thus type constraints are a powerful formalism in addition to normal parametric polymorphism.
+Furthermore, Haskell allows to constrain a type variable \mono{α} via type constraints \inl{Tc α ⇒ τ'} to only be substituted by a concrete type \mono{τ} if there exists an instance \inl{Tc} \mono{τ}. Type constraints allow to abstract over all types that inherit a shared behavior but the actual implementation of the behavior can differ per type. Type constraints are a powerful formalism in addition to parametric polymorphism.
 
 \subsubsection{Example: Overloading Equality in Haskell}\hfill\\\\
 In this example the function \inl{|\Blk eq| : α → α → Bool} is overloaded with different meanings for different substitutions $\{α \mapsto τ\}$. 

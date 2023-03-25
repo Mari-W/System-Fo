@@ -411,7 +411,7 @@ mutual
       ren (extᵣ ρ₂ _) (ren (extᵣ ρ₁ _) t)
     ≡⟨ ρt·ρ≡ρ·ρt t (extᵣ ρ₁ _) (extᵣ ρ₂ _) ⟩
       ren (extᵣ ρ₁ _ ρρ→ρ extᵣ ρ₂ _) t
-    ≡⟨ cong (λ x → {!  !}) (sym (ρ↑t·ρ≡ρ·ρ↑t t ρ₁ ρ₂)) ⟩
+    ≡⟨ cong (λ x → {!   !}) (sym (ρ↑t·ρ≡ρ·ρ↑t t ρ₁ ρ₂)) ⟩
       ren (extᵣ (ρ₁ ρρ→ρ ρ₂) _) t
     ∎
 
@@ -481,7 +481,7 @@ mutual
 
 ρτ[τ']≡ρτ[ρ↑τ'] : ∀ (ρ : Ren S₁ S₂) (τ : Type (S₁ ▷ τₛ)) (τ' : Type S₁) →
   ren ρ (τ [ τ' ]) ≡ ren (extᵣ ρ _) τ [ ren ρ τ' ]
-ρτ[τ']≡ρτ[ρ↑τ'] ρ τ τ' = {!   !}
+ρτ[τ']≡ρτ[ρ↑τ'] ρ τ τ' = {!    !}
 
 ⊢ρ-preserves : ∀ {ρ : Ren S₁ S₂} {Γ₁ : Ctx S₁} {Γ₂ : Ctx S₂} {t : Term S₁ s} {T : Term S₁ (type-of s)} →
   ρ ∶ Γ₁ ⇒ᵣ Γ₂ →
