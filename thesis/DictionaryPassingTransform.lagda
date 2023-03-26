@@ -285,6 +285,9 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⇝-pres-cstr-solve : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} → 
   (o∶τ∈Γ : [ ` Fᴼ.o ∶ Fᴼ.τ ]∈ Γ) → 
   F.lookup (Γ⇝Γ Γ) (o⇝x o∶τ∈Γ) ≡ (τ⇝τ Fᴼ.τ)
+-- ...
+\end{code}}
+\begin{code}[hide]
 ⇝-pres-cstr-solve {τ = τ} {Γ = Γ Fᴼ.▸ c@(` o ∶ τ)} (here {Γ = Γ}) = 
   begin  
     F.lookup (Γ⇝Γ Γ ▶ τ⇝τ τ) (here refl)
@@ -306,8 +309,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   ≡⟨ cong τ⇝τ (Fᴼ.idᵣτ≡τ τ) ⟩ 
     τ⇝τ τ
   ∎
-\end{code}}
-\begin{code}[hide]
+
 -- Terms
 \end{code}
 \newcommand{\DPTTermPres}[0]{\begin{code}

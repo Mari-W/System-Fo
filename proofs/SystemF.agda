@@ -1,6 +1,5 @@
 -- [latex] prefix(F)
 -- [latex] hide
-{-# OPTIONS --allow-unsolved-metas #-}
 open import Level using (Level; _⊔_) renaming (suc to lsuc; zero to lzero)
 open import Data.Unit using (⊤; tt)
 open import Data.Nat using (ℕ; zero; suc)
@@ -162,11 +161,10 @@ extₛ σ s _ (there x) = wk (σ _ x)
 dropₛ : Sub S₁ S₂ → Sub S₁ (S₂ ▷ s) 
 dropₛ σ _ x = wk (σ _ x)
 
--- [latex] inline(singlesub)
+-- [latex] block(singlesub)
 singleₛ : Sub S₁ S₂ → Term S₂ s → Sub (S₁ ▷ s) S₂
--- [latex] hide
-singleₛ σ t _ (here refl) = t
-singleₛ σ t _ (there x) = σ _ x
+singleₛ σ t' _ (here refl) = t'
+singleₛ σ t' _ (there x) = σ _ x
 
 -- [latex] inline(sub)
 sub : Sub S₁ S₂ → (Term S₁ s → Term S₂ s)

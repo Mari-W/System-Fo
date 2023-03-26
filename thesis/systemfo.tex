@@ -3,8 +3,9 @@
 \subsubsection{Sorts}\hfill\\\\
 In addition to the sorts of System F, System \Fo\ introduces two new sorts: \Constr{oₛ} for overloaded variables and \Constr{cₛ} for constraints.
 \FoSort
-Terms of sort \Constr{oₛ} can only be constructed using the variable constructor \Constr{`\_}. Thus, terms of sort \Constr{oₛ} are called overloaded variables and sort \Constr{oₛ} is indexed by \Constr{var}. We use the variable \Sym{o} for overloaded variables and variable \Sym{c} for constraints. 
+Terms of sort \Constr{oₛ} can only be constructed using the variable constructor \Constr{`\_}. Thus, terms of sort \Constr{oₛ} are called overloaded variables and sort \Constr{oₛ} is indexed by \Constr{var}.
 Variables for constraints do not exist in System \Fo\ and thus \Constr{cₛ} is indexed by \Constr{no-var}. 
+We use the variable symbol \Sym{o} for overloaded variables and the variable symbol \Sym{c} for constraints. 
 
 \subsubsection{Syntax}\hfill\\\\
 We only discuss additions to the syntax of System F.
@@ -26,7 +27,7 @@ Instance expressions do not introduce new bindings and thus, the index \Sym{S} i
 Renamings and substitutions in System \Fo\ are formalized identically to renamings and substitutions in System F. 
 The only difference is that we define the substitution operator only on types. 
 \Fosubs
-The \Data{single-typeₛ} function only introduces a new binding for types and not arbitrary terms.
+The \Data{single-typeₛ} function only introduces a new binding for types and not for arbitrary terms.
 Because we do not formalize direct semantics for System \Fo, only substitutions of types in types are necessary. Type in type substitution appears in the typing rule for type application.
 
 \subsubsection{Context}\hfill\\\\
@@ -38,7 +39,7 @@ Because overloaded variables themselves do not have a type, but rather multiple 
 We write \Sym{Γ} \Constr{▸} \Sym{c} to pick up a constraint \Sym{c}. 
 Because constraints give an additional meaning to an overloaded variable that is already bound, the index \Sym{S} is not modified. 
 
-\noindent The \Data{lookup} function in System \Fo\ is defined analogously to \Data{lookup} in System F and simply ignores constraints stored in the context.
+\noindent The \Data{lookup} function in System \Fo\ is defined analogously to the \Data{lookup} function in System F and simply ignores constraints stored in the context.
 
 \subsubsection{Constraint Solving}\hfill\\\\
 The search for constraints in a context is formalized analogously to membership proofs \Sym{s} \Constr{∈} \Sym{S}. The subtle difference is that we reference constraints in \Sym{Γ} and not in \Sym{S}. The constraint solving type does need to search in \Sym{Γ} because \Sym{S} does not know about the existence of constraints.
@@ -60,14 +61,14 @@ The rule for overloaded variables \Constr{⊢`o} says that if we can resolve the
 
 \noindent The rule \Constr{⊢decl} introduces a new overloaded variable \Sym{o} to \Sym{e}. 
 To introduce \Sym{o} in \Sym{Γ}, we only need to store the information that \Sym{o} exists as overloaded variable. The existence of \Sym{o} is denoted by extending \Sym{Γ} with kind \Constr{⋆}.
-Analogous to the type \Sym{τ'} inside the abstraction rule \Constr{⊢λ}, the resulting type \Sym{τ} is weakened to align in \Sym{S} with \Sym{Γ} not extended by \Constr{⋆}, such that it can act as the resulting type of the typing.
+Analogous to the type \Sym{τ'} inside the abstraction rule \Constr{⊢λ}, the resulting type \Sym{τ} cannot use the introduced overloaded variable and thus is weakened to align in \Sym{S} with \Sym{Γ} not extended by \Constr{⋆}. In consequence, \Sym{τ} can act as the resulting type of the typing.
 
 \noindent An instance for an overloaded variable \Sym{o} is typed using the rule \Constr{⊢inst}. We extend \Sym{Γ} with constraint \Sym{o} \Constr{:} \Sym{τ} inside \Sym{e₁}, where \Sym{τ} is the type of \Sym{e₂}. 
 
 \subsubsection{Typing Renaming \& Substitution}\hfill\\\\
 Typed renamings are identical to typed renamings in System F, except there is an additional case for the weakening by a constraint. 
 \FoRenTyping
-Constraint \Sym{o} \Constr{:} \Sym{τ} can be introduced only to \Sym{Γ₂} using the \Constr{⊢drop-cstrᵣ} constructor. 
+A constraint \Sym{o} \Constr{:} \Sym{τ} can be introduced only to \Sym{Γ₂} using the \Constr{⊢drop-cstrᵣ} constructor. 
 Dropping a constraint corresponds to a typed weakening, similar to constructor \Constr{⊢dropᵣ}, but instead of introducing an unused variable we introduce an unused constraint.
 
 \noindent Other than in System F, arbitrary substitutions will not be allowed in System \Fo. 
@@ -76,5 +77,7 @@ Similar to the substitution operator we restrict typed substitutions in System \
 \noindent The constructor \Constr{⊢single-typeₛ} allows to introduce an additional new type variable binder that is substituted with type \Sym{τ}.
 Thus, the constructor \Constr{⊢single-typeₛ} complements the \Data{single-typeₛ} function. 
 The intuition here is that if we would allow all terms to be introduced using a \Constr{⊢termₛ} constructor, then typed substitutions in System \Fo\ would be arbitrary again. 
-The restriction to type in type substitutions simplifies the type preservation proof for the Dictionary Passing Transform by eliminating cases for non-type terms that would otherwise needed to be proven.
-Constructors  \Constr{⊢idₛ}, \Constr{⊢extₛ}, \Constr{⊢dropₛ} and \Constr{⊢drop-cstrₛ} are not shown. All of them function the same way as their counterparts in typed renamings.
+
+\noindent Constructors  \Constr{⊢idₛ}, \Constr{⊢extₛ}, \Constr{⊢dropₛ} and \Constr{⊢drop-cstrₛ} are not shown. All of them function the same way as their counterparts in typed renamings.
+
+\noindent The restriction to type in type substitutions simplifies the type preservation proof for the Dictionary Passing Transform by eliminating cases for non-type terms that would otherwise needed to be proven. In hindsight arbitrary substitutions would not have produced a unreasonable amount of additional proofs, but the restriction does not effect the outcome of the proof, so it remained as is.  
