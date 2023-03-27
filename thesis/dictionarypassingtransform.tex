@@ -147,7 +147,7 @@ The case \Constr{⊢extₛ} is proven via induction over variable \Sym{x}, simil
 The base case holds by definition. 
 In the induction case we weaken both sides of the equality that results from the outer induction hypothesis. 
 We then combine the weakened induction hypothesis with proof that weakenings preserve the translation using transitivity. 
-The intuition here is that we need the renaming lemma \Data{⇝-dist-ren-type} because \Data{extₛ} is defined by weakening the term that result of the substitution \Sym{σ} being applied to the variable \Sym{x}.
+The intuition here is that we need the renaming lemma \Data{⇝-dist-ren-type} applied to the typed weakening \Data{⊢wkᵣ} because \Data{extₛ} is defined by weakening the term that result of the substitution \Sym{σ} being applied to the variable \Sym{x}.
 
 \noindent Both \Constr{⊢idₛ} and \Constr{⊢single-typeₛ} follow directly from the induction hypothesis. 
 The cases for \Constr{⊢dropₛ} and \Constr{⊢drop-cstrₛ} are similar to the case \Constr{⊢extₛ} and also align with their corresponding definition.
@@ -158,10 +158,13 @@ The lemma is proven via induction over the System \Fo\ context \Sym{Γ}.
 \DPTVarPresLookup
 As an example we will look at the case \Sym{Γ} \Constr{▶} \Sym{τ}. The case is proven via induction over variables \Sym{x}. 
 The prove follows the same reasoning as the \Constr{⊢extₛ} case for substitutions above. 
-Because the function \Data{lookup} weakens the type \Sym{τ} that is looked up in \Sym{Γ} in both cases \Constr{here} and \Constr{there}, both use lemma \Data{⇝-dist-ren-type} to account for the weakening. 
+Because the function \Data{lookup} weakens the type \Sym{τ} that is looked up in \Sym{Γ} in both cases \Constr{here} and \Constr{there}, both use lemma \Data{⇝-dist-ren-type} applied to the typed weakening \Constr{⊢wkᵣ} to account for the weakening. 
 
-\noindent The case \Sym{Γ} \Constr{▸} \Sym{c} follows analogously and the case \Constr{∅} is impossible because by definition, there must exist a context item if there exists a variable.
+\noindent The case \Sym{Γ} \Constr{▸} \Sym{c} follows analogously, but uses \Data{⊢wk-instᵣ} applied to the induction hypothesis instead of \Data{⊢wkᵣ} and does not need an inner case split. Furthermore, the case \Constr{∅} is impossible because by definition, there must exist a context item if there exists a variable.
 
-\noindent Lemma \Data{⇝-pres-cstr-solve} can be proven via induction over the type for resolved constraints \Data{[} \Sym{c} \Data{]∈} \Sym{Γ}. 
+\noindent The lemma \Data{⇝-pres-cstr-solve} can be proven via induction over the type for resolved constraints \Data{[} \Sym{c} \Data{]∈} \Sym{Γ}. The lemma follows symmetrically to the lemma \Data{⇝-pres-lookup} because the type for resolved constraints preserves the structure of \Sym{Γ} perfectly.
+\newpage
 \DPTOVarPresLookup
-The proof is analogous to the proof shown for \Data{⇝-pres-lookup} because the type for resolved constraints preserves the structure of the context \Sym{Γ} perfectly. 
+Similar to the case split on variables with constructors \Constr{here} and \Constr{there} in case \Sym{Γ} \Constr{▶} \Sym{τ} of lemma \Data{⇝-pres-lookup}, we have the two cases \Constr{here} and \Constr{under-inst} in lemma \Data{⇝-pres-cstr-solve}. Both cases work similarly to cases in lemma \Data{⇝-pres-lookup}, except that they use \Data{⊢wk-instᵣ} instead of \Data{⊢wkᵣ}.
+
+\noindent Furthermore, we have the case \Constr{under-bind} that works similar to the case \Sym{Γ} \Constr{▸} \Sym{c} and always uses the induction hypothesis applied to \Data{⊢wkᵣ} because we search for a constraint and not a variable.

@@ -8,11 +8,10 @@
 
 ### Abstract
 
-Most popular strongly typed programming languages support function overloading. In combination with polymorphism this leads to essential language constructs, for example type classes in Haskell or traits in Rust. We introduce System Fo, a minimal language extension to System F, with support for overloading. We show that the Dictionary Passing Transform from System Fo to System F is type preserving.
-
-### Examples
-
-tbd.
+Most popular strongly typed programming languages support function overloading. 
+In combination with polymorphism this leads to essential language constructs, for example typeclasses in Haskell or traits in Rust.  
+We introduce System Fo, a minimal language extension to System F, with support for overloading and polymorphism.
+Furthermore, we prove the Dictionary Passing Transform from System Fo to System F to be type preserving using Agda.
 
 ## Structure
 

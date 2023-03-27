@@ -13,9 +13,9 @@ Haskell solves the overloading problem with a more general concept, called typec
 \subsection{Typeclasses in Haskell}
 Essentially, typeclasses allow to declare function names with generic type signatures.
 We can give one of possibly many meanings to a typeclass by instantiating the typeclass for concrete types. 
-When we instantiate a typeclass, we must provide an actual implementation to all functions defined by the typeclass based on the concrete types that the typeclass is instantiated for.
+When we instantiate a typeclass, we must provide an actual implementation for all functions defined by the typeclass based on the concrete types that the typeclass is instantiated for.
 When we invoke an overloaded function name defined by a typeclass, we expect the compiler to determine the correct instance based on the types of the arguments that were applied to the overloaded function name. 
-Furthermore, Haskell allows to constrain a type variable \mono{α} via type constraints \inl{Tc α ⇒ τ'} to only be substituted by a concrete type \mono{τ} if there exists an instance \inl{Tc} \mono{τ}. 
+Furthermore, Haskell allows to constrain type variables via type constraints to only be substituted by a concrete type if there exists an instance for the concrete type. 
 Type constraints allow to abstract over all types that inherit a shared behavior, but the actual implementation of the behavior can differ per type. Type constraints are a powerful formalism in addition to parametric polymorphism.
 
 \subsubsection{Example: Overloading Equality in Haskell}\hfill\\\\
@@ -36,7 +36,7 @@ We want to be able to call \mono{eq} on both $\{$\mono{α} $\mapsto$ \inl{Nat}$\
 \end{minted}
 First, typeclass \inl{Eq} is declared with a single generic function signature \inl{|\Blk{eq}| :: α → α → Bool}. 
 We then instantiate \inl{Eq} for $\{$\mono{α} $\mapsto$ \inl{Nat}$\}$. 
-After that,  \inl{Eq} is instantiated for $\{$\mono{α} $\mapsto$ \inl{[β]}$\}$, given that an instance \inl{Eq β} can be resolved.
+After that,  \inl{Eq} is instantiated for $\{$\mono{α} $\mapsto$ \inl{[β]}$\}$, given that an instance \inl{Eq β} can be resolved for some concrete type \mono{β}.
 As a result, we can call \mono{eq} on expressions with type \inl{Nat} and \inl{[Nat]}. 
 In the latter case, the type constraint \inl{Eq β ⇒ ..} in the instance for lists resolves to the instance for natural numbers.
 
