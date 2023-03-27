@@ -13,8 +13,8 @@ Haskell solves the overloading problem with a more general concept, called typec
 \subsection{Typeclasses in Haskell}
 Essentially, typeclasses allow to declare function names with generic type signatures.
 We can give one of possibly many meanings to a typeclass by instantiating the typeclass for concrete types. 
-When we instantiate a typeclass, we must provide an actual implementation for all functions defined by the typeclass based on the concrete types that the typeclass is instantiated for.
-When we invoke an overloaded function name defined by a typeclass, we expect the compiler to determine the correct instance based on the types of the arguments that were applied to the overloaded function name. 
+When we instantiate a typeclass, we must provide an actual implementation for all functions defined by the typeclass, based on the concrete types that the typeclass is instantiated for.
+When we invoke an overloaded function name defined by a typeclass, we expect the compiler to determine the correct instance, based on the types of the arguments that were applied to the overloaded function name. 
 Furthermore, Haskell allows to constrain type variables via type constraints to only be substituted by a concrete type if there exists an instance for the concrete type. 
 Type constraints allow to abstract over all types that inherit a shared behavior, but the actual implementation of the behavior can differ per type. Type constraints are a powerful formalism in addition to parametric polymorphism.
 
