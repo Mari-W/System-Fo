@@ -44,7 +44,7 @@ The part about the inference algorithm that remained unclear in section~\ref{sec
 In \HMo\ such a connection would not exist.
 
 \noindent Originally the plan was to formalize System O in Agda, but multiple issues arose in the type preservation proof. 
-First, because we have a list of \Sym{n} constraints for each forall type, translating them results in \Sym{n} new lambda bindings (and \Sym{n} applications when constraints are explicitly passed) in one induction step. 
+First, because we have a list of \Sym{n} constraints in each forall type, translating them results in \Sym{n} new lambda bindings in one induction step. 
 While the problem above can be handled, another problem complicated the proof of type preservation via induction immensely. The translation of System O types must pull out forall quantifiers, because translating constraints directly to higher-order functions would break the rule that function types are only allowed to be built from mono types. 
 For instance, the translated System O type from above should not be \inl{∀α. (α → α → α) → ∀β. (β → β → β) → ..}, but rather \inl{∀α. ∀β. (α → α → α) → (β → β → β) → ..} to be a valid Hindley-Milner type. 
 Including the additional transform on types complicates the type preservation proof immensely, because the transform affects the type of the next \Sym{n} expressions and thus straight forward induction did not work out.
