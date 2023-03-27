@@ -12,7 +12,7 @@ Going forward, we will use the variable \Sym{r} for elements of type \Data{Binda
 The syntax of System F is represented in a single data type \Data{Term} that is indexed by sorts \Sym{S} and sort \Sym{s}. 
 The index \Sym{S} is inspired by Debruijn indices. 
 Debruijn indices reference variables using a number that counts the amount of binders that are in scope between the binding of the variable and the position it is used at. 
-In Agda, terms are often indexed by the amount of bound variables. 
+In Agda terms are often indexed by the amount of bound variables. 
 The variable constructor then only accepts Debruijn indices, instead of variable names, that are smaller than the current amount of bound variables.
 As a result, unbound variables cannot be referenced by definition. 
 This technique is also referred to as intrinsically scoped.
