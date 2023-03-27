@@ -9,7 +9,7 @@ Sorts \Constr{eₛ} and \Constr{τₛ} translate to their corresponding counterp
 \noindent The sort \Constr{oₛ} translates to \Constr{eₛ}.
 This is because, instead of removing \Constr{decl} expressions as seen in the example at the beginning, we keep them as redundant \Constr{let} expressions that bind a unit value \Constr{tt}. 
 Because \Constr{decl} expressions bind a new overloaded variable in System \Fo, removing them would result in a variable binding less in System F. To prevent more complex proofs involving the index \Sym{S} of terms, we keep all \Constr{decl} expressions as redundant \Constr{let} bindings.
-In consequence, all bindings for overloaded variables translate to normal expression bindings in System F and the sort \Constr{oₛ} needs to translate to \Constr{eₛ}.
+In consequence, all bindings for overloaded variables translate to normal expression bindings in System F and thus, the sort \Constr{oₛ} needs to translate to \Constr{eₛ}.
 
 \noindent Translating the index \Sym{S} directly is not possible because there might appear additional sorts inside the list after the translation. 
 New sorts must be added for variable bindings introduced by the translation. 
