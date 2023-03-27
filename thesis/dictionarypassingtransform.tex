@@ -161,7 +161,7 @@ As an example we will look at the case \Sym{Γ} \Constr{▶} \Sym{τ}. The case 
 The prove follows the same reasoning as the \Constr{⊢extₛ} case for substitutions above. 
 Because the function \Data{lookup} weakens the type \Sym{τ} that is looked up in \Sym{Γ} in both cases \Constr{here} and \Constr{there}, both use lemma \Data{⇝-dist-ren-type} applied to the typed weakening \Data{⊢wkᵣ} to account for the weakening. 
 
-\noindent The case \Sym{Γ} \Constr{▸} \Sym{c} follows analogously, but uses \Data{⊢wk-cstrᵣ} applied to the induction hypothesis instead of \Data{⊢wkᵣ}. Furthermore, the case \Constr{∅} is impossible because there must exist a context item if there exists a variable.
+\noindent The case \Sym{Γ} \Constr{▸} \Sym{c} follows analogously, but uses \Data{⊢wk-cstrᵣ} applied to the induction hypothesis instead of \Data{⊢wkᵣ}. Furthermore, the case \Constr{∅} is impossible because there must be a context item if a variable exists.
 
 \noindent The lemma \Data{⇝-pres-cstr-solve} can be proven via induction over the type for resolved constraints \Data{[} \Sym{c} \Data{]∈} \Sym{Γ}. The lemma follows symmetrically to the lemma \Data{⇝-pres-lookup} because the type for resolved constraints preserves the structure of \Sym{Γ} perfectly.
 
