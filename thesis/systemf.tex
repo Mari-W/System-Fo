@@ -16,7 +16,7 @@ In Agda terms are often indexed by the amount of bound variables.
 The variable constructor then only accepts Debruijn indices, instead of variable names, that are smaller than the current amount of bound variables.
 As a result, unbound variables cannot be referenced by definition. 
 This technique is also referred to as intrinsically scoped.
-But indexing \Data{Term} with a number is not sufficient because System F has both expression variables and type variables that need to be distinguished. 
+But indexing \Data{Term} with a number is not sufficient because System F has both expression variables and type variables, that need to be distinguished. 
 To solve this problem, we need to extend the idea of Debruijn indices and store the corresponding sort for each variable. Thus, we let \Sym{S} be a list of bindable sorts, instead of a number.
 The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list represent the sort of the variable bound at Debruijn index \Sym{i}. 
 
