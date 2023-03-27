@@ -48,7 +48,7 @@ In System \Fo\ we give up high level language constructs and instead work with s
 If declared as overloaded, \mono{o} can be instantiated for the type \mono{τ} of the expression \mono{e} using the \inl{|\Inst o| = e in e'} expression.
 In Haskell instances must comply with the generic type signatures defined by the typeclass. Such signatures are not present in System \Fo\ and overloaded variables can be instantiated for arbitrary types. 
 Locally shadowing other instances of the same type is allowed. 
-Constraints can be introduced on the expression level using constraint abstractions \inl{|\lambdabar| (o : τ). e'}. A constraint \inl{|\Blk{o}| : τ} requires the type checker to search for an instance for the overloaded variable \mono{o} that has type \mono{τ}. If the constraint cannot be resolved, then the program is invalid.
+Constraints can be introduced on the expression level using constraint abstractions \inl{|\lambdabar| (o : τ). e'}. A constraint \inl{|\Blk{o}| : τ} requires the type system to search for an instance for the overloaded variable \mono{o} that has type \mono{τ}. If the constraint cannot be resolved, then the program is invalid.
 Constraint abstractions result in constraint types \inl{[o : τ] ⇒ τ'} that lift constraints onto the type level. 
 We introduce constraints on the expression level because instance expressions do not have an explicit type annotation in System \Fo.
 All expressions with constraint types \inl{[o : τ] ⇒ τ'} are implicitly treated as expressions of type \Sym{τ'} by the type system, given that the constraint \inl{|\Blk{o}| : τ} can be resolved.
