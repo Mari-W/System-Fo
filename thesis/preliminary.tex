@@ -7,23 +7,23 @@ Thus, type checked Agda programs imply the correctness of the corresponding proo
 We will use Agda to formalize the type preservation proof for the Dictionary Passing Transform from System \Fo\ to System F.
 
 \subsection{Design Decisions for the Agda Formalization}
-To formalize syntaxes in Agda we use a single data type \Data{Term} indexed by sorts \Sym{s}. 
+To formalize the syntaxes of System F and System \Fo\ in Agda we use a single data type \Data{Term} indexed by sorts \Sym{s}. 
 Sorts distinguish between different categories of terms.
 For example, the sort \Constr{eₛ} represents expressions \Sym{e}, \Constr{τₛ} represents types \Sym{τ} and \Constr{κₛ} represents kinds. In System F and System \Fo\ there only exists a single kind \Constr{⋆}. 
-The idea of sorts originates from the theory of pure type systems~\cite{pts}, but neither System F nor System \Fo\ allow any interesting dependencies between terms of the sort \Constr{eₛ}, \Constr{τₛ}, and \Constr{κₛ}.
-Using a single data type to formalize the syntaxes yields more elegant proofs involving contexts, renamings and substitutions. 
-In consequence of using a single data type, we must use extrinsic typing because intrinsically typed terms, for example \Data{Term} \Constr{eₛ} \Constr{⊢} \Data{Term} \Constr{τₛ}, would need to be indexed by themselves and Agda does not support self-indexed data types. 
+The name 'sort' originates from the theory of pure type systems~\cite{pts}, but neither System F nor System \Fo\ allow any interesting dependencies between terms of sort \Constr{eₛ}, \Constr{τₛ}, and \Constr{κₛ}.
+Using a single data type to formalize syntaxes yields more elegant proofs involving contexts, renamings and substitutions. 
+In consequence of using a single data type, we must use extrinsic typing because intrinsically typed terms would need to be indexed by themselves and Agda does not support self-indexed data types. 
 In the actual implementation, the data type \Data{Term} has another index \Sym{S} that we will ignore for now.
 
 \subsection{Overview of the Type Preservation Proof}\label{sec:ov}
 The overall goal will be to prove that the Dictionary Passing Transform is type preserving. 
-Let \Sym{⊢t} be any well formed System \Fo\ term \Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}, where \Sym{Γ} is a typing environment of type \Data{Ctx$_{F_O}$}, \Sym{t} is a \Data{Term$_{F_O}$} \Sym{s}, \Sym{T} is a \Data{Term$_{F_O}$} \Sym{s'} and s' is the sort of the typing result for terms of the sort \Sym{s}. 
+Let \Sym{⊢t} be any well formed System \Fo\ term \Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}, where \Sym{Γ} is a typing context of type \Data{Ctx$_{F_O}$}, \Sym{t} is a \Data{Term$_{F_O}$} \Sym{s}, \Sym{T} is a \Data{Term$_{F_O}$} \Sym{s'} and s' is the sort of the typing result for terms of the sort \Sym{s}. 
 There are two cases for typings: \Sym{Γ} \Constr{⊢} \Sym{e} \Constr{:} \Sym{τ} and \Sym{Γ} \Constr{⊢} \Sym{τ} \Constr{:} \Constr{⋆}.
 Let \Data{⇝} : $($\Sym{Γ} \Constr{⊢$_{F_O}$} \Sym{t} \Constr{:} \Sym{T}$)$ \Sym{→} \Data{Term$_F$} \Sym{s} be the Dictionary Passing Transform that translates well typed System \Fo\ terms to untyped System F terms. 
 Further, let \Data{⇝$_\Gamma$} : \Data{Ctx$_{F_O}$} \Sym{→} \Data{Ctx$_F$} be the transform of contexts and \Data{⇝$_T$} : \Data{Term$_{F_O}$} \Sym{s'} \Sym{→} \Data{Term$_F$} \Sym{s'} be the transform of untyped types and kinds. 
 We show that for all well typed System \Fo\  terms \Sym{⊢t} the Dictionary Passing Transform results in a well typed System F term (\Data{⇝$_\Gamma$} \Sym{Γ)} \Constr{⊢$_{F}$} (\Data{⇝} \Sym{⊢t}) \Constr{:} (\Data{⇝$_T$} \Sym{T}). 
 
-\noindent We begin by formalizing the syntax, typing and semantic of System F in Agda and prove its soundness in section \ref{sec:sysf}. 
+\noindent We begin by formalizing the syntax, typing and semantic of System F and prove its soundness in section \ref{sec:sysf}. 
 In section \ref{sec:sysfo}, we formalize System \Fo's syntax and typing. 
 In the end, we formalize the translation of the Dictionary Passing Transform and prove it to be type preserving in section \ref{sec:dpt}. 
 We do not formalize semantics and soundness for System \Fo. 

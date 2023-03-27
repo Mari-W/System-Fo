@@ -1,13 +1,13 @@
 \subsection{Hindley Milner with Overloading}\label{sec:hm}
 In this scenario the source language for the Dictionary Passing Transform would be an extended Hindley-Milner~\cite{hm} based system \HMo\ and the target language would be Hindley-Milner. 
-The Hindley-Milner system is a restricted form of System F and \HMo\ would be a restricted form of System \Fo. 
+The Hindley-Milner system is a restricted form of System F that allows for full type inference. Similarly, \HMo\ would be a restricted form of System \Fo with support for full type inference. 
 
 \noindent Formalizing Hindley-Milner would require two new sorts, \Constr{mₛ} and \Constr{pₛ} for mono and poly types, in favour of the sort for arbitrary types \Constr{τₛ}. 
 Poly types can include quantification over type variables while mono types consist only of primitive types and type variables. 
 Usually all language constructs are restricted to mono types, except let bound variables. 
-Hence polymorphism in Hindley-Milner is also called let polymorphism.  
+Hence, polymorphism in Hindley-Milner is also called let polymorphism.  
 As a result, constraints must have the form \Sym{o} \Constr{:} \Sym{m}, where \Sym{m} is a mono type. 
-Because there are no expression level constructs to introduce type variables in Hindley-Milner, we would need to embed constraints into explicit type annotation of instances instead of introducing them on the expression level. 
+To separate the type logic from the expression logic in Hindley-Milner fashion, we would need to embed constraints into explicit type annotations of instances, instead of introducing them on the expression level. 
 The explicit type annotation for instances would allow poly types because instance expressions translate to let bindings after all.
 But instances would need to be restricted as well. 
 For each overloaded variable \Sym{o}, all instances would need to differ in the type of their first argument.
@@ -17,15 +17,15 @@ The inference algorithm would treat instance expressions similar to let bindings
 For now it remains unclear, if the inference algorithm can be extended to work for arbitrary mono type constraints and how constraints should be handled by the inference algorithm in general.
 
 \subsection{Proving Semantic Preservation}
-For now System \Fo\ does not have direct semantics formalized. In section \ref{sec:ov} we already discussed that correct semantics are already implicitly given by the translation, but it could also be interesting to investigate direct semantics on the System \Fo\ syntaxes.
+For now System \Fo\ does not have direct semantics formalized. In section \ref{sec:ov} we already discussed that correct semantics are already implicitly given by the translation, but it could also be interesting to investigate direct semantics on the System \Fo\ syntax.
 
 \noindent Semantics for System \Fo\ would need to be typed semantics because applications \Constr{`} \Sym{o} \Constr{·} \Sym{e₁} \Constr{·} $..$ \Constr{·} \Sym{e$_n$} need type information to reduce properly.
-The correct instance for \Sym{o} needs to be resolved based on the types of arguments \Sym{e₁} $..$ \Sym{e$_n$}. 
+The correct instance for \Sym{o} needs to be substituted based on the types of the arguments \Sym{e₁} $..$ \Sym{e$_n$}. 
 More specifically, we could introduce a reduction rule \Constr{β-o-*} that reduces \Constr{`} \Sym{o} \Constr{·} \Sym{e₁} \Constr{·} $..$ \Constr{·} \Sym{e$_n$} to \Sym{e} \Constr{·} \Sym{e₁} \Constr{·} $..$ \Constr{·} \Sym{e$_n$}, where \Sym{e} is the resolved instance based on the types of \Sym{e₁} $..$ \Sym{e$_n$}. The drawback would be that partial application to overloaded variables would not be possible.
 Alternately, we could apply the restriction mentioned above that restricts all instances for an overloaded variable \Sym{o} to differ in the type of their first argument.
 In consequence, the resolved instance for \Sym{o} in a single application step \Constr{`} \Sym{o} \Constr{·} \Sym{e} would be decidable.
 
-\noindent Let \Sym{⊢e} \Data{↪} \Sym{⊢e'} be a typed small step semantic. 
+\noindent Let \Sym{⊢e} \Data{↪} \Sym{⊢e'} be a typed small step semantic for System \Fo. 
 We would need to prove something similar to: If \Sym{⊢e} \Data{↪} \Sym{⊢e'} then \Constr{∃} \Constr{[} \Sym{e''} \Constr{]} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e} \Data{↪*} \Sym{e''}) \Constr{×} (\Data{⊢e↪e'⇝e↪e'} \Sym{⊢e'} \Data{↪*} \Sym{e''}), where \Data{⊢e↪e'⇝e↪e'} translates typed System \Fo\ reductions to a untyped System F reductions.
 Instead of translating reduction steps directly, we prove that both translated \Sym{⊢e} and translated \Sym{⊢e'} reduce to a System F expression \Sym{e''} using finite many reduction steps.
 This more general formulation is needed because there might be more reduction steps in the translated System F expression than in the System \Fo\ expression. 
@@ -39,12 +39,12 @@ In contrast to System \Fo\ and similar to \HMo, constraints are not introduced o
 
 \noindent For instance, the valid System \Fo\ and \HMo\ type \inl{∀α. ∀β. [a : α → α → α] => [b : β → β → β] => ..} would be expressed as \inl{∀α. (a : α → α → α) => ∀β. (b : β → β → β) => ..} in System O. 
 Inside the System O type, we only introduce one constraint per type variable, but a list of constraints would be allowed. 
-The part about the inference algorithm that remained unclear in section~\ref{sec:hm} is solved in System O by restricting constraints to begin their type with the type variable bound by the quantifier that they are introduced in. 
+The part about the inference algorithm that remained unclear in section~\ref{sec:hm} is solved in System O by restricting constraints to begin their type with the type variable that is bound by the quantifier that they are part of. 
 In \HMo\ such a connection would not exist.
 
 \noindent Originally the plan was to formalize System O in Agda, but multiple issues arose in the type preservation proof. 
 First, because we have a list of \Sym{n} constraints for each forall type, translating them results in \Sym{n} new lambda bindings (and \Sym{n} applications when constraints are explicitly passed) in one induction step. 
-But most problems arose, because the translation of System O types above must pull out forall quantifiers, because translating constraints directly to higher-order functions would break the rule that function types are only allowed to be built from mono types. 
+While the problem above can be handled, another problem complicated the proof of type preservation via induction immensely. The translation of System O types must pull out forall quantifiers, because translating constraints directly to higher-order functions would break the rule that function types are only allowed to be built from mono types. 
 For instance, the translated System O type from above should not be \inl{∀α. (α → α → α) → ∀β. (β → β → β) → ..}, but rather \inl{∀α. ∀β. (α → α → α) → (β → β → β) → ..} to be a valid Hindley-Milner type. 
 Including the additional transform on types complicates the type preservation proof immensely, because the transform affects the type of the next \Sym{n} expressions and thus straight forward induction did not work out.
 
@@ -53,11 +53,11 @@ Including the additional transform on types complicates the type preservation pr
 \subsection{Conclusion}
 We have formalized both System F and System \Fo\ in Agda.
 In the process, we explored the technique of using an intrinsically scoped and sorted data type to represent syntaxes.
-The essence of System \Fo\ was to act as a core calculus that captures the idea of ad-hoc polymorphism.
+The essence of System \Fo\ was to act as a core calculus that captures the idea of overloading and type constraints.
 Furthermore, we formalized the Dictionary Passing Transform between System F and System \Fo. 
 We proved the System F formalization to be sound and the Dictionary Passing Transform from System \Fo\ to System F to be type preserving. 
 The full formalization of the Dictionary Passing Transform, System \Fo\ and  System F can be found as Agda code files~\footnote{Formalizations and proofs as Agda code files: \url{https://github.com/Mari-W/System-Fo/tree/main/proofs}}. 
 
-\noindent One trick used in the formalization was to introduce constraints individually using constraint abstractions. As a result, we were able to translate constraint abstractions directly to lambda abstractions in System F. Another trick that we used was to preserve the structure of the context in the type for resolved constraints. In consequence, the translation of resolved constraints to unique variables was straight forward because the position of new bindings introduced by the translation was perfectly known.   
+\noindent One trick used in the formalization was to introduce constraints individually using constraint abstractions. As a result, we were able to translate constraint abstractions directly to lambda abstractions in System F. Another trick that we used was to preserve the structure of the context inside the type for resolved constraints. In consequence, the translation of resolved constraints to unique variables was straight forward because the position of new bindings introduced by the translation was perfectly known.   
 
 \noindent A reasonable next step would be to define direct semantics for System \Fo\ and prove semantic preservation for the Dictionary Passing Transform. 

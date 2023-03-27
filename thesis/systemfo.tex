@@ -19,7 +19,7 @@ Instance expressions do not introduce new bindings and thus, the index \Sym{S} i
 
 \noindent Constraints \Sym{c} can be constructed using constructor \Sym{o} \Constr{:} \Sym{τ}. 
 
-\noindent A constraint \Sym{c} can be part of a constraint abstraction \Constr{\lambdabar} \Sym{c} \Constr{⇒} \Sym{e}. Constraint abstractions assume the constraint \Sym{c} to be valid inside the body \Sym{e} and result in constraint types \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ}. The constraint type lifts the constraint from the expression level to the type level, where it will be implicitly eliminated by the typing rules.
+\noindent A constraint \Sym{c} can be part of a constraint abstraction \Constr{\lambdabar} \Sym{c} \Constr{⇒} \Sym{e}. Constraint abstractions assume the constraint \Sym{c} to be valid inside the body \Sym{e} and result in constraint types \\ \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ}. The constraint type lifts the constraint from the expression level to the type level, where it will be implicitly eliminated by the typing rules.
 
 \noindent Going forward, we will use the abbreviation \FoCstr.
 
@@ -46,18 +46,18 @@ The search for constraints in a context is formalized analogously to membership 
 \FoCstrSolve
 The \Constr{here} constructor is analogous to the \Constr{here} constructor of memberships and can be used when the last item in \Sym{Γ} is the desired constraint \Sym{c}.
 
-\noindent If the last item in the context is not the desired constraint \Sym{c}, then \Sym{c} must be further inside the context. The constraint can either behind an item stored in \Sym{Γ} (\Constr{under-bind}) or a constraint (\Constr{under-cstr}). In the case that \Sym{c} is under a binder, the constraint needs to be weakened, to align in \Sym{S} with the position it is resolved for.
+\noindent If the last item in the context is not the desired constraint \Sym{c}, then \Sym{c} must be further inside the context. The constraint can either behind an item stored in \Sym{Γ} (\Constr{under-bind}) or a constraint (\Constr{under-cstr}). In the case that \Sym{c} is under a binder, the constraint needs to be weakened to align in \Sym{S} with the position that it is resolved for.
 
 \noindent We use the constraint solving type inside the type system to resolve the instance for usages of overloaded variables and to implicitly eliminate constraints.
 
 \subsubsection{Typing}\hfill\\\\
-We only discuss typing rules not already discussed in the System F specification. 
+We only discuss typing rules not already discussed in the System F specification. The typing for overloaded variables results in a type. As a result, the \Data{type-of} function returns the sort \Constr{τₛ} for the sort \Constr{oₛ} in the case of typings.
 \FoTyping
 The rule for overloaded variables \Constr{⊢`o} says that if we can resolve the constraint \Sym{o} \Constr{:} \Sym{τ} in \Sym{Γ}, then \Sym{o} can take on type \Sym{τ}. 
 
-\noindent The rule for constraint abstraction \Constr{⊢ƛ} appends the constraint \Sym{c} to \Sym{Γ} and thus assumes \Sym{c} to be valid inside the body \Sym{e}. Constraint abstractions result in the corresponding constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ} that lifts the constraint onto the type level.
+\noindent The rule for constraint abstraction \Constr{⊢ƛ} appends the constraint \Sym{c} to \Sym{Γ} and thus assumes \Sym{c} to be valid inside the body \Sym{e}. Constraint abstractions result in expressions of the corresponding constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ} that lifts the constraint onto the type level.
 
-\noindent Expressions \Sym{e} with constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ'} have the constraint implicitly eliminated using the rule \Constr{⊢⊘}, given \Sym{c} can be resolved in \Sym{Γ}. Because the rule can be applied to arbitrary \Sym{e}, it is not syntax directed.
+\noindent Expressions \Sym{e} with constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ'} have the constraint implicitly eliminated using the rule \Constr{⊢⊘}, given \Sym{c} can be resolved in \Sym{Γ}.
 
 \noindent The rule \Constr{⊢decl} introduces a new overloaded variable \Sym{o} to \Sym{e}. 
 To introduce \Sym{o} in \Sym{Γ}, we only need to store the information that \Sym{o} exists as overloaded variable. The existence of \Sym{o} is denoted by extending \Sym{Γ} with kind \Constr{⋆}.
@@ -80,4 +80,4 @@ The intuition here is that if we would allow all terms to be introduced using a 
 
 \noindent Constructors  \Constr{⊢idₛ}, \Constr{⊢extₛ}, \Constr{⊢dropₛ} and \Constr{⊢drop-cstrₛ} are not shown. All of them function the same way as their counterparts in typed renamings.
 
-\noindent The restriction to type in type substitutions simplifies the type preservation proof for the Dictionary Passing Transform by eliminating cases for non-type terms that would otherwise needed to be proven. In hindsight arbitrary substitutions would not have produced a unreasonable amount of additional proofs, but the restriction does not effect the outcome of the proof, so it remained as is.  
+\noindent The restriction to type in type substitutions simplifies the type preservation proof for the Dictionary Passing Transform by eliminating cases for non-type terms that would otherwise needed to be proven. In hindsight arbitrary substitutions would not have produced a unreasonable amount of additional proofs, but the restriction does not effect the type preservation proof in any way, so it remained as is.  

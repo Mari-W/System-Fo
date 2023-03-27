@@ -31,7 +31,7 @@ s⇝s τₛ = τₛ
 Γ⇝S : Fᴼ.Ctx Fᴼ.S → F.Sorts
 Γ⇝S  ∅ = []
 Γ⇝S (Γ ▸ c) = Γ⇝S Γ ▷ F.eₛ
-Γ⇝S {S ▷ s} (Γ ▶ x) = Γ⇝S Γ ▷ s⇝s s
+Γ⇝S {S ▷ s} (Γ ▶ T) = Γ⇝S Γ ▷ s⇝s s
 
 -- [latex] hide
 
@@ -261,19 +261,19 @@ I⇝T {s = τₛ} ⋆ = ⋆
 -- Variables
 
 -- [latex] block(VarPresLookup)
-⇝-pres-lookup : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {τ : Fᴼ.Type Fᴼ.S} (x : Fᴼ.Var Fᴼ.S eₛ) →
+⇝-pres-lookup : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} {τ : Fᴼ.Type Fᴼ.S} {x : Fᴼ.Var Fᴼ.S eₛ} →
   Fᴼ.lookup Γ x ≡ τ →  
   F.lookup (Γ⇝Γ Γ) (x⇝x x) ≡ (τ⇝τ τ)
-⇝-pres-lookup {Γ = Γ ▶ τ} (here refl) refl = ⇝-dist-ren-type Fᴼ.⊢wkᵣ τ
-⇝-pres-lookup {Γ = Γ ▶ _} {τ'} (there x) refl = trans 
-  (cong F.wk (⇝-pres-lookup x refl)) 
-  (⇝-dist-ren-type Fᴼ.⊢wkᵣ (Fᴼ.lookup Γ x))
+⇝-pres-lookup {Γ = Γ ▶ τ} {x = here refl} refl = ⇝-dist-ren-type Fᴼ.⊢wkᵣ τ
+⇝-pres-lookup {Γ = Γ ▶ _} {τ'} {x = there x'} refl = trans 
+  (cong F.wk (⇝-pres-lookup {x = x'} refl)) 
+  (⇝-dist-ren-type Fᴼ.⊢wkᵣ (Fᴼ.lookup Γ x'))
 -- ...
 -- [latex] hide
-⇝-pres-lookup {Γ = Γ ▸ c@(` o ∶ τ')} {τ} x refl =  (
+⇝-pres-lookup {Γ = Γ ▸ c@(` o ∶ τ')} {τ} {x} refl =  (
   begin                     
     F.wk (F.lookup (Γ⇝Γ Γ) (x⇝x x))   
-  ≡⟨ cong F.wk (⇝-pres-lookup x refl) ⟩ 
+  ≡⟨ cong F.wk (⇝-pres-lookup refl) ⟩ 
     F.wk (τ⇝τ τ)
   ≡⟨ ⇝-dist-ren-type ⊢wk-instᵣ τ ⟩ 
     τ⇝τ (Fᴼ.ren Fᴼ.idᵣ τ)
@@ -317,7 +317,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
         {T : Fᴼ.Term Fᴼ.S (Fᴼ.type-of Fᴼ.s)} →
   (⊢t : Γ Fᴼ.⊢ t ∶ T) →
   (Γ⇝Γ Γ) F.⊢ (⊢t⇝t ⊢t) ∶ (T⇝T T)
-⇝-pres-⊢ (⊢`x {x = x} Γx≡τ) = ⊢`x  (⇝-pres-lookup x Γx≡τ)
+⇝-pres-⊢ (⊢`x Γx≡τ) = ⊢`x  (⇝-pres-lookup Γx≡τ)
 ⇝-pres-⊢ (⊢`o o∶τ∈Γ) = ⊢`x (⇝-pres-cstr-solve o∶τ∈Γ)
 ⇝-pres-⊢ (⊢let ⊢e₂ ⊢e₁) = ⊢let (⇝-pres-⊢ ⊢e₂) 
   (subst (_ F.⊢ ⊢t⇝t ⊢e₁ ∶_) ⇝-dist-wk-type(⇝-pres-⊢ ⊢e₁))

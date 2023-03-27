@@ -140,7 +140,7 @@
 \AgdaBound{s}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{▶}}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{T}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{Γ⇝S}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
@@ -1526,11 +1526,11 @@
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Fᴼ.Type}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{Fᴼ.Var}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S}\AgdaSpace{}%
-\AgdaInductiveConstructor{eₛ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{eₛ}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
@@ -1557,8 +1557,10 @@
 \AgdaBound{Γ}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{▶}}\AgdaSpace{}%
 \AgdaBound{τ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{here}\AgdaSpace{}%
-\AgdaInductiveConstructor{refl}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaArgument{x}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{here}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{⇝-dist-ren-type}\AgdaSpace{}%
@@ -1572,8 +1574,10 @@
 \AgdaOperator{\AgdaInductiveConstructor{▶}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}\}}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{τ'}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaInductiveConstructor{there}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaArgument{x}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{there}\AgdaSpace{}%
+\AgdaBound{x'}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{trans}\<%
@@ -1582,7 +1586,9 @@
 \>[2]\AgdaSymbol{(}\AgdaFunction{cong}\AgdaSpace{}%
 \AgdaFunction{F.wk}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{⇝-pres-lookup}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaArgument{x}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{x'}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\AgdaSymbol{))}\<%
 \\
 %
@@ -1590,7 +1596,7 @@
 \AgdaFunction{Fᴼ.⊢wkᵣ}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{Fᴼ.lookup}\AgdaSpace{}%
 \AgdaBound{Γ}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSymbol{))}\<%
+\AgdaBound{x'}\AgdaSymbol{))}\<%
 \\
 \>[0]\AgdaComment{--\ ...}\<%
 \end{code}}
@@ -1605,10 +1611,10 @@
 \AgdaOperator{\AgdaInductiveConstructor{∶}}\AgdaSpace{}%
 \AgdaBound{τ'}\AgdaSymbol{)\}}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{τ}\AgdaSymbol{\}}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{x}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[51]\AgdaSymbol{(}\<%
+\>[53]\AgdaSymbol{(}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaOperator{\AgdaFunction{begin}}\<%
@@ -1626,7 +1632,6 @@
 \AgdaFunction{cong}\AgdaSpace{}%
 \AgdaFunction{F.wk}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{⇝-pres-lookup}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaFunction{⟩}\<%
 \\
@@ -1903,14 +1908,10 @@
 \\
 \>[0]\AgdaFunction{⇝-pres-⊢}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{⊢`x}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaArgument{x}\AgdaSpace{}%
-\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSymbol{\}}\AgdaSpace{}%
 \AgdaBound{Γx≡τ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{⊢`x}%
-\>[35]\AgdaSymbol{(}\AgdaFunction{⇝-pres-lookup}\AgdaSpace{}%
-\AgdaBound{x}\AgdaSpace{}%
+\>[27]\AgdaSymbol{(}\AgdaFunction{⇝-pres-lookup}\AgdaSpace{}%
 \AgdaBound{Γx≡τ}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{⇝-pres-⊢}\AgdaSpace{}%
