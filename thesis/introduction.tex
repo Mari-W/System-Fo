@@ -108,4 +108,4 @@ We remove the \inl{|\Decl|}expression and transform both \inl{|\Inst|}expression
 Inside the instance for lists, the constraint abstraction translates to a normal lambda abstraction. 
 The lambda abstraction takes the constraint that was implicitly resolved in System \Fo\ as an explicit higher-order function argument.
 Invocations of \mono{eq} translate to correct unique variables \mono{eq$_i$} that are bound by the let bindings that got introduced for the former resolved instances.
-Because \mono{eq$_2$} is invoked for lists of numbers, we must pass the correct instance to eliminate the new higher-order function binding by explicitly passing instance \mono{eq$_1$} as argument.
+Because \mono{eq$_2$} is invoked for a list of numbers, we must pass the correct instance to eliminate the new higher-order function binding by explicitly passing instance \mono{eq$_1$} as argument.
