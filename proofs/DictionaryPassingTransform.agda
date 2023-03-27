@@ -214,7 +214,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 -- [latex] block(VarPresSub)
 
 ⇝-dist-sub-var : {σ : Fᴼ.Sub Fᴼ.S₁ Fᴼ.S₂} 
-                      {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
+                 {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
   (⊢σ : σ Fᴼ.∶ Γ₁ ⇒ₛ Γ₂) → 
   (x : Fᴼ.Var Fᴼ.S₁ τₛ) →
   F.sub (⊢σ⇝σ ⊢σ) (` x⇝x x) ≡ τ⇝τ (Fᴼ.sub σ (` x))
@@ -285,7 +285,6 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⇝-pres-cstr-solve : ∀ {Γ : Fᴼ.Ctx Fᴼ.S} → 
   (o∶τ∈Γ : [ ` Fᴼ.o ∶ Fᴼ.τ ]∈ Γ) → 
   F.lookup (Γ⇝Γ Γ) (o⇝x o∶τ∈Γ) ≡ (τ⇝τ Fᴼ.τ)
--- ...
 -- [latex] hide
 ⇝-pres-cstr-solve {τ = τ} {Γ = Γ Fᴼ.▸ c@(` o ∶ τ)} (here {Γ = Γ}) = 
   begin  
@@ -314,7 +313,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 -- [latex] block(TermPres)
 
 ⇝-pres-⊢ : {Γ : Fᴼ.Ctx Fᴼ.S} {t : Fᴼ.Term Fᴼ.S Fᴼ.s} 
-        {T : Fᴼ.Term Fᴼ.S (Fᴼ.type-of Fᴼ.s)} →
+           {T : Fᴼ.Term Fᴼ.S (Fᴼ.type-of Fᴼ.s)} →
   (⊢t : Γ Fᴼ.⊢ t ∶ T) →
   (Γ⇝Γ Γ) F.⊢ (⊢t⇝t ⊢t) ∶ (T⇝T T)
 ⇝-pres-⊢ (⊢`x Γx≡τ) = ⊢`x  (⇝-pres-lookup Γx≡τ)

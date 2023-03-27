@@ -81,13 +81,13 @@ After all, overloading is more of a convenience feature.
 
 \noindent The Dictionary Passing Transform translates well typed System \Fo\ expressions to well typed System F expressions. 
 The translation requires knowledge acquired during type checking. 
-More specifically, we need to know the instances that were resolved for invocations of overloaded identifiers and the instances that constraints were implicitly resolved to.
+More specifically, we need to know the instances that were resolved for invocations of overloaded identifiers and the instances that constraints were implicitly resolved with.
 
 \noindent The translation removes all \inl{|\Decl|}expressions. 
 Instance expressions \inl{|\Inst o| = e in e'} are replaced with \inl{let o|$_τ$| = e in e'} expressions, where \mono{o$_τ$} is a unique name with respect to the type \mono{τ} of the expression \mono{e}. 
 Implicitly resolved constraints in System \Fo\ will be taken as explicit higher-order function arguments in System F.
 As a result, constraint abstractions \inl{|\lambdabar|(o : τ). e'} translate to normal abstractions \mono{λo$_τ$. e'} and constraint types \inl{[o : τ] ⇒ τ'} translate to function types \mono{τ → τ'}. 
-A invocation of an overloaded function name \mono{o} translates to the correct unique variable name \mono{o$_τ$} that is bound by the let binding that got introduced for the instance that was resolved at the given invocation. 
+A invocation of an overloaded function name \mono{o} translates to the correct unique variable name \mono{o$_τ$} that is bound by the let binding that got introduced for the resolved instance at the given invocation. 
 The translation becomes more intuitive when looking at an example.
 
 \subsubsection{Example: Dicitionary Passing Transform}\hfill\\\\

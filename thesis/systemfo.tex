@@ -32,21 +32,21 @@ Because we do not formalize direct semantics for System \Fo, only substitutions 
 
 \subsubsection{Context}\hfill\\\\
 In addition to types and kinds, the existence of overloaded variables is stored inside the context. Overloaded variables act as normal context items. 
-Because overloaded variables themselves do not have a type, but rather multiple types that they can take on, we only need to store their existence in \Sym{Γ}. Thus, similar to type variables, we store kind \Constr{⋆} in \Sym{Γ} to denote the existence of an overloaded variable. As a result, the \Data{type-of} function is extended and returns the sort \Constr{κₛ} when applied to the sort \Constr{oₛ}.
+Because overloaded variables themselves do not have a type, but rather multiple types that they can take on, we only need to store their existence in \Sym{Γ}. Thus, similar to type variables, we store kind \Constr{⋆} in \Sym{Γ} to denote the existence of an overloaded variable. 
 
 \noindent The types that an overloaded variable can take on are stored in the form of constraints. Constraints can be introduced to the context by both constraint abstractions and instance expressions.
 \FoCtx
 We write \Sym{Γ} \Constr{▸} \Sym{c} to pick up a constraint \Sym{c}. 
 Because constraints give an additional meaning to an overloaded variable that is already bound, the index \Sym{S} is not modified. 
 
-\noindent The \Data{lookup} function in System \Fo\ is defined analogously to the \Data{lookup} function in System F and simply ignores constraints stored in the context.
+\noindent The \Data{lookup} function in System \Fo\ is defined analogous to the \Data{lookup} function in System F and simply ignores constraints stored in the context.
 
 \subsubsection{Constraint Solving}\hfill\\\\
-The search for constraints in a context is formalized analogously to membership proofs \Sym{s} \Constr{∈} \Sym{S}. The subtle difference is that we reference constraints in \Sym{Γ} and not in \Sym{S}. The constraint solving type does need to search in \Sym{Γ} because \Sym{S} does not know about the existence of constraints.
+The search for constraints in a context is inductively formalized, similar to membership proofs \Sym{s} \Constr{∈} \Sym{S}. The subtle difference is that we reference constraints in \Sym{Γ} and not in \Sym{S}. The constraint solving type does need to search in \Sym{Γ} because \Sym{S} does not know about the existence of constraints.
 \FoCstrSolve
 The \Constr{here} constructor is analogous to the \Constr{here} constructor of memberships and can be used when the last item in \Sym{Γ} is the desired constraint \Sym{c}.
 
-\noindent If the last item in the context is not the desired constraint \Sym{c}, then \Sym{c} must be further inside the context. The constraint can either behind an item stored in \Sym{Γ} (\Constr{under-bind}) or a constraint (\Constr{under-cstr}). In the case that \Sym{c} is under a binder, the constraint needs to be weakened to align in \Sym{S} with the position that it is resolved for.
+\noindent If the last item in the context is not the desired constraint \Sym{c}, then \Sym{c} must be further inside the context. The constraint can either be behind an item stored in \Sym{Γ} (\Constr{under-bind}) or a constraint (\Constr{under-cstr}). In the case that \Sym{c} is under a binder, the constraint needs to be weakened to align in \Sym{S} with the position that it is resolved for.
 
 \noindent We use the constraint solving type inside the type system to resolve the instance for usages of overloaded variables and to implicitly eliminate constraints.
 
@@ -55,7 +55,7 @@ We only discuss typing rules not already discussed in the System F specification
 \FoTyping
 The rule for overloaded variables \Constr{⊢`o} says that if we can resolve the constraint \Sym{o} \Constr{:} \Sym{τ} in \Sym{Γ}, then \Sym{o} can take on type \Sym{τ}. 
 
-\noindent The rule for constraint abstraction \Constr{⊢ƛ} appends the constraint \Sym{c} to \Sym{Γ} and thus assumes \Sym{c} to be valid inside the body \Sym{e}. Constraint abstractions result in expressions of the corresponding constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ} that lifts the constraint onto the type level.
+\noindent The rule for constraint abstractions \Constr{⊢ƛ} appends the constraint \Sym{c} to \Sym{Γ} and thus assumes \Sym{c} to be valid inside the body \Sym{e}. Constraint abstractions result in expressions of the corresponding constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ} that lifts the constraint onto the type level.
 
 \noindent Expressions \Sym{e} with constraint type \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ'} have the constraint implicitly eliminated using the rule \Constr{⊢⊘}, given \Sym{c} can be resolved in \Sym{Γ}.
 

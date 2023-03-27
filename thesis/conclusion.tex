@@ -1,6 +1,7 @@
 \subsection{Hindley Milner with Overloading}\label{sec:hm}
 In this scenario the source language for the Dictionary Passing Transform would be an extended Hindley-Milner~\cite{hm} based system \HMo\ and the target language would be Hindley-Milner. 
-The Hindley-Milner system is a restricted form of System F that allows for full type inference. Similarly, \HMo\ would be a restricted form of System \Fo with support for full type inference. 
+The Hindley-Milner system is a restricted form of System F that allows for full type inference. 
+Similarly, \HMo\ would be a restricted form of System \Fo\ with support for full type inference. 
 
 \noindent Formalizing Hindley-Milner would require two new sorts, \Constr{mₛ} and \Constr{pₛ} for mono and poly types, in favour of the sort for arbitrary types \Constr{τₛ}. 
 Poly types can include quantification over type variables while mono types consist only of primitive types and type variables. 
@@ -35,7 +36,7 @@ For now it remains unclear if semantic preservation can be proven by induction o
 \subsection{Related Work}
 The ideas for the required restrictions to preserve the inference algorithm in section \ref{sec:hm} originate from System O~\cite{syso}. 
 System O is a language extension to the Hindley-Milner System. 
-In contrast to System \Fo\ and similar to \HMo, constraints are not introduced on the expression level and instead are introduced via explicit type annotations of instances as part of forall types. 
+In contrast to System \Fo\, constraints are not introduced on the expression level and instead are introduced via explicit type annotations of instances as part of forall types. 
 
 \noindent For instance, the valid System \Fo\ and \HMo\ type \inl{∀α. ∀β. [a : α → α → α] => [b : β → β → β] => ..} would be expressed as \inl{∀α. (a : α → α → α) => ∀β. (b : β → β → β) => ..} in System O. 
 Inside the System O type, we only introduce one constraint per type variable, but a list of constraints would be allowed. 
@@ -54,10 +55,10 @@ Including the additional transform on types complicates the type preservation pr
 We have formalized both System F and System \Fo\ in Agda.
 In the process, we explored the technique of using an intrinsically scoped and sorted data type to represent syntaxes.
 The essence of System \Fo\ was to act as a core calculus that captures the idea of overloading and type constraints.
-Furthermore, we formalized the Dictionary Passing Transform between System F and System \Fo. 
-We proved the System F formalization to be sound and the Dictionary Passing Transform from System \Fo\ to System F to be type preserving. 
+We formalized the Dictionary Passing Transform between System F and System \Fo. 
+Furthermore, we proved the System F formalization to be sound and the Dictionary Passing Transform from System \Fo\ to System F to be type preserving. 
 The full formalization of the Dictionary Passing Transform, System \Fo\ and  System F can be found as Agda code files~\footnote{Formalizations and proofs as Agda code files: \url{https://github.com/Mari-W/System-Fo/tree/main/proofs}}. 
 
-\noindent One trick used in the formalization was to introduce constraints individually using constraint abstractions. As a result, we were able to translate constraint abstractions directly to lambda abstractions in System F. Another trick that we used was to preserve the structure of the context inside the type for resolved constraints. In consequence, the translation of resolved constraints to unique variables was straight forward because the position of new bindings introduced by the translation was perfectly known.   
+\noindent One trick used in the formalization was to introduce constraints individually using constraint abstractions. As a result, we were able to translate constraint abstractions directly to lambda abstractions in System F. Another trick that we used was to preserve the structure of the context inside the type for resolved constraints. In consequence, the translation of resolved constraints to Debruijn variables was straight forward because the position of new bindings introduced by the translation was perfectly known.   
 
 \noindent A reasonable next step would be to define direct semantics for System \Fo\ and prove semantic preservation for the Dictionary Passing Transform. 

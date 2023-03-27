@@ -1161,15 +1161,15 @@
 \end{code}
 \newcommand{\DPTVarPresSub}[0]{\begin{code}%
 \>[0]\AgdaFunction{⇝-dist-sub-var}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{σ}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[802I]\AgdaFunction{Fᴼ.Sub}\AgdaSpace{}%
+\>[800I]\AgdaSymbol{\{}\AgdaBound{σ}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaFunction{Fᴼ.Sub}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S₁}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S₂}\AgdaSymbol{\}}\<%
 \\
-\>[.][@{}l@{}]\<[802I]%
-\>[22]\AgdaSymbol{\{}\AgdaBound{Γ₁}\AgdaSpace{}%
+\>[.][@{}l@{}]\<[800I]%
+\>[17]\AgdaSymbol{\{}\AgdaBound{Γ₁}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Fᴼ.Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S₁}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -1699,8 +1699,6 @@
 \AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{τ⇝τ}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.τ}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaComment{--\ ...}\<%
 \end{code}}
 \begin{code}[hide]%
 \>[0]\AgdaFunction{⇝-pres-cstr-solve}\AgdaSpace{}%
@@ -1866,8 +1864,8 @@
 \end{code}
 \newcommand{\DPTTermPres}[0]{\begin{code}%
 \>[0]\AgdaFunction{⇝-pres-⊢}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{Γ}\AgdaSpace{}%
+\AgdaSymbol{:}%
+\>[1261I]\AgdaSymbol{\{}\AgdaBound{Γ}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Fᴼ.Ctx}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -1877,8 +1875,8 @@
 \AgdaGeneralizable{Fᴼ.S}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.s}\AgdaSymbol{\}}\<%
 \\
-\>[0][@{}l@{\AgdaIndent{0}}]%
-\>[8]\AgdaSymbol{\{}\AgdaBound{T}\AgdaSpace{}%
+\>[.][@{}l@{}]\<[1261I]%
+\>[11]\AgdaSymbol{\{}\AgdaBound{T}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{Fᴼ.Term}\AgdaSpace{}%
 \AgdaGeneralizable{Fᴼ.S}\AgdaSpace{}%
