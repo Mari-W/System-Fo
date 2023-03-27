@@ -62,7 +62,7 @@ The rule for overloaded variables \Constr{⊢`o} says that if we can resolve the
 
 \noindent The rule \Constr{⊢decl} introduces a new overloaded variable \Sym{o} to \Sym{e}. 
 To introduce \Sym{o} in \Sym{Γ}, we only need to store the information that \Sym{o} exists as overloaded variable. The existence of \Sym{o} is denoted by extending \Sym{Γ} with kind \Constr{⋆}.
-Analogous to the type \Sym{τ'} inside the abstraction rule \Constr{⊢λ}, the resulting type \Sym{τ} cannot use the introduced overloaded variable and thus is weakened to align in \Sym{S} with \Sym{Γ}. In consequence, \Sym{τ} can act as the resulting type of the typing.
+Analogous to the type \Sym{τ'} inside the abstraction rule \Constr{⊢λ}, the resulting type \Sym{τ} cannot use the introduced overloaded variable and thus is weakened to align in \Sym{S} with \Sym{Γ} \Constr{▶} \Constr{⋆}. In consequence, \Sym{τ} can act as the resulting type of the typing.
 
 \noindent An instance for an overloaded variable \Sym{o} is typed using the rule \Constr{⊢inst}. We extend \Sym{Γ} with constraint \Sym{o} \Constr{:} \Sym{τ} inside \Sym{e₁}, where \Sym{τ} is the type of \Sym{e₂}. 
 
