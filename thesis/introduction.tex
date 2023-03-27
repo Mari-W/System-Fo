@@ -41,14 +41,14 @@ As a result, we can invoke \mono{eq} on expressions with type \inl{Nat} and \inl
 In the latter case, the type constraint \inl{Eq β ⇒ ..} in the instance for lists resolves to the instance for natural numbers.
 
 \subsection{Desugaring Typeclass Functionality to System \Fo}
-System \Fo\ is a minimal calculus with support for overloading and polymorphism based on System F.  
+System \Fo\ is a minimal calculus with support for overloading and polymorphism based on System F. System F is a minimal calculus with support for polymorphism. It is also sometimes referred to as polymorphic lambda calculus or second order lambda calculus.
 In System \Fo\ we give up high level language constructs and instead work with simple overloaded identifiers. 
 
 \noindent Using the \inl{|\Decl o| in e} expression we can introduce an new overloaded variable \mono{o}. 
 If declared as overloaded, \mono{o} can be instantiated for the type \mono{τ} of the expression \mono{e} using the \inl{|\Inst o| = e in e'} expression.
-In Haskell, instances must comply with the generic type signatures defined by the typeclass. Such signatures are not present in System \Fo\ and overloaded variables can be instantiated for arbitrary types. 
+In Haskell instances must comply with the generic type signatures defined by the typeclass. Such signatures are not present in System \Fo\ and overloaded variables can be instantiated for arbitrary types. 
 Locally shadowing other instances of the same type is allowed. 
-Constraints can be introduced on the expression level using constraint abstractions \inl{|\lambdabar| (o : τ). e'}. 
+Constraints can be introduced on the expression level using constraint abstractions \inl{|\lambdabar| (o : τ). e'}. A constraint \inl{|\Blk{o}| : τ} requires the type checker to search for an instance for the overloaded variable \mono{o} that has type \mono{τ}. If the constraint cannot be resolved, then the program is invalid.
 Constraint abstractions result in constraint types \inl{[o : τ] ⇒ τ'} that lift constraints onto the type level. 
 We introduce constraints on the expression level because instance expressions do not have an explicit type annotation in System \Fo.
 All expressions with constraint types \inl{[o : τ] ⇒ τ'} are implicitly treated as expressions of type \Sym{τ'} by the type system, given that the constraint \inl{|\Blk{o}| : τ} can be resolved.
@@ -57,6 +57,7 @@ All expressions with constraint types \inl{[o : τ] ⇒ τ'} are implicitly trea
 Recall the Haskell example from above. 
 The same functionality can be expressed in System \Fo. 
 For convenience, type annotations for instances are given.
+\newpage
 \begin{minted}[escapeinside=||]{haskell}
     |\Decl| eq in
 
@@ -94,6 +95,7 @@ The translation becomes more intuitive when looking at an example.
 Recall the System \Fo\ example from above. 
 We use indices to represent unique names \mono{o$_τ$}.
 Applying the Dictionary Passing Transform to the example above results in a well typed System F expression. Type annotations for let bindings are given for convenience.
+\newpage
 \begin{minted}[escapeinside=||]{haskell}
     let eq₁ : Nat → Nat → Bool 
       = λx. λy. .. in
@@ -106,4 +108,4 @@ We remove the \inl{|\Decl|}expression and transform both \inl{|\Inst|}expression
 Inside the instance for lists, the constraint abstraction translates to a normal lambda abstraction. 
 The lambda abstraction takes the constraint that was implicitly resolved in System \Fo\ as an explicit higher-order function argument.
 Invocations of \mono{eq} translate to correct unique variables \mono{eq$_i$} that are bound by the let bindings that got introduced for the former resolved instances.
-Because \mono{eq$_2$} is invoked for lists of numbers, we must pass the correct instance to eliminate new higher-order function binding by explicitly passing instance \mono{eq$_1$} as argument.
+Because \mono{eq$_2$} is invoked for lists of numbers, we must pass the correct instance to eliminate the new higher-order function binding by explicitly passing instance \mono{eq$_1$} as argument.

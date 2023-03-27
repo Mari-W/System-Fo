@@ -21,7 +21,7 @@ To solve this problem, we need to extend the idea of Debruijn indices and store 
 The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list represent the sort of the variable bound at Debruijn index \Sym{i}. 
 
 \noindent The index \Sym{s} represents the sort of the term itself.
-\newpage
+
 \FTerm
 Variables \Constr{`} \Sym{x} are represented as membership proofs of type \Sym{s} \Prim{∈} \Sym{S}.
 Membership proofs are inductively defined, similar to the definition of natural numbers. 
@@ -89,7 +89,7 @@ The variable \Sym{T} represents terms of the sort \Data{type-of} \Sym{s}.
 \noindent The function \Data{type-of} maps bindable sorts \Sym{s} to the sort of the term that is stored in \Sym{Γ} for variables of the sort \Sym{s}. Thus, if we bind a new variable for a term of the sort \Sym{s}, then \Sym{Γ} needs to be extended by a term of the sort \Data{type-of} \Sym{s}.
 \Fkind
 Expression variables require \Sym{Γ} to store the corresponding type. 
-For type variables, the context \Sym{Γ} stores the corresponding kind. 
+Similarly, we store the corresponding kind for all types in \Sym{Γ}.
 
 \noindent The \Data{lookup} function resolves the type or kind \Sym{T} for a variable in the context \Sym{Γ}.
 \Flookup

@@ -6,7 +6,10 @@ Intuitively there does not even exist a sensible translation for \Constr{cₛ}.
 \DPTSort
 Sorts \Constr{eₛ} and \Constr{τₛ} translate to their corresponding counterparts in System F. 
 
-\noindent The sort \Constr{oₛ} translates to \Constr{eₛ}. Because we will translate \Constr{decl} expressions to redundant \Constr{let} expressions, all bindings for overloaded variables translate to normal expression bindings in System F.
+\noindent The sort \Constr{oₛ} translates to \Constr{eₛ}.
+This is because, instead of removing \Constr{decl} expressions as seen in the example at the beginning, we keep them as redundant \Constr{let} expressions that bind a unit value \Constr{tt}. 
+Because \Constr{decl} expressions bind a new overloaded variable in System \Fo, removing them would result in a variable binding less in System F. To prevent more complex proofs involving the index \Sym{S} of terms, we keep all \Constr{decl} expressions as redundant \Constr{let} bindings.
+In consequence, all bindings for overloaded variables translate to normal expression bindings in System F and the sort \Constr{oₛ} needs to translate to \Constr{eₛ}.
 
 \noindent Translating the index \Sym{S} directly is not possible because there might appear additional sorts inside the list after the translation. 
 New sorts must be added for variable bindings introduced by the translation. 
@@ -73,6 +76,7 @@ The implicitly resolved constraint will be taken as higher-order function argume
 \noindent Arbitrary terms can only be translated using typing information.
 The typing carries information about the instances that were resolved for usages of overloaded variables and the instances that were implicitly resolved for constraints. 
 We only look at the translation of System \Fo\ expressions that do not have a direct counterpart in System F.
+\newpage
 \DPTTerms
 Typed overloaded variables \Constr{⊢`o} carry the information \Sym{o∶τ∈Γ} about the instance that was resolved for \Sym{o}.
 We translate the resolved instance to the corresponding unique variable in System F using the \Data{o⇝x} function from above.
@@ -81,9 +85,7 @@ We translate the resolved instance to the corresponding unique variable in Syste
 
 \noindent An implicitly resolved constraint \Constr{⊢⊘} translates to an explicit application that passes the resolved instance \Sym{o∶τ∈Γ} as argument. We again use function \Data{o⇝x} to translate the resolved instance to the corresponding unique variable. 
 
-\noindent All typed declaration expressions \Constr{⊢decl} could be removed by the translation as seen in the example at the beginning. 
-Instead, \Constr{decl} expressions are translated to let bindings that bind a unit value \Constr{tt}.
-Because \Constr{decl} expressions bind a new overloaded variable in System \Fo, removing them would result in a variable binding less in System F. To prevent more complex proofs involving the index \Sym{S} of terms we keep \Constr{decl} expressions as redundant \Constr{let} bindings. 
+\noindent As discussed, we translate typed declaration expressions \Constr{⊢decl} to redundant \Constr{let} bindings that bind a unit value.
 
 \noindent We translate typed instance expressions \Constr{⊢inst} to \Constr{let} expressions that introduce an additional binding not present in System \Fo.
 
@@ -127,6 +129,7 @@ Using lemma \Data{⇝-dist-τ[τ']} of type \DPTTypeDistSingleSub\ we can substi
 Both \Data{⇝-dist-wk-type} and \Data{⇝-dist-wk-inst-type} directly follow from a more general lemma \Data{⇝-dist-ren-type} for arbitrary renamings. 
 The lemma \Data{⇝-dist-ren-type} proves that translating both the typed renaming \Sym{⊢ρ} and type \Sym{τ} and then applying the renaming in System F is equivalent to applying the renaming \Sym{ρ} in System \Fo\ and then translating the renamed type \Sym{τ}. 
 The lemma can be proven by induction over System \Fo\ types \Sym{τ}.
+\newpage
 \DPTTypePresRen
 The case for type variables needs an additional lemma \Data{⇝-dist-ren-var-type} specifically for type variables.
 Lemma \Data{⇝-dist-ren-var-type} proves an analogous statement, but for type variables applied to a renaming: \DPTVarPresRen. 
@@ -141,7 +144,7 @@ The lemma \Data{⇝-dist-sub-type} also follows by straight forward induction ov
 Other than with renamings, the cases for lemma \Data{⇝-dist-sub-var-type} do not follow directly from the induction hypothesis. 
 To understand why, we at look at the case \Constr{⊢extₛ}.
 \DPTVarPresSub
-The case \Constr{⊢extₛ} is proven via induction over variable \Sym{x}, similar to how \Data{extₛ} is defined. 
+The case \Constr{⊢extₛ} is proven via a case split on variables, similar to how \Data{extₛ} is defined. 
 The base case holds by definition. 
 In the induction case we weaken both sides of the equality that results from the outer induction hypothesis. 
 We then combine the weakened induction hypothesis with proof that weakenings preserve the translation using transitivity. 
@@ -149,7 +152,7 @@ The intuition here is that we need the renaming lemma \Data{⇝-dist-ren-type} a
 
 \noindent Both \Constr{⊢idₛ} and \Constr{⊢single-typeₛ} follow directly from the induction hypothesis. 
 The cases for \Constr{⊢dropₛ} and \Constr{⊢drop-cstrₛ} are similar to the case \Constr{⊢extₛ} and also align with their corresponding definition.
-
+\newpage
 \subsubsection{Variables}\hfill\\\\
 We first look at the proof for lemma \Data{⇝-pres-lookup}. 
 The lemma is proven via induction over the System \Fo\ context \Sym{Γ}. 
