@@ -166,6 +166,6 @@ Because the function \Data{lookup} weakens the type \Sym{τ} that is looked up i
 \noindent The lemma \Data{⇝-pres-cstr-solve} can be proven via induction over the type for resolved constraints \Data{[} \Sym{c} \Data{]∈} \Sym{Γ}. The lemma follows symmetrically to the lemma \Data{⇝-pres-lookup} because the type for resolved constraints preserves the structure of \Sym{Γ} perfectly.
 
 \DPTOVarPresLookup
-Similar to the case split on variables with constructors \Constr{here} and \Constr{there} in case \Sym{Γ} \Constr{▶} \Sym{τ} of lemma \Data{⇝-pres-lookup}, we have the two cases \Constr{here} and \Constr{under-cstr} in lemma \Data{⇝-pres-cstr-solve}. Both cases work similarly to cases in lemma \Data{⇝-pres-lookup}, except that they use \Data{⊢wk-cstrᵣ} instead of \Data{⊢wkᵣ}.
+Similar to the case split on variables with constructors \Constr{here} and \Constr{there} inside the case \Sym{Γ} \Constr{▶} \Sym{τ} of lemma \Data{⇝-pres-lookup}, we have the two cases \Constr{here} and \Constr{under-cstr} in lemma \Data{⇝-pres-cstr-solve}. Both cases work similarly to cases in lemma \Data{⇝-pres-lookup}, except that they use \Data{⊢wk-cstrᵣ} instead of \Data{⊢wkᵣ}.
 
 \noindent Furthermore, we have the case \Constr{under-bind} that works similar to the case \Sym{Γ} \Constr{▸} \Sym{c} and always uses the induction hypothesis applied to \Data{⊢wkᵣ} because we search for a former constraint and not a variable.
