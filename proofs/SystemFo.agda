@@ -342,8 +342,8 @@ data _∶_⇒ᵣ_ : Ren S₁ S₂ → Ctx S₁ → Ctx S₂ → Set where
 ⊢wkᵣ : ∀ {I : Term S (item-of s)} → (dropᵣ idᵣ) ∶ Γ ⇒ᵣ (Γ ▶ I)
 ⊢wkᵣ = ⊢dropᵣ ⊢idᵣ
 
-⊢wk-instᵣ : ∀ {o} → idᵣ ∶ Γ ⇒ᵣ (Γ ▸ (o ∶ τ))
-⊢wk-instᵣ = ⊢drop-cstrᵣ ⊢idᵣ
+⊢wk-cstrᵣ : ∀ {o} → idᵣ ∶ Γ ⇒ᵣ (Γ ▸ (o ∶ τ))
+⊢wk-cstrᵣ = ⊢drop-cstrᵣ ⊢idᵣ
 
 extᵣidᵣ≡idᵣ : ∀ (x : Var (S ▷ s') s) → extᵣ idᵣ x ≡ idᵣ x
 extᵣidᵣ≡idᵣ (here refl) = refl

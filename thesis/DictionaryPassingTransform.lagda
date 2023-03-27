@@ -149,7 +149,8 @@ I⇝T {s = τₛ} ⋆ = ⋆
 -- Type Preservation --------------------------------------------------------------------
 
 -- Renaming
-⇝-dist-ren-var : {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
+⇝-dist-ren-var-type : {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} 
+                      {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
   (⊢ρ : ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂) → 
   (x : Fᴼ.Var Fᴼ.S₁ Fᴼ.s) →
 \end{code}
@@ -157,12 +158,12 @@ I⇝T {s = τₛ} ⋆ = ⋆
   (⊢ρ⇝ρ ⊢ρ) _ (x⇝x x) ≡ x⇝x (ρ x)  
 \end{code}}
 \begin{code}[hide]
-⇝-dist-ren-var ⊢idᵣ x = refl
-⇝-dist-ren-var (⊢extᵣ ⊢ρ) (here refl) = refl
-⇝-dist-ren-var (⊢extᵣ ⊢ρ) (there x) = cong there (⇝-dist-ren-var ⊢ρ x)
-⇝-dist-ren-var (⊢dropᵣ ⊢ρ) x = cong there (⇝-dist-ren-var ⊢ρ x)
--- ⇝-dist-ren-var (⊢ext-cstrᵣ ⊢ρ) x = cong there (⇝-dist-ren-var ⊢ρ x)
-⇝-dist-ren-var (⊢drop-cstrᵣ ⊢ρ) x = cong there (⇝-dist-ren-var ⊢ρ x)
+⇝-dist-ren-var-type ⊢idᵣ x = refl
+⇝-dist-ren-var-type (⊢extᵣ ⊢ρ) (here refl) = refl
+⇝-dist-ren-var-type (⊢extᵣ ⊢ρ) (there x) = cong there (⇝-dist-ren-var-type ⊢ρ x)
+⇝-dist-ren-var-type (⊢dropᵣ ⊢ρ) x = cong there (⇝-dist-ren-var-type ⊢ρ x)
+-- ⇝-dist-ren-var-type (⊢ext-cstrᵣ ⊢ρ) x = cong there (⇝-dist-ren-var-type ⊢ρ x)
+⇝-dist-ren-var-type (⊢drop-cstrᵣ ⊢ρ) x = cong there (⇝-dist-ren-var-type ⊢ρ x)
 \end{code}
 \newcommand{\DPTTypePresRen}[0]{\begin{code}
 ⇝-dist-ren-type :  {ρ : Fᴼ.Ren Fᴼ.S₁ Fᴼ.S₂} 
@@ -170,7 +171,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   (⊢ρ : ρ Fᴼ.∶ Γ₁ ⇒ᵣ Γ₂) → 
   (τ : Fᴼ.Type Fᴼ.S₁) →
   F.ren (⊢ρ⇝ρ ⊢ρ) (τ⇝τ τ) ≡ τ⇝τ (Fᴼ.ren ρ τ) 
-⇝-dist-ren-type ⊢ρ (` x) = cong `_ (⇝-dist-ren-var  ⊢ρ x)
+⇝-dist-ren-type ⊢ρ (` x) = cong `_ (⇝-dist-ren-var-type  ⊢ρ x)
 ⇝-dist-ren-type ⊢ρ ([ ` o ∶ τ ]⇒ τ') = cong₂ _⇒_ 
   (⇝-dist-ren-type ⊢ρ τ) (⇝-dist-ren-type ⊢ρ τ') 
 -- ...
@@ -200,32 +201,32 @@ I⇝T {s = τₛ} ⋆ = ⋆
     τ⇝τ τ
   ≡⟨ cong τ⇝τ (sym (Fᴼ.idᵣτ≡τ τ)) ⟩ 
     τ⇝τ (Fᴼ.ren Fᴼ.idᵣ τ)
-  ≡⟨ sym (⇝-dist-ren-type ⊢wk-instᵣ τ) ⟩ 
+  ≡⟨ sym (⇝-dist-ren-type ⊢wk-cstrᵣ τ) ⟩ 
     F.wk (τ⇝τ τ)
   ∎
 
 -- Substititution
 \end{code}
 \newcommand{\DPTVarPresSub}[0]{\begin{code}
-⇝-dist-sub-var : {σ : Fᴼ.Sub Fᴼ.S₁ Fᴼ.S₂} 
-                 {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
+⇝-dist-sub-var-type : {σ : Fᴼ.Sub Fᴼ.S₁ Fᴼ.S₂} 
+                      {Γ₁ : Fᴼ.Ctx Fᴼ.S₁} {Γ₂ : Fᴼ.Ctx Fᴼ.S₂} →
   (⊢σ : σ Fᴼ.∶ Γ₁ ⇒ₛ Γ₂) → 
   (x : Fᴼ.Var Fᴼ.S₁ τₛ) →
   F.sub (⊢σ⇝σ ⊢σ) (` x⇝x x) ≡ τ⇝τ (Fᴼ.sub σ (` x))
-⇝-dist-sub-var (⊢extₛ ⊢σ) (here refl) = refl
-⇝-dist-sub-var (⊢extₛ {σ = σ} ⊢σ) (there x) = trans 
-  (cong F.wk (⇝-dist-sub-var ⊢σ x)) (⇝-dist-ren-type Fᴼ.⊢wkᵣ (σ x))
+⇝-dist-sub-var-type (⊢extₛ ⊢σ) (here refl) = refl
+⇝-dist-sub-var-type (⊢extₛ {σ = σ} ⊢σ) (there x) = trans 
+  (cong F.wk (⇝-dist-sub-var-type ⊢σ x)) (⇝-dist-ren-type Fᴼ.⊢wkᵣ (σ x))
 \end{code}}
 \begin{code}[hide]
-⇝-dist-sub-var ⊢idₛ x = refl
-⇝-dist-sub-var (⊢dropₛ {σ = σ} ⊢σ) x  = trans 
-  (cong F.wk (⇝-dist-sub-var ⊢σ x)) (⇝-dist-ren-type Fᴼ.⊢wkᵣ (σ x))
-⇝-dist-sub-var (⊢single-typeₛ ⊢σ) (here refl) = refl
-⇝-dist-sub-var (⊢single-typeₛ ⊢σ) (there x) = ⇝-dist-sub-var ⊢σ x 
-⇝-dist-sub-var (⊢drop-cstrₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⇝-dist-sub-var ⊢σ x)) (
+⇝-dist-sub-var-type ⊢idₛ x = refl
+⇝-dist-sub-var-type (⊢dropₛ {σ = σ} ⊢σ) x  = trans 
+  (cong F.wk (⇝-dist-sub-var-type ⊢σ x)) (⇝-dist-ren-type Fᴼ.⊢wkᵣ (σ x))
+⇝-dist-sub-var-type (⊢single-typeₛ ⊢σ) (here refl) = refl
+⇝-dist-sub-var-type (⊢single-typeₛ ⊢σ) (there x) = ⇝-dist-sub-var-type ⊢σ x 
+⇝-dist-sub-var-type (⊢drop-cstrₛ {σ = σ} ⊢σ) x = trans (cong F.wk (⇝-dist-sub-var-type ⊢σ x)) (
    begin 
     F.wk (τ⇝τ (σ x))
-  ≡⟨ ⇝-dist-ren-type ⊢wk-instᵣ (σ x) ⟩ 
+  ≡⟨ ⇝-dist-ren-type ⊢wk-cstrᵣ (σ x) ⟩ 
     τ⇝τ (Fᴼ.ren Fᴼ.idᵣ (σ x))
   ≡⟨ cong τ⇝τ (Fᴼ.idᵣτ≡τ (σ x)) ⟩ 
     τ⇝τ (σ x)
@@ -240,7 +241,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
   F.sub (⊢σ⇝σ ⊢σ) (τ⇝τ τ) ≡ τ⇝τ (Fᴼ.sub σ τ) 
 \end{code}}
 \begin{code}[hide]
-⇝-dist-sub-type  ⊢σ (` x) = ⇝-dist-sub-var ⊢σ x
+⇝-dist-sub-type  ⊢σ (` x) = ⇝-dist-sub-var-type ⊢σ x
 ⇝-dist-sub-type  ⊢σ `⊤ = refl
 ⇝-dist-sub-type  ⊢σ (τ₁ ⇒ τ₂) = cong₂ _⇒_ (⇝-dist-sub-type  ⊢σ τ₁) (⇝-dist-sub-type   ⊢σ τ₂)
 ⇝-dist-sub-type  ⊢σ (∀`α τ) = cong F.∀`α_ (⇝-dist-sub-type  (Fᴼ.⊢extₛ ⊢σ) τ)
@@ -275,7 +276,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
     F.wk (F.lookup (Γ⇝Γ Γ) (x⇝x x))   
   ≡⟨ cong F.wk (⇝-pres-lookup refl) ⟩ 
     F.wk (τ⇝τ τ)
-  ≡⟨ ⇝-dist-ren-type ⊢wk-instᵣ τ ⟩ 
+  ≡⟨ ⇝-dist-ren-type ⊢wk-cstrᵣ τ ⟩ 
     τ⇝τ (Fᴼ.ren Fᴼ.idᵣ τ)
   ≡⟨ cong τ⇝τ (Fᴼ.idᵣτ≡τ τ) ⟩ 
     τ⇝τ τ
@@ -290,7 +291,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
 ⇝-pres-cstr-solve {τ = τ} {Γ = Γ Fᴼ.▸ c@(` o ∶ τ)} (here {Γ = Γ}) = 
   begin  
     F.lookup (Γ⇝Γ Γ ▶ τ⇝τ τ) (here refl)
-  ≡⟨ ⇝-dist-ren-type ⊢wk-instᵣ τ ⟩
+  ≡⟨ ⇝-dist-ren-type ⊢wk-cstrᵣ τ ⟩
     τ⇝τ (Fᴼ.ren Fᴼ.idᵣ τ)
   ≡⟨ cong τ⇝τ (Fᴼ.idᵣτ≡τ τ) ⟩ 
     τ⇝τ τ
@@ -303,7 +304,7 @@ I⇝T {s = τₛ} ⋆ = ⋆
     F.wk (F.lookup (Γ⇝Γ Γ) (o⇝x o∶τ∈Γ))   
   ≡⟨ cong F.wk (⇝-pres-cstr-solve o∶τ∈Γ) ⟩ 
     F.wk (τ⇝τ τ)
-  ≡⟨ ⇝-dist-ren-type ⊢wk-instᵣ τ ⟩ 
+  ≡⟨ ⇝-dist-ren-type ⊢wk-cstrᵣ τ ⟩ 
     τ⇝τ (Fᴼ.ren Fᴼ.idᵣ τ)
   ≡⟨ cong τ⇝τ (Fᴼ.idᵣτ≡τ τ) ⟩ 
     τ⇝τ τ

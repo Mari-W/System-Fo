@@ -6,11 +6,11 @@ Intuitively there does not even exist a sensible translation for \Constr{cₛ}.
 \DPTSort
 Sorts \Constr{eₛ} and \Constr{τₛ} translate to their corresponding counterparts in System F. 
 
-\noindent The sort \Constr{oₛ} translates to \Constr{eₛ}. We will translate \Constr{decl} expressions to redundant \Constr{let} expressions later on. In consequence all bindings for overloaded variables translate to normal expression bindings in System F.
+\noindent The sort \Constr{oₛ} translates to \Constr{eₛ}. Because we will translate \Constr{decl} expressions to redundant \Constr{let} expressions, all bindings for overloaded variables translate to normal expression bindings in System F.
 
 \noindent Translating the index \Sym{S} directly is not possible because there might appear additional sorts inside the list after the translation. 
 New sorts must be added for variable bindings introduced by the translation. 
-For example, a \Constr{inst`} \Constr{`} \Sym{o} \Constr{=} \Sym{e₂} \Constr{`in} \Sym{e₁} expression does not bind a new variable in \Sym{e₁}, but translates to a \Constr{let`x=} \Sym{e₂} \Constr{`in} \Sym{e₁} binding. 
+For example, an \Constr{inst`} \Constr{`} \Sym{o} \Constr{=} \Sym{e₂} \Constr{`in} \Sym{e₁} expression does not bind a new variable in \Sym{e₁}, but translates to a \Constr{let`x=} \Sym{e₂} \Constr{`in} \Sym{e₁} binding. 
 Hence, \Sym{S} must have an additional entry \Constr{eₛ} at the corresponding position to further function as valid index for the translated \Sym{e₁}. 
 Similarly, an additional sort \Constr{eₛ} must be appended to \Sym{S} inside the body of translated constraint abstractions.
 To solve this problem the System \Fo\ context \Sym{Γ} is used to build the translated \Sym{S}. 
@@ -30,7 +30,7 @@ If an item is stored in the context we can translate the variable directly.
 \noindent Whenever a constraint is encountered, \Sym{x} is wrapped in an additional \Constr{there}. 
 This is because the expression that introduced the constraint will translate to an expression with an additional new binding that needs to be respected in System F.
 
-\noindent Furthermore, resolved constraints translate to correct unique expression variables. We can apply the same idea as seen in the translation for variables because the type for resolved constraints \Data{[} \Sym{c} \Data{]∈} \Sym{Γ} preserves the structure of the context perfectly. 
+\noindent Resolved constraints translate to correct unique expression variables using function \Data{o⇝x}. We can apply a symmetric argumentation as seen in the translation for variables because the type for resolved constraints \Data{[} \Sym{c} \Data{]∈} \Sym{Γ} preserves the structure of the context perfectly. The subtle difference to \Data{x⇝x} is that we have the two cases \Constr{here} and \Constr{under-cstr} for constraints, instead of the two cases \Constr{here} and \Constr{there} for normal variables. Futhermore, we only have one case for bindings \Constr{under-bind} in \Constr{o⇝x}, instead of one case for constraints in \Constr{x⇝x}.
 \DPTOVar
 Inside the case \Constr{here} we found the correct instance, now variable.
 
@@ -62,7 +62,7 @@ Typed renamings in System \Fo\ translate to untyped renamings in System F.
 
 \subsubsection{Terms}\hfill\\\\
 Types and kinds can be translated without typing information using the function \Data{T⇝T}.  
-We only look at the untyped translation of types \Data{τ⇝τ} that is used inside the function \Data{T⇝T}. Kind \Constr{⋆} translates to its direct counterpart in System F.
+We only look at the untyped translation of types \Data{τ⇝τ} that is used inside the function \Data{T⇝T} because the kind \Constr{⋆} translates to its direct counterpart in System F.
 \DPTType
 Constraint types \Constr{[} \Sym{o} \Constr{:} \Sym{τ} \Constr{]⇒} \Sym{τ'} translate to function types \Sym{τ} \Constr{⇒} \Sym{τ'}. 
 The translation from constraint types to function types directly corresponds to the translation of constraint abstractions to normal abstractions. 
@@ -104,18 +104,18 @@ Using lemma \Data{⇝-pres-cstr-solve} the typing rule for overloaded variables 
 \noindent Typed let bindings \Constr{⊢let} \Sym{⊢e₂} \Sym{⊢e₁} translate to typed let bindings in System F. 
 The typing rule \Sym{⊢e₂} is translated directly using the induction hypothesis. 
 Because the expression \Sym{e₁} results in type \Data{wk} \Sym{τ'} inside typing rule \Sym{⊢e₁}, proof is needed that \Sym{τ'} weakened in System \Fo\ and translated to System F is equivalent to the weakening of the translated \Sym{τ'} in System F. 
-Lemma \Data{⇝-dist-wk-type} produces the required equality proof of type \DPTTypePresWk. On the right hand side of the equality we need to specify that the otherwise implicit argument \Sym{Γ = Γ} needs to be extended by some \Sym{T}. We then substitute the equivalence into the translation of the typing rule \Sym{⊢e₁}.
+Lemma \Data{⇝-dist-wk-type} produces the required equality proof of type \DPTTypePresWk. On the left hand side of the equality we need to specify that the otherwise implicit argument \Sym{Γ = Γ} needs to be an extended \Sym{Γ} in that case. We then substitute the equivalence into the translation of the typing rule \Sym{⊢e₁}.
 
 \noindent Typed constraint abstractions \Constr{⊢ƛ} translate to normal abstractions in System F.
 Inside the typing \Sym{⊢e}, the result type \Sym{τ} of the body \Sym{e} does not need to be weakened because the constraint abstraction only introduced a constraint and no actual binding to context \Sym{Γ}. 
 After the translation the former constraint will be bound by a binding and thus a new item in \Data{Γ⇝Γ} \Sym{Γ} will exist. 
 To ignore the binding, \Sym{τ} is weakened in the abstraction rule \Constr{⊢λ}.
 Lemma \Data{⇝-dist-wk-inst-type} proves that translating \Sym{τ} in \Sym{Γ} extended by a constraint is equivalent to weakening \Sym{τ} after the translation: \DPTTypePresWkInst.
-The lemma follows because the constraint translates to an actual binding and consequently, both sides of the equivalence have an additional expression binding that \Sym{τ} cannot use.
+The lemma follows because the constraint translates to an actual binding and consequently, both sides of the equivalence have an additional expression binding that \Sym{τ} does not care about.
 
 \noindent Implicitly resolved constraints \Constr{⊢⊘} carry the information \Sym{o∶τ∈Γ} about the instance that was resolved. In System F the former constraint is explicitly passed as variable pointing to the correct translated instance. 
 Thus, the typing \Constr{⊢⊘} results in typed application \Constr{⊢·}. 
-We apply the correct equality proof to the typing rule \Constr{⊢`o} using lemma \Data{⇝-pres-cstr-solve}.
+We apply the correct equality proof to the typing rule \Constr{⊢`x} using lemma \Data{⇝-pres-cstr-solve}.
 
 \noindent The type application rule \Constr{⊢•} contains type in type substitution. 
 Hence, we need proof that it is irrelevant, if \Sym{τ'} is substituted into \Sym{τ} and then translated or both \Sym{τ} and \Sym{τ'} are translated and substitution is applied in System F. 
@@ -128,8 +128,8 @@ Both \Data{⇝-dist-wk-type} and \Data{⇝-dist-wk-inst-type} directly follow fr
 The lemma \Data{⇝-dist-ren-type} proves that translating both the typed renaming \Sym{⊢ρ} and type \Sym{τ} and then applying the renaming in System F is equivalent to applying the renaming \Sym{ρ} in System \Fo\ and then translating the renamed type \Sym{τ}. 
 The lemma can be proven by induction over System \Fo\ types \Sym{τ}.
 \DPTTypePresRen
-The case for type variables needs an additional lemma \Data{⇝-dist-ren-var} specifically for type variables.
-Lemma \Data{⇝-dist-ren-var} proves an analogous statement, but for type variables applied to a renaming: \DPTVarPresRen. 
+The case for type variables needs an additional lemma \Data{⇝-dist-ren-var-type} specifically for type variables.
+Lemma \Data{⇝-dist-ren-var-type} proves an analogous statement, but for type variables applied to a renaming: \DPTVarPresRen. 
 This statement can be proven via straight forward induction over typed System \Fo\ renamings \Sym{⊢ρ}.
 
 \noindent All other cases follow directly from the induction hypothesis. 
@@ -138,7 +138,7 @@ The only small exception is the constraint type, where we need to respect that i
 \subsubsection{Substitution}\hfill\\\\
 Similar to renamings, the lemma for single substitution on types \Data{⇝-dist-τ[τ']} follows from a more general lemma about type in type substitutions \Data{⇝-dist-sub-type}.
 The lemma \Data{⇝-dist-sub-type} also follows by straight forward induction over System \Fo\ types, except the case for type variables. 
-Other than with renamings, the cases for lemma \Data{⇝-dist-sub-var} do not follow directly from the induction hypothesis. 
+Other than with renamings, the cases for lemma \Data{⇝-dist-sub-var-type} do not follow directly from the induction hypothesis. 
 To understand why, we at look at the case \Constr{⊢extₛ}.
 \DPTVarPresSub
 The case \Constr{⊢extₛ} is proven via induction over variable \Sym{x}, similar to how \Data{extₛ} is defined. 
@@ -156,13 +156,13 @@ The lemma is proven via induction over the System \Fo\ context \Sym{Γ}.
 \DPTVarPresLookup
 As an example we will look at the case \Sym{Γ} \Constr{▶} \Sym{τ}. The case is proven via a case split on variables. 
 The prove follows the same reasoning as the \Constr{⊢extₛ} case for substitutions above. 
-Because the function \Data{lookup} weakens the type \Sym{τ} that is looked up in \Sym{Γ} in both cases \Constr{here} and \Constr{there}, both use lemma \Data{⇝-dist-ren-type} applied to the typed weakening \Constr{⊢wkᵣ} to account for the weakening. 
+Because the function \Data{lookup} weakens the type \Sym{τ} that is looked up in \Sym{Γ} in both cases \Constr{here} and \Constr{there}, both use lemma \Data{⇝-dist-ren-type} applied to the typed weakening \Data{⊢wkᵣ} to account for the weakening. 
 
-\noindent The case \Sym{Γ} \Constr{▸} \Sym{c} follows analogously, but uses \Data{⊢wk-instᵣ} applied to the induction hypothesis instead of \Data{⊢wkᵣ}. Furthermore, the case \Constr{∅} is impossible because there must exist a context item if there exists a variable by definition.
+\noindent The case \Sym{Γ} \Constr{▸} \Sym{c} follows analogously, but uses \Data{⊢wk-cstrᵣ} applied to the induction hypothesis instead of \Data{⊢wkᵣ}. Furthermore, the case \Constr{∅} is impossible because there must exist a context item if there exists a variable by definition.
 
 \noindent The lemma \Data{⇝-pres-cstr-solve} can be proven via induction over the type for resolved constraints \Data{[} \Sym{c} \Data{]∈} \Sym{Γ}. The lemma follows symmetrically to the lemma \Data{⇝-pres-lookup} because the type for resolved constraints preserves the structure of \Sym{Γ} perfectly.
 
 \DPTOVarPresLookup
-Similar to the case split on variables with constructors \Constr{here} and \Constr{there} in case \Sym{Γ} \Constr{▶} \Sym{τ} of lemma \Data{⇝-pres-lookup}, we have the two cases \Constr{here} and \Constr{under-cstr} in lemma \Data{⇝-pres-cstr-solve}. Both cases work similarly to cases in lemma \Data{⇝-pres-lookup}, except that they use \Data{⊢wk-instᵣ} instead of \Data{⊢wkᵣ}.
+Similar to the case split on variables with constructors \Constr{here} and \Constr{there} in case \Sym{Γ} \Constr{▶} \Sym{τ} of lemma \Data{⇝-pres-lookup}, we have the two cases \Constr{here} and \Constr{under-cstr} in lemma \Data{⇝-pres-cstr-solve}. Both cases work similarly to cases in lemma \Data{⇝-pres-lookup}, except that they use \Data{⊢wk-cstrᵣ} instead of \Data{⊢wkᵣ}.
 
-\noindent Furthermore, we have the case \Constr{under-bind} that works similar to the case \Sym{Γ} \Constr{▸} \Sym{c} and always uses the induction hypothesis applied to \Data{⊢wkᵣ} because we search for a constraint and not a variable.
+\noindent Furthermore, we have the case \Constr{under-bind} that works similar to the case \Sym{Γ} \Constr{▸} \Sym{c} and always uses the induction hypothesis applied to \Data{⊢wkᵣ} because we search for a former constraint and not a variable.

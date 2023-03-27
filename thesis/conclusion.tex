@@ -35,7 +35,7 @@ For now it remains unclear if semantic preservation can be proven by induction o
 
 \subsection{Related Work}
 The ideas for the required restrictions to preserve the inference algorithm in section \ref{sec:hm} originate from System O~\cite{syso}. 
-System O is a language extension to the Hindley-Milner System. 
+System O is a language extension to the Hindley-Milner system. 
 In contrast to System \Fo\, constraints are not introduced on the expression level and instead are introduced via explicit type annotations of instances as part of forall types. 
 
 \noindent For instance, the valid System \Fo\ and \HMo\ type \inl{∀α. ∀β. [a : α → α → α] => [b : β → β → β] => ..} would be expressed as \inl{∀α. (a : α → α → α) => ∀β. (b : β → β → β) => ..} in System O. 

@@ -9,6 +9,7 @@ We use the variable symbol \Sym{o} for overloaded variables and the variable sym
 
 \subsubsection{Syntax}\hfill\\\\
 We only discuss additions to the syntax of System F.
+\newpage
 \FoTerm
 Declarations \Constr{decl`o`in} \Sym{e} introduce a new overloaded variable \Sym{o}. 
 Hence, \Sym{S} is extended by the sort \Constr{oₛ} inside the body \Sym{e}. 
@@ -19,7 +20,7 @@ Instance expressions do not introduce new bindings and thus, the index \Sym{S} i
 
 \noindent Constraints \Sym{c} can be constructed using constructor \Sym{o} \Constr{:} \Sym{τ}. 
 
-\noindent A constraint \Sym{c} can be part of a constraint abstraction \Constr{\lambdabar} \Sym{c} \Constr{⇒} \Sym{e}. Constraint abstractions assume the constraint \Sym{c} to be valid inside the body \Sym{e} and result in constraint types \\ \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ}. The constraint type lifts the constraint from the expression level to the type level, where it will be implicitly eliminated by the typing rules.
+\noindent A constraint \Sym{c} can be part of a constraint abstraction \Constr{\lambdabar} \Sym{c} \Constr{⇒} \Sym{e}. Constraint abstractions assume the constraint \Sym{c} to be valid inside the body \Sym{e} and result in constraint types \Constr{[} \Sym{c} \Constr{]⇒} \Sym{τ}. The constraint type lifts the constraint from the expression level to the type level, where it will be implicitly eliminated by the typing rules.
 
 \noindent Going forward, we will use the abbreviation \FoCstr.
 
@@ -61,7 +62,7 @@ The rule for overloaded variables \Constr{⊢`o} says that if we can resolve the
 
 \noindent The rule \Constr{⊢decl} introduces a new overloaded variable \Sym{o} to \Sym{e}. 
 To introduce \Sym{o} in \Sym{Γ}, we only need to store the information that \Sym{o} exists as overloaded variable. The existence of \Sym{o} is denoted by extending \Sym{Γ} with kind \Constr{⋆}.
-Analogous to the type \Sym{τ'} inside the abstraction rule \Constr{⊢λ}, the resulting type \Sym{τ} cannot use the introduced overloaded variable and thus is weakened to align in \Sym{S} with \Sym{Γ} not extended by \Constr{⋆}. In consequence, \Sym{τ} can act as the resulting type of the typing.
+Analogous to the type \Sym{τ'} inside the abstraction rule \Constr{⊢λ}, the resulting type \Sym{τ} cannot use the introduced overloaded variable and thus is weakened to align in \Sym{S} with \Sym{Γ}. In consequence, \Sym{τ} can act as the resulting type of the typing.
 
 \noindent An instance for an overloaded variable \Sym{o} is typed using the rule \Constr{⊢inst}. We extend \Sym{Γ} with constraint \Sym{o} \Constr{:} \Sym{τ} inside \Sym{e₁}, where \Sym{τ} is the type of \Sym{e₂}. 
 
@@ -69,15 +70,14 @@ Analogous to the type \Sym{τ'} inside the abstraction rule \Constr{⊢λ}, the 
 Typed renamings are identical to typed renamings in System F, except there is an additional case for the weakening by a constraint. 
 \FoRenTyping
 A constraint \Sym{o} \Constr{:} \Sym{τ} can be introduced only to \Sym{Γ₂} using the \Constr{⊢drop-cstrᵣ} constructor. 
-Dropping a constraint corresponds to a typed weakening, similar to constructor \Constr{⊢dropᵣ}, but instead of introducing an unused variable we introduce an unused constraint.
+Dropping a constraint corresponds to a typed weakening, similar to constructor \Constr{⊢dropᵣ}, but instead of introducing an unused variable we introduce an unused constraint. In consequence, the typed weakening by a constraint \Data{⊢wk-cstrᵣ} is defined by \Constr{⊢drop-cstrᵣ} \Constr{⊢idᵣ}.
 
 \noindent Other than in System F, arbitrary substitutions will not be allowed in System \Fo. 
 Similar to the substitution operator we restrict typed substitutions in System \Fo\ to substitutions of types in types. 
 \FoSubTyping
 \noindent The constructor \Constr{⊢single-typeₛ} allows to introduce an additional new type variable binder that is substituted with type \Sym{τ}.
-Thus, the constructor \Constr{⊢single-typeₛ} complements the \Data{single-typeₛ} function. 
-The intuition here is that if we would allow all terms to be introduced using a \Constr{⊢termₛ} constructor, then typed substitutions in System \Fo\ would be arbitrary again. 
+Thus, the constructor \Constr{⊢single-typeₛ} complements the \Data{single-typeₛ} function.  
 
 \noindent Constructors  \Constr{⊢idₛ}, \Constr{⊢extₛ}, \Constr{⊢dropₛ} and \Constr{⊢drop-cstrₛ} are not shown. All of them function the same way as their counterparts in typed renamings.
 
-\noindent The restriction to type in type substitutions simplifies the type preservation proof for the Dictionary Passing Transform by eliminating cases for non-type terms that would otherwise needed to be proven. In hindsight arbitrary substitutions would not have produced a unreasonable amount of additional proofs, but the restriction does not effect the type preservation proof in any way, so it remained as is.  
+\noindent The intuition here is that if we would allow all terms to be introduced using a \Constr{⊢termₛ} constructor, then typed substitutions in System \Fo\ would be arbitrary again. The restriction to type in type substitutions simplifies the type preservation proof for the Dictionary Passing Transform by eliminating cases for non-type terms that would otherwise needed to be proven. In hindsight arbitrary substitutions would not have produced an unreasonable amount of additional work, but the restriction does not effect the type preservation proof in any way, so it remained as is.  

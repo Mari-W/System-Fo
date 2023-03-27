@@ -21,8 +21,7 @@ To solve this problem, we need to extend the idea of Debruijn indices and store 
 The length of \Sym{S} represents the amount of bound variables and the elements \Sym{s$_i$} of the list represent the sort of the variable bound at Debruijn index \Sym{i}. 
 
 \noindent The index \Sym{s} represents the sort of the term itself.
-
-
+\newpage
 \FTerm
 Variables \Constr{`} \Sym{x} are represented as membership proofs of type \Sym{s} \Prim{∈} \Sym{S}.
 Membership proofs are inductively defined, similar to the definition of natural numbers. 
@@ -90,17 +89,18 @@ The variable \Sym{T} represents terms of the sort \Data{type-of} \Sym{s}.
 \noindent The function \Data{type-of} maps bindable sorts \Sym{s} to the sort of the term that is stored in \Sym{Γ} for variables of the sort \Sym{s}. Thus, if we bind a new variable for a term of the sort \Sym{s}, then \Sym{Γ} needs to be extended by a term of the sort \Data{type-of} \Sym{s}.
 \Fkind
 Expression variables require \Sym{Γ} to store the corresponding type. 
-For type variables, \Sym{Γ} stores the corresponding kind. 
+For type variables, the context \Sym{Γ} stores the corresponding kind. 
 
-\noindent The \Data{lookup} function resolves the type or kind \Sym{T} for a variable \Sym{x} in \Sym{Γ}.
+\noindent The \Data{lookup} function resolves the type or kind \Sym{T} for a variable in the context \Sym{Γ}.
 \Flookup
 Inside both cases of the case split on variables, we wrap the looked up \Sym{T} in a weakening. 
-As a result, \Sym{T} always has index \Sym{S} that aligns with the current required amount of bound variables. 
+As a result, \Sym{T} always has the index \Sym{S} that aligns with the current required amount of bound variables. 
 The \Data{lookup} function cannot fail by definition because we only allow to lookup bound variables that must have an entry in \Sym{Γ} by definition.
 
 \subsubsection{Typing}\hfill\\\\
 The typing relation \Sym{Γ} \Data{⊢} \Sym{t} \Data{:} \Sym{T} relates a term \Sym{t} to its typing result \Sym{T} in a context \Sym{Γ}.
 
+\newpage
 
 \FTyping
 The rule \Constr{⊢`x} says that a variable \Constr{`} \Sym{x} has type \Sym{τ}, if the type for \Sym{x} in \Sym{Γ} is \Sym{τ}. 
@@ -141,7 +141,7 @@ The identity renaming \Constr{⊢idᵣ} is typed by definition.
 The constructor \Constr{⊢extᵣ} corresponds to the typed version of the function \Data{extᵣ} that is used when a binder is encountered. 
 
 \noindent The constructor \Constr{⊢dropᵣ} allows to introduce \Sym{T'} only in \Sym{Γ₂}. 
-Hence, \Constr{⊢dropᵣ ⊢idᵣ} corresponds to the typed weakening of a term.
+Hence, \Constr{⊢dropᵣ ⊢idᵣ} corresponds to the typed weakening \Data{⊢wkᵣ} of a term.
 
 \noindent The absence of a constructor that allows to introduce a term only to \Sym{Γ₁} is exactly the restriction needed for typed renamings to be order preserving embeddings.
 
@@ -174,7 +174,7 @@ In both cases, we make sure that the abstraction and the applied argument are va
 \subsubsection{Progress}\hfill\\\\
 We prove \Data{progress} by showing that a typed expression \Sym{e} can either be further reduced to another expression \Sym{e'} or \Sym{e} is a value. 
 The proof follows by induction over the typing rules. 
-
+\newpage
 \FProgress
 The cases \Constr{⊢⊤}, \Constr{⊢λ} and \Constr{⊢Λ} result in values. 
 The application cases \Constr{⊢·}, \Constr{⊢•} and \Constr{⊢let} follow directly from the induction hypothesis. 
@@ -189,6 +189,7 @@ The \Sym{ξ} reduction cases \Constr{ξ-·₁}, \Constr{ξ-·₂}, \Constr{ξ-�
 We have two different types of substitution present inside the reduction rules: \Sym{e} \Data{[} \Sym{e} \Data{]} and \Sym{e} \Data{[} \Sym{τ} \Data{]}.
 Both \Data{e[e]-preserves} and \Data{e[τ]-preserves} follow from a more general lemma \Data{⊢σ-preserves}. 
 The lemma \Data{⊢σ-preserves} proves that applying a typed substitution preserves the typing.
+\newpage
 \Fpreserves
 The lemma \Data{⊢σ-preserves} follows by induction over the typing rules and lemmas about the interaction of substitutions and renamings. 
 More specifically, we also need to prove that all operations on substitutions preserve the typing. 
